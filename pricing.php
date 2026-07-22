@@ -18,9 +18,101 @@ $is_admin = $_SESSION['is_admin'] ?? false;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing & Plans — Superable Learning LMS</title>
-    <meta name="description" content="Transparent, accessible pricing plans for Superable Learning LMS. Isolated multi-tenant databases, WCAG 2.2 AA compliance, and flexible course engine.">
+    <meta name="description" content="Transparent, accessible pricing plans for Superable Learning LMS. Sandbox, Pro, and Premium tiers with optional accessibility review packages.">
     <link rel="stylesheet" href="style.css">
     <?= renderTenantBrandingCss('local-dev') ?>
+    <style>
+        /* Custom layout styling for the pricing pages */
+        .pricing-section-title {
+            text-align: center;
+            color: var(--color-primary);
+            margin: 3rem 0 1.5rem;
+            font-size: 2rem;
+            position: relative;
+        }
+        .pricing-section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: var(--color-primary);
+            margin: 0.5rem auto 0;
+            border-radius: 2px;
+        }
+        .addon-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) {
+            .addon-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .addon-card {
+            background-color: var(--color-bg-light, #f8f9fa);
+            border: 1px solid var(--color-border, #e2e8f0);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .addon-header {
+            margin-bottom: 1rem;
+        }
+        .addon-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        .addon-desc {
+            font-size: 0.875rem;
+            color: var(--color-text-dark, #4a5568);
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+        .addon-rates {
+            border-top: 1px dashed var(--color-border, #e2e8f0);
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+        .rate-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .rate-row:last-child {
+            margin-bottom: 0;
+        }
+        .rate-label {
+            font-weight: 600;
+            color: var(--color-text-dark, #2d3748);
+        }
+        .rate-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .rate-sub {
+            font-size: 0.75rem;
+            color: var(--color-text-muted, #718096);
+        }
+        .audit-info-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -88,72 +180,190 @@ $is_admin = $_SESSION['is_admin'] ?? false;
             </div>
         </div>
 
+        <h2 class="pricing-section-title">LMS Platform Tiers</h2>
+
         <!-- Pricing Cards Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8" id="pricing-grid">
             
-            <!-- Tier 1: Developer / Single Tenant -->
+            <!-- Tier 1: Sandbox -->
             <div class="pricing-card">
-                <h2 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Developer & Sandbox</h2>
-                <p class="text-neutral-mid text-sm">Perfect for course creators, testing HTML/SCORM packages, and single-tenant trials.</p>
-                <div class="pricing-price">$0 <span>/ month</span></div>
+                <h3 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Sandbox</h3>
+                <p class="text-neutral-mid text-sm">For learners, testers, accessibility students, and creators exploring the platform.</p>
+                <div class="pricing-price">$0 <span>/ free</span></div>
                 <p class="text-xs text-neutral-mid">Free forever for single local/dev tenant</p>
 
                 <ul class="pricing-features">
-                    <li>1 Isolated Tenant Database</li>
-                    <li>WCAG 2.2 AA Accessible Player</li>
-                    <li>Up to 50 Active Learners</li>
-                    <li>250 MB Storage Quota</li>
-                    <li>Standard HTML & LC-JSON Importer</li>
-                    <li>Community & Markdown Docs</li>
+                    <li><strong>250 MB storage</strong></li>
+                    <li><strong>1 admin account</strong></li>
+                    <li>Unlimited learners</li>
+                    <li>Unlimited courses (to quota limit)</li>
+                    <li>LC-JSON & HTML import</li>
+                    <li>Basic Accessibility Tools:
+                        <ul style="padding-left: 1rem; margin-top: 0.25rem;">
+                            <li>Contrast checker</li>
+                            <li>Reading-order preview</li>
+                            <li>Basic HTML linting</li>
+                            <li>Basic JSON validation</li>
+                            <li>CSS guardrails</li>
+                        </ul>
+                    </li>
                 </ul>
 
-                <a href="index.php?tenant=local-dev" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary);">Explore Local Demo</a>
+                <a href="index.php?tenant=local-dev" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">Explore Local Demo</a>
             </div>
 
-            <!-- Tier 2: Standard Organization (Featured) -->
+            <!-- Tier 2: Pro (Featured) -->
             <div class="pricing-card featured">
                 <span class="pricing-card-badge">Most Popular</span>
-                <h2 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Standard Organization</h2>
-                <p class="text-neutral-mid text-sm">Dedicated tenant isolation for schools, non-profits, and growing companies.</p>
-                <div class="pricing-price">$199 <span>/ month</span></div>
-                <p class="text-xs text-neutral-mid">Billed annually or $229/mo billed monthly</p>
+                <h3 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Pro</h3>
+                <p class="text-neutral-mid text-sm">For freelancers, small orgs, and accessibility-first creators who need more control.</p>
+                <div class="pricing-price">$10 <span>/ month</span></div>
+                <p class="text-xs text-neutral-mid">All Sandbox tools plus custom branding</p>
 
                 <ul class="pricing-features">
-                    <li>Dedicated Tenant SQLite Database</li>
-                    <li>500 MB Isolated Storage Quota</li>
-                    <li>Up to 500 Active Learners</li>
-                    <li>Dynamic Brand CSS Customization</li>
-                    <li>Custom Subdomain Access</li>
-                    <li>Invitation Course Code Management</li>
-                    <li>NVDA, JAWS & VoiceOver Tested</li>
-                    <li>Email & Ticket Support</li>
+                    <li><strong>500 MB storage</strong></li>
+                    <li><strong>1 admin account</strong></li>
+                    <li>Unlimited learners & courses</li>
+                    <li><strong>Branding controls:</strong>
+                        <ul style="padding-left: 1rem; margin-top: 0.25rem;">
+                            <li>CSS variables styling</li>
+                            <li>Logo upload</li>
+                            <li>Theme toggles</li>
+                        </ul>
+                    </li>
+                    <li>Priority email support (72h response)</li>
+                    <li>Help center & docs access</li>
                 </ul>
 
-                <a href="index.php#workspace-finder" class="btn btn-primary text-center">Get Started / Find Workspace</a>
+                <a href="index.php#workspace-finder" class="btn btn-primary text-center" style="margin-top: auto;">Get Started / Find Workspace</a>
             </div>
 
-            <!-- Tier 3: Enterprise Multi-Tenant -->
+            <!-- Tier 3: Premium -->
             <div class="pricing-card">
-                <h2 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Enterprise Multi-Tenant</h2>
-                <p class="text-neutral-mid text-sm">For multi-division enterprises, government agencies, and custom LMS networks.</p>
-                <div class="pricing-price">$499 <span>/ month</span></div>
-                <p class="text-xs text-neutral-mid">Custom SLA & provisioning available</p>
+                <h3 style="font-size: 1.5rem; margin-top: 0; color: var(--color-primary);">Premium</h3>
+                <p class="text-neutral-mid text-sm">For small teams and departments needing collaboration, analytics, and advanced tools.</p>
+                <div class="pricing-price">$20 <span>/ month</span></div>
+                <p class="text-xs text-neutral-mid">Full team capabilities & advanced WCAG tools</p>
 
                 <ul class="pricing-features">
-                    <li>Unlimited Tenant Databases</li>
-                    <li>Custom Domain Mapping (JSON/DNS)</li>
-                    <li>Custom CSS Stylesheet Overrides</li>
-                    <li>Unlimited Learners & Courses</li>
-                    <li>5 GB Base Storage (Expandable)</li>
-                    <li>Automated Tenant Provisioning API</li>
-                    <li>Priority Accessibility Auditing</li>
-                    <li>Dedicated Account Manager</li>
+                    <li><strong>1 GB storage</strong></li>
+                    <li><strong>3 admin accounts</strong> (RBAC permissions)</li>
+                    <li><strong>Customization:</strong>
+                        <ul style="padding-left: 1rem; margin-top: 0.25rem;">
+                            <li>Full Custom CSS (guardrails enforced)</li>
+                            <li>Custom fonts subsetting</li>
+                            <li>Course-level branding overrides</li>
+                        </ul>
+                    </li>
+                    <li><strong>Advanced Accessibility Tools:</strong>
+                        <ul style="padding-left: 1rem; margin-top: 0.25rem;">
+                            <li>Automated WCAG linting</li>
+                            <li>Accessibility heatmaps</li>
+                            <li>NVDA simulation mode</li>
+                            <li>Interactive remediation</li>
+                        </ul>
+                    </li>
+                    <li>Shared course library & brand settings</li>
+                    <li>Light analytics dashboard (CSV export)</li>
+                    <li>Priority support (24-48h response)</li>
                 </ul>
 
-                <a href="help.php" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary);">Contact Platform Team</a>
+                <a href="help.php" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">Contact Platform Team</a>
             </div>
 
         </div>
+
+        <!-- Add-on Section: Accessibility Review Package -->
+        <section class="card mb-8">
+            <h2 class="h3-style" style="margin-top: 0; color: var(--color-primary);">Accessibility Review Add-On Options</h2>
+            <p class="text-neutral-mid mb-4">
+                Affordable accessibility auditing designed for creators and small organizations. Typical WCAG audits cost <strong>$75–$120/hr</strong> — we price ours accessibly because accessibility should be accessible.
+            </p>
+
+            <div class="addon-grid">
+                
+                <!-- Add-on Type 1: Basic Review -->
+                <div class="addon-card">
+                    <div class="addon-header">
+                        <h3 class="addon-title">Basic Review</h3>
+                        <p class="addon-desc">A quick, high‑level accessibility check that identifies surface‑level issues without WCAG mapping or remediation guidance.</p>
+                    </div>
+                    <div class="addon-rates">
+                        <div class="rate-row">
+                            <span class="rate-label">Per Module:</span>
+                            <span class="rate-value">$15</span>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Per Course:</span>
+                            <div>
+                                <span class="rate-value">$50</span>
+                                <span class="rate-sub">(5 modules)</span>
+                            </div>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Subscription:</span>
+                            <span class="rate-value">$45<span style="font-size:0.75rem; font-weight:normal;">/mo</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add-on Type 2: Full WCAG Audit -->
+                <div class="addon-card" style="border: 2px solid var(--color-accent-blue, #3182ce);">
+                    <div class="addon-header">
+                        <h3 class="addon-title" style="color: var(--color-accent-blue, #3182ce);">Full WCAG Audit</h3>
+                        <p class="addon-desc">A complete diagnostic that maps all found issues directly to WCAG 2.2 AA success criteria with severity ratings and impact explanations.</p>
+                    </div>
+                    <div class="addon-rates">
+                        <div class="rate-row">
+                            <span class="rate-label">Per Module:</span>
+                            <span class="rate-value">$30</span>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Per Course:</span>
+                            <div>
+                                <span class="rate-value">$100</span>
+                                <span class="rate-sub">(5 modules)</span>
+                            </div>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Subscription:</span>
+                            <span class="rate-value">$90<span style="font-size:0.75rem; font-weight:normal;">/mo</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add-on Type 3: Full Audit + Remediation Plan -->
+                <div class="addon-card">
+                    <div class="addon-header">
+                        <h3 class="addon-title">Full Audit + Remediation</h3>
+                        <p class="addon-desc">A full WCAG audit plus detailed remediation instructions, code‑level guidance, custom component fixes, and regression testing steps.</p>
+                    </div>
+                    <div class="addon-rates">
+                        <div class="rate-row">
+                            <span class="rate-label">Per Module:</span>
+                            <span class="rate-value">$40</span>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Per Course:</span>
+                            <div>
+                                <span class="rate-value">$150</span>
+                                <span class="rate-sub">(5 modules)</span>
+                            </div>
+                        </div>
+                        <div class="rate-row">
+                            <span class="rate-label">Subscription:</span>
+                            <span class="rate-value">$125<span style="font-size:0.75rem; font-weight:normal;">/mo</span></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="text-align: center; border-top: 1px dashed var(--color-border, #e2e8f0); padding-top: 1rem;">
+                <span class="text-xs text-neutral-mid">For course limits exceeding 5 modules, additional modules are billed at: Basic ($10/mod), Full ($20/mod), Audit + Remediation ($30/mod). Subscription options require a 2-month minimum commitment.</span>
+                <a href="help.php?doc=administration/accessibility-reviews" class="audit-info-link">View Detailed Accessibility Review Definitions & Scopes &rarr;</a>
+            </div>
+        </section>
 
         <!-- Detailed Feature Matrix Table -->
         <section class="card mb-8">
@@ -165,15 +375,33 @@ $is_admin = $_SESSION['is_admin'] ?? false;
                     <thead>
                         <tr style="border-bottom: 2px solid var(--color-primary); text-align: left;">
                             <th style="padding: 0.75rem;">Feature / Capability</th>
-                            <th style="padding: 0.75rem;">Developer</th>
-                            <th style="padding: 0.75rem;">Standard Org</th>
-                            <th style="padding: 0.75rem;">Enterprise</th>
+                            <th style="padding: 0.75rem;">Sandbox</th>
+                            <th style="padding: 0.75rem;">Pro</th>
+                            <th style="padding: 0.75rem;">Premium</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr style="border-bottom: 1px solid #E2E8F0;">
+                            <td style="padding: 0.75rem; font-weight: 700;">Monthly Price</td>
+                            <td style="padding: 0.75rem;">$0</td>
+                            <td style="padding: 0.75rem;">$10</td>
+                            <td style="padding: 0.75rem;">$20</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E2E8F0;">
+                            <td style="padding: 0.75rem; font-weight: 700;">Storage Limit</td>
+                            <td style="padding: 0.75rem;">250 MB</td>
+                            <td style="padding: 0.75rem;">500 MB</td>
+                            <td style="padding: 0.75rem;">1 GB</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E2E8F0;">
+                            <td style="padding: 0.75rem; font-weight: 700;">Admin Accounts</td>
+                            <td style="padding: 0.75rem;">1 Account</td>
+                            <td style="padding: 0.75rem;">1 Account</td>
+                            <td style="padding: 0.75rem;">3 Accounts (RBAC)</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E2E8F0;">
                             <td style="padding: 0.75rem; font-weight: 700;">Database Isolation</td>
-                            <td style="padding: 0.75rem;">Shared Sandbox SQLite</td>
+                            <td style="padding: 0.75rem;">Dedicated Tenant SQLite</td>
                             <td style="padding: 0.75rem;">Dedicated Tenant SQLite</td>
                             <td style="padding: 0.75rem;">Dedicated Tenant SQLite</td>
                         </tr>
@@ -181,31 +409,25 @@ $is_admin = $_SESSION['is_admin'] ?? false;
                             <td style="padding: 0.75rem; font-weight: 700;">WCAG 2.2 AA Compliance</td>
                             <td style="padding: 0.75rem;">✓ Full Engine</td>
                             <td style="padding: 0.75rem;">✓ Full Engine</td>
-                            <td style="padding: 0.75rem;">✓ Full Engine + Custom Audits</td>
+                            <td style="padding: 0.75rem;">✓ Full Engine + Advanced Linting</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 0.75rem; font-weight: 700;">Custom Subdomain & Domains</td>
-                            <td style="padding: 0.75rem;">Localhost / Query Param</td>
-                            <td style="padding: 0.75rem;">Subdomain (org.superablelearning.com)</td>
-                            <td style="padding: 0.75rem;">Custom Domain (learn.client.com)</td>
+                            <td style="padding: 0.75rem; font-weight: 700;">Branding Customization</td>
+                            <td style="padding: 0.75rem;">None</td>
+                            <td style="padding: 0.75rem;">CSS Variables, Logo Upload, Theme Toggle</td>
+                            <td style="padding: 0.75rem;">Full Custom CSS, Custom Fonts, Course-level Overrides</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 0.75rem; font-weight: 700;">Brand CSS Overrides</td>
-                            <td style="padding: 0.75rem;">Basic Colors</td>
-                            <td style="padding: 0.75rem;">Dynamic CSS Variables</td>
-                            <td style="padding: 0.75rem;">Full custom.css + Fonts</td>
+                            <td style="padding: 0.75rem; font-weight: 700;">Analytics & Reports</td>
+                            <td style="padding: 0.75rem;">None</td>
+                            <td style="padding: 0.75rem;">Basic completion status</td>
+                            <td style="padding: 0.75rem;">Analytics dashboard, Completion rates, CSV export, LRS connector</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 0.75rem; font-weight: 700;">Course Formats Supported</td>
-                            <td style="padding: 0.75rem;">HTML / LC-JSON</td>
-                            <td style="padding: 0.75rem;">HTML / SCORM / LC-JSON / BuildXCL</td>
-                            <td style="padding: 0.75rem;">All Formats + Custom Converter</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 0.75rem; font-weight: 700;">Multitenant User Auth Model</td>
-                            <td style="padding: 0.75rem;">Tenant Portal Login</td>
-                            <td style="padding: 0.75rem;">Tenant Portal + Code Access</td>
-                            <td style="padding: 0.75rem;">Tenant Portal + Custom SSO / SAML</td>
+                            <td style="padding: 0.75rem; font-weight: 700;">Support Level</td>
+                            <td style="padding: 0.75rem;">Community Forums</td>
+                            <td style="padding: 0.75rem;">Priority email support (72h)</td>
+                            <td style="padding: 0.75rem;">Priority support (24-48h), Zoom Troubleshooting</td>
                         </tr>
                     </tbody>
                 </table>
@@ -242,7 +464,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
                     <span aria-hidden="true">+</span>
                 </button>
                 <div class="faq-content hidden">
-                    <p>Yes! Enterprise plans include full custom domain mapping via our built-in <code>custom_domains.json</code> router. For example, your learners can access courses at <code>learning.yourcompany.com</code> seamlessly.</p>
+                    <p>Yes! Premium plans support custom domain mapping via our built-in <code>custom_domains.json</code> router. For example, your learners can access courses at <code>learning.yourcompany.com</code> seamlessly.</p>
                 </div>
             </div>
 
