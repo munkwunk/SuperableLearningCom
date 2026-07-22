@@ -1,0 +1,79 @@
+<section class="pattern-container" id="validation-module">
+    <h1>Form Validation & Errors</h1>
+    <p>Forms are the primary way users provide data. When that data is incorrect, the application must provide clear, programmatically associated feedback to help the user fix the issue. <em>(Note: This interaction is designed to demonstrate validation failures; there is no way to submit a "successful" form in this demo.)</em></p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Attempt to submit the form with empty fields.</p>
+        <p>2. Identify the functional cues that indicate an error state and how focus is managed to guide the user.</p>
+        <p>3. Use the error summary links and identify the cues that confirm you have moved to the related input.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, errors are indicated only by a vague message and color changes. Focus remains on the button, and the specific invalid field has no text-based error identification. A screen reader user is left entirely unable to identify what went wrong.</p>
+        
+        <div class="bad-form" id="bad-form-container" style="padding: 1.5rem; border: 1px solid #ccc; background: #eee; border-radius: 0.5rem;">
+            <div id="bad-form-summary" style="color: red; font-weight: bold; display: none; margin-bottom: 1rem;">Please fix the errors below.</div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label>Username:</label><br>
+                <input type="text" id="bad-wiz-user-field">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Email Address:</label><br>
+                <input type="text" id="bad-wiz-email-field">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Password:</label><br>
+                <input type="password" id="bad-wiz-pass-field">
+            </div>
+
+            <button type="button" class="nav-btn" onclick="
+                document.getElementById('bad-form-summary').style.display = 'block';
+                document.getElementById('bad-wiz-user-field').style.border = '2px solid red';
+                console.log('Submission failed using color-only cues.');
+            ">Register</button>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Color Alone:</strong> The Username field is indicated as invalid only by its red border. Screen readers do not announce CSS border colors, so this state is invisible to NVDA users.</li>
+                <li><strong>Vague Messaging:</strong> The message "Please fix the errors below" doesn't specify which field is broken or how to fix it.</li>
+                <li><strong>No Initial Focus:</strong> When the button is pressed, the screen reader remains silent and focus stays on the button. The user has no idea that an error message appeared at the top of the form.</li>
+                <li><strong>No Programmatic Link:</strong> There are no <code>aria-invalid</code> or <code>aria-describedby</code> attributes to link the error state to the inputs.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 1.4.1: Use of Color</strong> - Color is the only visual cue provided to identify the specific field that requires attention.</li>
+                <li><strong>SC 3.3.1: Error Identification</strong> - The specific error is not identified in text, and the vague summary provides no actionable information for screen reader users.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - The appearance of the error message and the change in form state are not announced to the user.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses <code>aria-invalid</code>, <code>aria-describedby</code>, and automatically focuses the first error on submission.</p>
+
+        <jw-form-validation></jw-form-validation>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Aria-invalid:</strong> Tells the screen reader the field needs attention.</li>
+                <li><strong>Aria-describedby:</strong> Directly links the error message ID to the input, so NVDA reads the error as soon as the field is focused.</li>
+                <li><strong>Error Summary:</strong> Provides a list of all errors at the top of the form, with links to jump directly to the invalid fields.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 3.3.1: Error Identification</strong> - <code>aria-invalid</code> ensures the error state is programmatically identifiable.</li>
+                <li><strong>SC 3.3.3: Error Suggestion</strong> - <code>aria-describedby</code> links corrective suggestions directly to the input.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - An error summary and focus management provide clear status updates upon submission.</li>
+            </ul>
+        </div>
+    </div>
+</section>

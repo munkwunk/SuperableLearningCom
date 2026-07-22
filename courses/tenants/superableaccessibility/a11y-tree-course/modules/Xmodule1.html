@@ -1,0 +1,83 @@
+<h1 tabindex="-1">Your Site Looks Perfect, But Is It?</h1>
+
+<h2>Introduction</h2>
+<p>You’ve spent hours getting it right. The layout is pixel-perfect, the branding is sharp, and every interaction feels smooth. You’ve tweaked the code, maybe with a little help from an AI assistant, and visually, it’s exactly what you wanted.</p>
+<p>But then you run a basic screen reader test, and you hear something like this:</p>
+<blockquote>"Clickable... text... button... blank."</blockquote>
+<p>What’s going on? Your site looks perfect, but to some users, it’s confusing or even broken. The problem is that there’s a hidden conversation happening—one that you might not be aware of. It’s a conversation between the browser and the assistive technologies (AT) that people with disabilities rely on. And right now, your code might be sending the wrong messages.</p>
+
+<h2>The Two Blueprints</h2>
+<p>Think of it this way: every webpage is built from two blueprints.</p>
+<ol>
+    <li><strong>The Visual Blueprint (The Document Object Model):</strong> This is the one you know well. Its technical name is the Document Object Model, or DOM. It tells the browser how to draw the page—the colors, the fonts, the layout. It’s all about appearance.</li>
+    <li><strong>The Semantic Blueprint (The Accessibility Tree):</strong> This is the hidden one. It's called the Accessibility Tree. It tells assistive technology what every element means and what it does. It’s all about structure and function.</li>
+</ol>
+<p>When a developer focuses only on the visual blueprint (the DOM), the semantic blueprint (the Accessibility Tree) gets neglected. That’s when a beautiful design can become an inaccessible experience.</p>
+
+<figure class="text-center mt-8 mb-8">
+    <img src="images/m1-image1.svg" alt="A diagram showing the DOM as a wireframe and the Accessibility Tree as a nested list. An arrow flows from the DOM to the Accessibility Tree, indicating the browser creates the latter from the former." class="w-full rounded-lg shadow-lg">
+    <figcaption class="text-sm text-neutral-mid mt-2">The browser uses the DOM to create the Accessibility Tree.</figcaption>
+</figure>
+
+<h2>Interactive Game: Can You Spot the Difference?</h2>
+<p>Below are two headings. Visually, they are identical. But one is accessible, and one is not.</p>
+<div class="interactive-game">
+    <div class="text-center">
+        <span class="styled-heading">Our Mission</span>
+    </div>
+    <div class="text-center">
+        <h3 class="styled-heading">Our Mission</h3>
+    </div>
+</div>
+<p class="text-center">Could you tell which was which just by looking? Probably not.</p>
+<div class="text-center">
+    <button id="reveal-btn" class="cta-button">Reveal Code</button>
+</div>
+
+<h2>Hear the Difference</h2>
+<p>Now, let's hear the difference this makes in a real-world example. The simulation below lets you hear how a screen reader would announce the two headings from the game above.</p>
+
+<div class="tts-container">
+    <div class="tts-header">
+        <h3>Screen Reader Output Simulation</h3>
+    </div>
+    <div class="tts-comparison">
+        <div class="tts-example">
+            <h4>Inaccessible Version (&lt;span&gt;)</h4>
+            <button class="tts-button tts-play-btn" data-text="Our Mission.">Play Screen Reader Output</button>
+        </div>
+        <div class="tts-example">
+            <h4>Accessible Version (&lt;h3&gt;)</h4>
+            <button class="tts-button tts-play-btn" data-text="Heading level 3, Our Mission.">Play Screen Reader Output</button>
+        </div>
+    </div>
+</div>
+
+
+<p class="mt-8">By the end of this course, you’ll have the foundational knowledge to ensure your projects aren't just visually stunning, but are also clear, functional, and inclusive for everyone.</p>
+
+<!-- Modal for Code Reveal -->
+<div id="code-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+        <h3 id="modal-title" class="mb-4" tabindex="-1">You can't see the difference, but a screen reader can.</h3>
+        <p class="mb-6">The accessible version uses a semantic <code>&lt;h3&gt;</code> tag, which allows screen reader users to identify it as a major landmark on the page and navigate directly to it.</p>
+        <div class="code-comparison">
+            <div>
+                <p><strong>Inaccessible Code:</strong></p>
+                <div class="code-snippet">
+                    &lt;span style="font-size: 1.5em; font-weight: bold;"&gt;Our Mission&lt;/span&gt;
+                </div>
+            </div>
+            <div>
+                <p><strong>Accessible Code:</strong></p>
+                <div class="code-snippet">
+                    &lt;h3&gt;Our Mission&lt;/h3&gt;
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-8">
+            <button id="close-modal-btn" class="cta-button">Close</button>
+        </div>
+    </div>
+</div>
+

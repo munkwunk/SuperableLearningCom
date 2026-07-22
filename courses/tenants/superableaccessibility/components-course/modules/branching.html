@@ -1,0 +1,83 @@
+<section class="pattern-container" id="branching-module">
+    <h1>Scenario-Based Branching Choice</h1>
+    <p>Branching scenarios immerse learners in a narrative where their decisions impact the outcome. This is a powerful e-learning tool, but it requires careful focus management to ensure that non-visual learners are not left "hanging" on a stale choice button after the story has moved on.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate to the accessible scenario and make a choice.</p>
+        <p>2. Notice how your focus is immediately moved to the new heading and NVDA begins reading.</p>
+        <p>3. Try restarting the scenario and verify that the focus management works consistently every time.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, making a choice swaps the text below, but your focus stays on the button. You have no idea the story has progressed unless you manually search for the new text.</p>
+        
+        <div class="bad-scenario" style="padding: 1rem; border: 1px solid #ccc; background: #eee;">
+            <div id="bad-scenario-text">
+                <p>A designer wants to use a light grey font on a white background because it looks "modern." This violates the <strong>Perceivable</strong> principle. What is your response?</p>
+            </div>
+            <div id="bad-scenario-choices" style="margin-top: 1rem;">
+                <button type="button" class="nav-btn" onclick="document.getElementById('bad-scenario-text').innerHTML = '<p>You allowed the design. Many users can no longer read the content. <strong>Perceivability Failure.</strong></p>'; document.getElementById('bad-scenario-choices').style.display='none'; document.getElementById('bad-scenario-retry').style.display='block';">Allow the design</button>
+                <button type="button" class="nav-btn" style="background-color: var(--color-accent);" onclick="document.getElementById('bad-scenario-text').innerHTML = '<p>You insisted on a 4.5:1 contrast ratio. The content is now readable by everyone. <strong>Perceivability Success!</strong></p>'; document.getElementById('bad-scenario-choices').style.display='none'; document.getElementById('bad-scenario-retry').style.display='block';">Insist on contrast</button>
+            </div>
+            <div id="bad-scenario-retry" style="margin-top: 1rem; display: none;">
+                <button type="button" class="nav-btn" onclick="document.getElementById('bad-scenario-text').innerHTML = '<p>A designer wants to use a light grey font on a white background because it looks \&quot;modern.\&quot; This violates the <strong>Perceivable</strong> principle. What is your response?</p>'; document.getElementById('bad-scenario-choices').style.display='block'; document.getElementById('bad-scenario-retry').style.display='none';">Try Again</button>
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Stale Focus:</strong> When the content changes, the user's focus remains on the button they just clicked (or disappears if the button is removed). The user has no orientation to the new "page" of content.</li>
+                <li><strong>No Narrative Flow:</strong> NVDA does not automatically read the new scenario because focus was never moved to it.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Focus is not managed logically after a significant content change.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - The new scenario heading and content are not programmatically introduced to the user.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses <strong>Focus Redirection</strong>. When a choice is made, we programmatically move focus to the heading of the new scenario, forcing NVDA to read from the start of the new context.</p>
+
+        <jw-scenario>
+            <jw-branch id="start" title="The Contrast Challenge" initial>
+                <p>A designer wants to use a light grey font on a white background because it looks "modern." This violates the <strong>Perceivable</strong> principle. What is your response?</p>
+                <jw-choice next="fail">Allow the design</jw-choice>
+                <jw-choice next="success">Insist on contrast</jw-choice>
+            </jw-branch>
+
+            <jw-branch id="success" title="Outcome: Perceivability Success">
+                <p>Great choice! Insisting on a 4.5:1 contrast ratio ensures that your content is Perceivable by users with low vision.</p>
+                <p><strong>Success:</strong> Your application now meets WCAG AA contrast requirements.</p>
+                <jw-choice next="start">Restart Scenario</jw-choice>
+            </jw-branch>
+
+            <jw-branch id="fail" title="Outcome: Perceivability Failure">
+                <p>By allowing the design, you have created a barrier for many users. Visual aesthetics should never come at the cost of basic access.</p>
+                <p><strong>Warning:</strong> The application is now non-compliant with WCAG 2.2 AA.</p>
+                <jw-choice next="start">Restart Scenario</jw-choice>
+            </jw-branch>
+        </jw-scenario>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Heading Focus:</strong> Each new branch has an <code>&lt;h3&gt;</code> with <code>tabindex="-1"</code>. When the branch changes, we call <code>.focus()</code> on that heading.</li>
+                <li><strong>Instant Orientation:</strong> Because focus moved to the heading, NVDA immediately announces the new title and starts reading the new narrative.</li>
+                <li><strong>Linear Navigation:</strong> The user is perfectly positioned to read the new outcome and then Tab forward to the next set of choices.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Focus is programmatically moved to the new content, maintaining a logical flow.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - Heading focus provides clear structure and orientation for the new context.</li>
+            </ul>
+        </div>
+    </div>
+</section>

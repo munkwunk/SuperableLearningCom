@@ -1,0 +1,65 @@
+<svg width="800" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+    <!-- Created by Gemini -->
+    <defs>
+        <style>
+            .bg { fill: #F9F9F7; }
+            .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: bold; fill: #3B7A57; }
+            .code-text { font-family: 'Courier New', Courier, monospace; font-size: 14px; fill: #1F1F1F; }
+            .desc-text { font-family: 'Inter', sans-serif; font-size: 16px; fill: #1F1F1F; }
+            .tree-box { fill: #ffffff; stroke: #5F8F6B; stroke-width: 2; rx: 8; }
+            .tree-line { stroke: #5F8F6B; stroke-width: 2; }
+            .info-box { fill: #e9f5e9; stroke: #a3d9a3; stroke-width: 1; rx: 8; }
+            .info-text { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; fill: #1a4d1a; }
+            .info-prop { font-weight: normal; }
+            .arrow { stroke: #B07A1E; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+            .arrow-head { fill: #B07A1E; }
+            .caption-text { font-family: 'Inter', sans-serif; font-size: 14px; font-style: italic; fill: #6E6E6E; text-anchor: middle; }
+        </style>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" class="arrow-head" />
+        </marker>
+    </defs>
+
+    <rect width="800" height="450" class="bg"/>
+
+    <!-- Left Panel: DOM Tree -->
+    <g transform="translate(40, 40)">
+        <text x="155" y="0" text-anchor="middle" class="title-text">The DOM Tree</text>
+        <rect x="0" y="20" width="310" height="340" rx="10" fill="#fff" stroke="#ccc"/>
+        <text x="15" y="50" class="code-text">&lt;label for="email"&gt;Email&lt;/label&gt;</text>
+        <text x="15" y="70" class="code-text">&lt;input type="email" id="email" required&gt;</text>
+        
+        <!-- Tree Diagram -->
+        <rect x="105" y="120" width="100" height="40" class="tree-box"/>
+        <text x="155" y="145" text-anchor="middle" class="desc-text">div</text>
+        <line x1="155" y1="160" x2="155" y2="190" class="tree-line"/>
+        <line x1="80" y1="190" x2="230" y2="190" class="tree-line"/>
+        <line x1="80" y1="190" x2="80" y2="220" class="tree-line"/>
+        <line x1="230" y1="190" x2="230" y2="220" class="tree-line"/>
+        <rect x="30" y="220" width="100" height="40" class="tree-box"/>
+        <text x="80" y="245" text-anchor="middle" class="desc-text">label</text>
+        <rect x="180" y="220" width="100" height="40" class="tree-box"/>
+        <text x="230" y="245" text-anchor="middle" class="desc-text">input</text>
+    </g>
+
+    <!-- Right Panel: Accessibility Tree -->
+    <g transform="translate(450, 40)">
+        <text x="155" y="0" text-anchor="middle" class="title-text">The Accessibility Tree</text>
+        <rect x="0" y="20" width="310" height="340" rx="10" fill="#fff" stroke="#ccc"/>
+        
+        <!-- Accessible Object Box -->
+        <rect x="30" y="130" width="250" height="140" class="info-box"/>
+        <text x="45" y="165" class="info-text">Role: <tspan class="info-prop">textbox</tspan></text>
+        <text x="45" y="205" class="info-text">Name: <tspan class="info-prop">"Email"</tspan></text>
+        <text x="45" y="245" class="info-text">State: <tspan class="info-prop">required</tspan></text>
+    </g>
+
+    <!-- Connecting Arrows -->
+    <path d="M215,70 C330,80 380,150 450,165" class="arrow"/> <!-- type="email" to Role -->
+    <path d="M120,50 C250,30 380,180 450,205" class="arrow"/> <!-- label to Name -->
+    <path d="M280,70 C350,100 390,220 450,245" class="arrow"/> <!-- required to State -->
+
+    <!-- Caption -->
+    <text x="400" y="420" class="caption-text">The DOM shows the code's structure. The Accessibility Tree shows the element's meaning.</text>
+
+</svg>

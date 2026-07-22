@@ -1,0 +1,53 @@
+<h1 tabindex="-1">Decoding the Blueprints: DOM vs. Accessibility Tree</h1>
+
+<p>In the last module, we saw that every webpage has two blueprints: the visual one (the DOM) and the semantic one (the
+    Accessibility Tree). Now, let's look at what that actually means. Understanding the difference between these two is
+    the key to building truly inclusive websites.</p>
+
+<h2>The DOM: The Complete Instruction Manual</h2>
+<p>The Document Object Model (DOM) is the browser's complete, unabridged instruction manual for your page. When a
+    browser loads your HTML, it creates a tree-like structure in its memory that includes every single thing on the
+    page: every &lt;div&gt;, every &lt;span&gt;, every paragraph, and every comment.</p>
+<p>The DOM's main job is to give JavaScript a map of the page so it can add, remove, or change elements dynamically.
+    It’s built for the browser and for developers. It cares about structure, but it doesn't inherently understand
+    meaning. To the DOM, a &lt;button&gt; and a &lt;div&gt; are just two different nodes in its tree.</p>
+
+<h2>The Accessibility Tree: The "CliffsNotes" for Assistive Tech</h2>
+<p>Now, imagine trying to read that entire, massive instruction manual out loud. It would be overwhelming and full of
+    unnecessary details.</p>
+<p>That's why the browser creates a second, much simpler blueprint: the <strong>Accessibility Tree</strong>.</p>
+<p>The Accessibility Tree is like the "CliffsNotes" version of the DOM, made specifically for assistive technologies
+    like screen readers. It’s a subset of the DOM that intentionally filters out all the "noise"—the purely visual
+    elements like &lt;div&gt; wrappers used for layout—and focuses only on what's meaningful.</p>
+
+<h3>The Language of the Accessibility Tree</h3>
+<p>Instead of just listing nodes, the Accessibility Tree describes each important element using three key properties:
+</p>
+<ul>
+    <li><strong>Role:</strong> What is this thing? (e.g., a "button," a "heading," a "link").</li>
+    <li><strong>Name:</strong> What should I call it? (e.g., the text label, like "Submit" or "Read More").</li>
+    <li><strong>State:</strong> What is its current condition? (e.g., "checked" for a checkbox, "expanded" for a menu).
+    </li>
+</ul>
+<p>This is the information a screen reader uses to describe the interface to a user. If an element is missing a name or
+    has the wrong role, the screen reader can't do its job properly.</p>
+
+<figure class="placeholder-graphic">
+    <img src="images/m2-image1.svg"
+        alt="A diagram comparing the DOM tree, which shows separate label and input elements, to the Accessibility Tree, which combines them into a single object with a name, role, and state."
+        style="max-width: 100%; height: auto;">
+</figure>
+
+<h2>The Difference</h2>
+<p>As you may notice, the DOM keeps the &lt;label&gt; and the &lt;input&gt; as separate, sibling nodes. It's a literal
+    representation of the code. The Accessibility Tree, however, is much smarter. It understands the relationship
+    between the two elements and combines them into a single, meaningful object for a screen reader: a textbox with the
+    name "Email" that is in a required state.</p>
+<p>This translation from a structural list to a meaningful summary is the most important difference to understand. Our
+    job as developers is to write code that gives the browser the right information to build a helpful and accurate
+    Accessibility Tree.</p>
+
+<h2>Coming Up</h2>
+<p>Now you can see the crucial difference between the DOM (the visual blueprint) and the Accessibility Tree (the
+    semantic blueprint). Understanding this is the key, but the real power comes from knowing how to control it. In the
+    next module, we'll get hands-on with your developer toolkit.</p>

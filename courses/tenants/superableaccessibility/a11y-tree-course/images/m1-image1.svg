@@ -1,0 +1,51 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- Created by Gemini -->
+    <defs>
+        <style>
+            .bg { fill: #F9F9F7; }
+            .title-text { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: bold; fill: #3B7A57; }
+            .desc-text { font-family: 'Inter', sans-serif; font-size: 16px; fill: #1F1F1F; }
+            .wireframe-box { fill: #ffffff; stroke: #5F8F6B; stroke-width: 2; }
+            .tree-text { font-family: 'Inter', sans-serif; font-size: 16px; fill: #1F1F1F; }
+            .arrow { stroke: #B07A1E; stroke-width: 3; fill: none; }
+            .arrow-head { fill: #B07A1E; }
+        </style>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+        </marker>
+    </defs>
+
+    <rect width="800" height="400" class="bg"/>
+
+    <!-- Left Panel: DOM -->
+    <g transform="translate(50, 50)">
+        <text x="75" y="0" text-anchor="middle" class="title-text">Visual Blueprint (DOM)</text>
+        <rect x="-50" y="30" width="250" height="280" rx="10" fill="#fff" stroke="#ccc"/>
+        
+        <!-- Wireframe -->
+        <rect x="0" y="60" width="150" height="220" class="wireframe-box"/>
+        <rect x="10" y="70" width="130" height="30" class="wireframe-box"/>
+        <text x="75" y="90" text-anchor="middle" class="desc-text">Header</text>
+        <rect x="10" y="110" width="130" height="110" class="wireframe-box"/>
+        <text x="75" y="165" text-anchor="middle" class="desc-text">Main</text>
+        <rect x="10" y="230" width="130" height="40" class="wireframe-box"/>
+        <text x="75" y="255" text-anchor="middle" class="desc-text">Footer</text>
+    </g>
+
+    <!-- Arrow -->
+    <path d="M330,200 C380,150 420,150 470,200" class="arrow" marker-end="url(#arrowhead)"/>
+
+    <!-- Right Panel: Accessibility Tree -->
+    <g transform="translate(550, 50)">
+        <text x="100" y="0" text-anchor="middle" class="title-text">Semantic Blueprint (A11y Tree)</text>
+        <rect x="-25" y="30" width="250" height="280" rx="10" fill="#fff" stroke="#ccc"/>
+
+        <!-- Nested List -->
+        <text x="0" y="100" class="tree-text">• Header</text>
+        <text x="20" y="130" class="tree-text">• Navigation</text>
+        <text x="0" y="170" class="tree-text">• Main Content</text>
+        <text x="20" y="200" class="tree-text">• Heading: "Welcome"</text>
+        <text x="20" y="230" class="tree-text">• Button: "Submit"</text>
+        <text x="0" y="270" class="tree-text">• Footer</text>
+    </g>
+</svg>

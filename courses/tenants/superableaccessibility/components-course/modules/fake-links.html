@@ -1,0 +1,57 @@
+<section class="pattern-container" id="links-module">
+    <h1>Fake Links (Anti-Pattern)</h1>
+    <p>Links are the basic building blocks of the web. They are used for navigation between pages and sections. Using a <code>&lt;span&gt;</code> or <code>&lt;div&gt;</code> to simulate a link is a major accessibility anti-pattern.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Open the screen reader's elements list (e.g., NVDA Elements List with <strong>NVDA + F7</strong>).</p>
+        <p>2. Identify which elements appear as links and which functional cues distinguish them.</p>
+        <p>3. Navigate to the native link and verify the functional cues provided when it is focused or activated.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, the link is just a <code>span</code> with blue text. It cannot be reached by Tab, and screen readers treat it as plain text.</p>
+        
+        <div class="bad-link-demo" style="padding: 1.5rem; border: 1px solid #ccc; background: #eee;">
+            <p>To learn more, <span style="color: blue; text-decoration: underline; cursor: pointer;" onclick="alert('Link activated! (This is a demo, so no actual navigation occurred.)')">view our digital accessibility guidelines (Fake Link)</span>.</p>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Not Focusable:</strong> Keyboard users skip right past the fake link.</li>
+                <li><strong>No Role:</strong> Screen readers don't announce "link," so the user doesn't know it's a navigational element.</li>
+                <li><strong>No URL context:</strong> Real links show the target URL in the status bar, providing confidence to the user. Fake links provide no such feedback.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The <code>span</code> lacks a link role, so its purpose is not announced to screen readers.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The <code>span</code> is not focusable and cannot be activated via keyboard.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Comparison</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Comparison</h2>
+        <p>Like buttons, links are best handled by native HTML. Notice how the native <code>&lt;a&gt;</code> tag gives you everything for free.</p>
+
+        <jw-link-demo></jw-link-demo>
+
+        <div class="meta-pedagogy">
+            <h3>Key Differences</h4>
+            <ul>
+                <li><strong>Span:</strong> A total barrier for navigation. Keyboard users cannot reach it, and it has no semantic meaning.</li>
+                <li><strong>ARIA Polyfill:</strong> Requires <code>role="link"</code> and <code>tabindex="0"</code>. This is reachable via Tab and Enter, but fails to appear in standard "Links List" dialogs in some browsers.</li>
+                <li><strong>Native Link:</strong> Automatically focusable, has the "link" role, and is part of the "Links List" in screen readers (NVDA + F7). This is the gold standard.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Using a native <code>&lt;a&gt;</code> tag ensures the correct role and name are announced.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Native links and properly polyfilled controls are focusable and respond to the Enter key.</li>
+            </ul>
+        </div>
+    </div>
+</section>

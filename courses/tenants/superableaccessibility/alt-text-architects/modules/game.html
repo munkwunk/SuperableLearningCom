@@ -1,0 +1,72 @@
+<h1>Alt-Text Practice</h1>
+
+<div id="game-container" class="game-container">
+    <div class="game-header">
+        <div id="progress-indicator" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
+            Task <span id="current-level">1</span> of 5
+        </div>
+        <div id="score-display">Points: <span id="current-score">0</span></div>
+    </div>
+
+    <div class="instruction-box">
+        <h2 id="instruction-title">Your Goal</h2>
+        <p>Read the description and look at the image below. Then, choose the best alt text option in the "Your Choice" section at the bottom of the page.</p>
+    </div>
+
+    <div class="simulation-grid">
+        <!-- Slide Environment -->
+        <section class="slide-environment" aria-labelledby="slide-title">
+            <h2 id="slide-title" class="sr-only">Example Page</h2>
+            <div id="slide-content" class="slide-viewport">
+                <!-- Content injected by engine.js -->
+            </div>
+        </section>
+
+        <!-- Context Analysis Panel -->
+        <aside class="context-panel" aria-labelledby="context-title">
+            <h2 id="context-title">About this Page</h2>
+            <div id="context-content">
+                <!-- Context injected by engine.js -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Decision Node -->
+    <section class="decision-node" aria-labelledby="decision-title">
+        <h2 id="decision-title">Your Choice</h2>
+        <div id="options-container" class="options-grid">
+            <!-- Options injected by engine.js -->
+        </div>
+        <div class="submit-container">
+            <button id="submit-btn" class="btn btn-primary" disabled>Submit Answer</button>
+        </div>
+    </section>
+
+    <!-- Auditory Simulation Matrix -->
+    <section class="auditory-simulation" aria-labelledby="auditory-title">
+        <h2 id="auditory-title">What Screen Readers Hear</h2>
+        <div id="sr-emulation" class="sr-output" aria-live="polite">
+            <!-- Screen reader output injected by engine.js -->
+        </div>
+        <div id="diagnostic-critique" class="critique-area">
+            <!-- Critique injected by engine.js -->
+        </div>
+    </section>
+    
+    <div id="navigation-container" class="nav-buttons-container">
+        <button id="prev-btn" class="btn btn-secondary hidden">Previous Task</button>
+        <button id="next-btn" class="btn btn-success hidden">Go to Next Task</button>
+    </div>
+</div>
+
+<!-- Accessible Modal Dialog for Quiz Feedback -->
+<div id="feedback-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-content" id="modal-content-container" tabindex="-1">
+        <h2 id="modal-title">Feedback</h2>
+        <div id="modal-feedback-body">
+            <!-- Injected dynamically -->
+        </div>
+        <button id="modal-close-btn" class="btn btn-secondary btn-close">Close</button>
+    </div>
+</div>

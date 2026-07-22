@@ -1,0 +1,6 @@
+# Security Protection: Disable Execution of Scripts
+<FilesMatch "\.(php|phtml|php3|php4|php5|phps|cgi|pl|py|sh|bat|cmd)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+Options -Indexes

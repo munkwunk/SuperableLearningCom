@@ -1,0 +1,75 @@
+<h1 tabindex="-1">The Challenge & Your Path Forward</h1>
+<p>Congratulations! You've decoded the hidden conversation between the browser and assistive technology. You now know that every website has two blueprints—the visual DOM and the semantic Accessibility Tree—and you have the tools to inspect them both.</p>
+<p>Most importantly, you've learned the golden rule that will guide you from now on: <strong>build for meaning, not just for looks.</strong></p>
+<p>Thinking "semantic-first" isn't just about compliance; it's about making accessibility a foundational part of your design and development process from the very beginning. This shift in mindset will make your work more robust, more inclusive, and ultimately, easier to maintain.</p>
+<p>Now, let's put your new knowledge to the test.</p>
+
+<h2>Final Challenge</h2>
+<p>The following short quiz will help solidify what you've learned. You'll need to score at least 80% to pass. Good luck!</p>
+
+<form id="quiz-form" class="quiz-container space-y-6">
+    
+    <fieldset class="quiz-question">
+        <legend class="font-bold mb-2">1. A screen reader gets its information directly from the Document Object Model (DOM).</legend>
+        <div class="quiz-options space-y-2">
+            <div><label><input type="radio" name="q1" value="false"> False</label></div>
+            <div><label><input type="radio" name="q1" value="true"> True</label></div>
+        </div>
+    </fieldset>
+
+    <fieldset class="quiz-question">
+        <legend class="font-bold mb-2">2. Which of these two visually identical buttons has a more accessible name for a screen reader user?</legend>
+        <div class="quiz-options space-y-2">
+           <div><label><input type="radio" name="q2" value="a"> Button A: <span class="cta-button" style="font-size: 0.8em; pointer-events: none;">Learn More</span></label></div>
+           <div><label><input type="radio" name="q2" value="b"> Button B: <span class="cta-button" style="font-size: 0.8em; pointer-events: none;">&gt;</span></label></div>
+        </div>
+    </fieldset>
+
+    <fieldset class="quiz-question">
+        <legend class="font-bold mb-2">3. When inspecting an element in the Accessibility Tree, which of the following is NOT a core property you would typically find?</legend>
+        <div class="quiz-options space-y-2">
+            <div><label><input type="radio" name="q3" value="a"> Role</label></div>
+            <div><label><input type="radio" name="q3" value="b"> Name</label></div>
+            <div><label><input type="radio" name="q3" value="c"> State</label></div>
+            <div><label><input type="radio" name="q3" value="d"> CSS Class</label></div>
+        </div>
+    </fieldset>
+
+    <fieldset class="quiz-question">
+        <legend class="font-bold mb-2">4. According to the "Golden Rule," what is the very first thing you should do when creating a simple on/off toggle switch?</legend>
+        <div class="quiz-options space-y-2">
+            <div><label><input type="radio" name="q4" value="a"> Build it with a &lt;div&gt; and add role="switch".</label></div>
+            <div><label><input type="radio" name="q4" value="b"> Check if a native HTML element, like &lt;input type="checkbox"&gt;, can provide the needed functionality.</label></div>
+            <div><label><input type="radio" name="q4" value="c"> Write the JavaScript to handle the on/off state.</label></div>
+            <div><label><input type="radio" name="q4" value="d"> Design the "on" and "off" graphics in a design tool.</label></div>
+        </div>
+    </fieldset>
+
+    <fieldset class="quiz-question">
+        <legend class="font-bold mb-2">5. You are creating a list of navigation links. Which code snippet uses the most semantic and accessible approach?</legend>
+        <div class="quiz-options space-y-2">
+            <div><label><input type="radio" name="q5" value="a"> <code>&lt;div&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;a href="#"&gt;About&lt;/a&gt;&lt;/div&gt;</code></label></div>
+            <div><label><input type="radio" name="q5" value="b"> <code>&lt;nav&gt;&lt;ul&gt;&lt;li&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;&lt;li&gt;&lt;a href="#"&gt;About&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/nav&gt;</code></label></div>
+        </div>
+    </fieldset>
+
+    <button type="submit" class="cta-button" id="submit-quiz-btn">Submit Quiz</button>
+</form>
+
+<h2 class="mt-8">Your Journey Continues</h2>
+<p>Passing that quiz is a huge first step. You now have a solid foundation for building more accessible web experiences. But the best way to grow your skills is to keep practicing.</p>
+<ul class="space-y-2">
+    <li><a href="https://jacobwood.me/s/NVDADemo" target="_blank" class="link-default">Explore the Demo Pages</a></li>
+    <li><a href="#" class="link-default">Take on the WCAG Quest (Coming Soon)</a></li>
+</ul>
+<p>Thank you for taking the time to learn these essential skills. By continuing to build with semantics and empathy, you're helping to create a web that works better for everyone.</p>
+
+<!-- Accessible Modal for Quiz Results -->
+<div id="quiz-results-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="quiz-results-title">
+    <div class="modal-content text-center">
+        <h2 id="quiz-results-title" class="text-3xl font-bold mb-4">Quiz Results</h2>
+        <p id="quiz-score-message" class="text-lg mb-6"></p>
+        <button id="quiz-modal-action-btn" class="cta-button"></button>
+    </div>
+</div>
+

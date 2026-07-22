@@ -1,0 +1,216 @@
+/* === Color Variables === */
+:root {
+    --color-primary: #3B7A57;
+    --color-secondary: #5F8F6B;
+    --color-accent: #B07A1E;
+    --color-bg-light: #F9F9F7;
+    --color-text-dark: #1F1F1F;
+    --color-neutral-mid: #6E6E6E;
+}
+
+/* === Base Styles === */
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-dark);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-primary);
+    margin-top: 0;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* === Layout & Course Structure === */
+.container { 
+    width: 100%; 
+    max-width: 800px; 
+    margin-left: auto; 
+    margin-right: auto; 
+    padding: 1rem;
+}
+
+.course-header {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+.course-header h1 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.toc-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.toc-link {
+    background: none;
+    border: 1px solid white;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.toc-link:hover, .toc-link.active {
+    background-color: white;
+    color: var(--color-primary);
+}
+
+.course-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--color-bg-light);
+    border-top: 1px solid #e0e0e0;
+}
+
+/* === Components === */
+.cta-button {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+}
+.cta-button:hover {
+    background-color: var(--color-secondary);
+}
+.cta-button:disabled {
+    background-color: var(--color-neutral-mid);
+    cursor: not-allowed;
+}
+
+.link-default {
+    color: var(--color-primary);
+    transition: color 0.2s ease-in-out;
+}
+.link-default:hover {
+    color: var(--color-accent);
+}
+
+/* === Interactive Elements === */
+.styled-heading {
+    color: var(--color-primary);
+    font-size: 1.5em; /* Matches h3 */
+    font-weight: bold;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+}
+
+.interactive-game {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1rem;
+}
+
+.code-snippet {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: left;
+    white-space: pre-wrap;
+}
+
+/* Quiz Styles */
+.quiz-container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e0e0e0;
+}
+
+.quiz-question {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.quiz-question:last-of-type {
+    border-bottom: none;
+}
+
+.quiz-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+.hidden {
+  display: none;
+}
+
+/* Utility */
+.w-full { width: 100%; }
+.rounded-lg { border-radius: 0.5rem; }
+.shadow-lg { box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; }
+.text-neutral-mid { color: var(--color-neutral-mid); }
+.mt-2 { margin-top: 0.5rem; }
+.mt-8 { margin-top: 2rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-6 > * + * { margin-top: 1.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.font-bold { font-weight: bold; }
+

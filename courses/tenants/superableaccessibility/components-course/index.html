@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hands-On, Sight Off: Working with NVDA - Jacob Wood</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="course-header">
+        <div class="container">
+            <p class="course-title-main" aria-hidden="false">Hands-On, Sight Off: Working with NVDA</p>
+            <p>NVDA Testing for Dynamic Patterns</p>
+        </div>
+    </header>
+
+    <div class="spa-container container">
+        <aside class="sidebar">
+            <nav aria-label="Course Navigation">
+                <jw-accordion level="2">
+                    <jw-accordion-item title="Core E-Learning" expanded>
+                        <ul class="nav-list">
+                            <li><a href="#flipcard" class="nav-link" data-module="flipcard">Flip Cards</a></li>
+                            <li><a href="#tabs" class="nav-link" data-module="tabs">Tabs</a></li>
+                            <li><a href="#accordion" class="nav-link" data-module="accordion">Accordion</a></li>
+                            <li><a href="#dragdrop-alt" class="nav-link" data-module="dragdrop-alt">Drag & Drop Alternative</a></li>
+                            <li><a href="#click-reveal" class="nav-link" data-module="click-reveal">Click-to-Reveal</a></li>
+                            <li><a href="#hotspots" class="nav-link" data-module="hotspots">Hotspot Image</a></li>
+                            <li><a href="#timeline" class="nav-link" data-module="timeline">Timeline</a></li>
+                            <li><a href="#branching" class="nav-link" data-module="branching">Branching Scenario</a></li>
+                            <li><a href="#wizard" class="nav-link" data-module="wizard">Multi-Step Wizard</a></li>
+                            <li><a href="#carousel" class="nav-link" data-module="carousel">Carousel / Slider</a></li>
+                        </ul>
+                    </jw-accordion-item>
+                    
+                    <jw-accordion-item title="Layout & Structure">
+                        <ul class="nav-list">
+                            <li><a href="#tables" class="nav-link" data-module="tables">Interactive Tables</a></li>
+                            <li><a href="#multicolumn" class="nav-link" data-module="multicolumn">Multi-Column</a></li>
+                        </ul>
+                    </jw-accordion-item>
+
+                    <jw-accordion-item title="UI Utilities">
+                        <ul class="nav-list">
+                            <li><a href="#live-regions" class="nav-link" data-module="live-regions">Live Regions</a></li>
+                            <li><a href="#modal" class="nav-link" data-module="modal">Modal Dialog</a></li>
+                            <li><a href="#form-validation" class="nav-link" data-module="form-validation">Form Validation</a></li>
+                            <li><a href="#tooltip" class="nav-link" data-module="tooltip">Tooltip / Info Hover</a></li>
+                            <li><a href="#progress" class="nav-link" data-module="progress">Progress Bar</a></li>
+                        </ul>
+                    </jw-accordion-item>
+
+                    <jw-accordion-item title="Anti-Patterns">
+                        <ul class="nav-list">
+                            <li><a href="#fake-buttons" class="nav-link" data-module="fake-buttons">Fake Buttons</a></li>
+                            <li><a href="#fake-links" class="nav-link" data-module="fake-links">Fake Links</a></li>
+                        </ul>
+                    </jw-accordion-item>
+                </jw-accordion>
+            </nav>
+        </aside>
+
+        <main id="main-content" aria-live="polite">
+            <!-- Content loaded via loader.js -->
+            <div class="loading-state">
+                <p>Loading course content...</p>
+            </div>
+        </main>
+    </div>
+
+    <footer class="course-footer">
+        <div class="navigation-controls container">
+            <button id="prev-btn" class="nav-btn" disabled>&larr; Previous</button>
+            <p id="progress-indicator" class="progress-text">Module 1 of 19</p>
+            <button id="next-btn" class="nav-btn">Next &rarr;</button>
+        </div>
+    </footer>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- JW Components Library -->
+    <script src="components/jw-components.js"></script>
+    <!-- xAPI Service -->
+    <script src="js/xapi-service.js"></script>
+    <!-- SPA Loader -->
+    <script src="js/loader.js"></script>
+    <!-- Site-wide Footer -->
+    <script src="../global-footer.js"></script>
+</body>
+</html>

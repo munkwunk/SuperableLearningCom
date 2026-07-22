@@ -1,0 +1,55 @@
+<section class="pattern-container" id="live-regions-module">
+    <h1>Live Region Notifications</h1>
+    <p>Live regions allow you to announce dynamic changes to the page that are not caused by a user's direct navigation. These are essential for success messages, error alerts, and status updates. The key is knowing when to be "polite" and when to be "assertive."</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Initiate a screen reader announcement (e.g., by reading a paragraph).</p>
+        <p>2. While the screen reader is speaking, press the "Polite" button and identify how it queues the announcement.</p>
+        <p>3. Repeat the process with the "Assertive" button and identify the functional difference in how the interruption is handled.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, clicking the buttons adds a message to the screen visually, but because there are no <code>aria-live</code> attributes, NVDA remains completely silent.</p>
+        
+        <div class="bad-live" style="padding: 1rem; border: 1px solid #ccc; background: #eee;">
+            <button type="button" class="nav-btn" onclick="const m = document.createElement('p'); m.textContent='Visually saved! (Silent to NVDA)'; document.getElementById('bad-messages').appendChild(m);">Save Changes</button>
+            <div id="bad-messages" style="margin-top: 1rem; color: #d97706; font-weight: bold;"></div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Silent Feedback:</strong> The dynamic text is added to the DOM, but NVDA does not monitor standard <code>div</code> or <code>p</code> tags for changes. The user has no idea if their action was successful.</li>
+                <li><strong>Missing Role:</strong> Without a live region role (like <code>status</code> or <code>alert</code>) or the <code>aria-live</code> attribute, dynamic content is "invisible" to screen readers until the user manually navigates to it.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.3: Status Messages</strong> - Dynamic updates to the page are not announced to screen reader users, providing no feedback on the results of their actions.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses two distinct live regions. One is <strong>Polite</strong> for standard updates, and the other is <strong>Assertive</strong> for critical interruptions.</p>
+
+        <jw-notifications></jw-notifications>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Aria-live="polite":</strong> Used for the "Success" message. NVDA will wait until it finishes its current sentence before announcing the update. This is the preferred setting for 90% of notifications.</li>
+                <li><strong>Aria-live="assertive":</strong> Used for the "Error" message. NVDA will immediately interrupt whatever it is saying to announce the critical information. Use this sparingly!</li>
+                <li><strong>Visual/Auditory Sync:</strong> The notification appears both visually (as a toast) and is announced to the screen reader at the same time.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.3: Status Messages</strong> - <code>aria-live</code> attributes (polite and assertive) ensure that status updates and error messages are announced to assistive technology.</li>
+            </ul>
+        </div>
+    </div>
+</section>

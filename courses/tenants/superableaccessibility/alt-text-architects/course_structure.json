@@ -1,0 +1,37 @@
+{
+    "properties": {
+        "title": "Alt-Text Architect: The Sea Cucumber Chronicles",
+        "description": "Master the art of writing contextual alt text in this interactive sea cucumber simulation.",
+        "thumbnail": "images/m1-image1.svg",
+        "access": {
+            "type": "public"
+        },
+        "assets": {
+            "css": ["css/style.css"],
+            "js": ["js/main.js"]
+        }
+    },
+    "modules": [
+        {
+            "group": "Introduction",
+            "expanded": true,
+            "items": [
+                { "id": "welcome", "title": "Introduction", "src": "modules/welcome.html" }
+            ]
+        },
+        {
+            "group": "The Activity",
+            "expanded": true,
+            "items": [
+                { "id": "game", "title": "Alt-Text Practice", "src": "modules/game.html" }
+            ]
+        },
+        {
+            "group": "Next Steps",
+            "expanded": true,
+            "items": [
+                { "id": "cta", "title": "Ready to Level Up?", "src": "modules/cta.html" }
+            ]
+        }
+    ]
+}

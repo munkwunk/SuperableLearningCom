@@ -1,0 +1,100 @@
+<section class="pattern-container" id="carousel-module">
+    <h1>Carousel / Slider</h1>
+    <p>Carousels are common for showcasing multiple items in a limited space. However, they are frequently inaccessible due to hidden content, lack of keyboard control, or unannounced slide changes.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Tab through the carousel controls and activate the "Next" button.</p>
+        <p>2. Identify the functional cues (Role, State, Name) announced by the screen reader as focus moves into the new slide.</p>
+        <p>3. Continue tabbing and notice that you can't "accidentally" tab into hidden slides.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, all slides are visually hidden but still "visible" to screen readers. There are no controls for keyboard users, and changes aren't announced. It auto-rotates infinitely without a way to stop it.</p>
+        
+        <div class="bad-carousel" id="bad-carousel-demo" style="border: 1px solid #ccc; padding: 1rem; position: relative; height: 150px; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center;">
+            <div id="bad-carousel-content" style="font-weight: bold; font-size: 1.2rem;">Slide 1: Universal Design</div>
+            <!-- Hack to execute script in SPA environment where <script> tags are ignored on injection -->
+            <img src="x" onerror="
+                (function() {
+                    if (window.badCarouselInterval) clearInterval(window.badCarouselInterval);
+                    const slides = [
+                        'Slide 1: Universal Design',
+                        'Slide 2: ARIA Best Practices',
+                        'Slide 3: NVDA Master Testing',
+                        'Slide 4: Inclusive Pedagogies'
+                    ];
+                    let current = 0;
+                    window.badCarouselInterval = setInterval(() => {
+                        const content = document.getElementById('bad-carousel-content');
+                        if (content) {
+                            current = (current + 1) % slides.length;
+                            content.textContent = slides[current];
+                        } else {
+                            clearInterval(window.badCarouselInterval);
+                        }
+                    }, 3000);
+                })();
+            " style="display:none;" alt="">
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard Controls:</strong> Without "Next" or "Previous" buttons, a keyboard user cannot control the carousel.</li>
+                <li><strong>No Pause/Stop:</strong> The auto-rotation cannot be stopped, which is a major barrier for users who need more time to read or those with cognitive disabilities.</li>
+                <li><strong>Hidden Content:</strong> Off-screen slides should be <code>hidden</code> or <code>inert</code>. In many bad carousels, NVDA still "sees" all items in a long list, confusing the user.</li>
+                <li><strong>Unexpected Changes:</strong> Auto-rotation can be extremely disorienting and even dangerous for people with cognitive disabilities or those using screen magnifiers.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The carousel and its slides lack proper ARIA roles and state information.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The carousel cannot be operated via keyboard.</li>
+                <li><strong>SC 2.2.2: Pause, Stop, Hide</strong> - Moving content that starts automatically and lasts more than five seconds must have a way to be paused or stopped.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version provides explicit controls, uses <code>aria-roledescription</code> to identify the widget, and manages the visibility of slides. Controls are placed at the bottom to preserve natural reading flow.</p>
+
+        <jw-carousel aria-label="Course Highlights">
+            <jw-slide>
+                <h3>Universal Design</h4>
+                <p>Learn how to design for everyone from the start.</p>
+            </jw-slide>
+            <jw-slide>
+                <h3>ARIA Best Practices</h4>
+                <p>Understand when to use ARIA and when to stick to HTML.</p>
+            </jw-slide>
+            <jw-slide>
+                <h3>NVDA Testing</h4>
+                <p>Master the tool that professionals use for auditing.</p>
+            </jw-slide>
+            <jw-slide>
+                <h3>Inclusive Pedagogies</h4>
+                <p>Learn how to teach accessibility through accessible interactions.</p>
+            </jw-slide>
+        </jw-carousel>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Aria-roledescription:</strong> We use <code>aria-roledescription="carousel"</code> and <code>"slide"</code> to give NVDA users context that this is a specialized widget.</li>
+                <li><strong>Visibility Management:</strong> Only the current slide is visible. Others are set to <code>hidden</code>, removing them from both the visual screen and the accessibility tree.</li>
+                <li><strong>Focus Movement:</strong> When the user clicks "Next", we move focus to the new slide. This ensures the screen reader immediately begins reading the new content.</li>
+                <li><strong>Logical Control Flow:</strong> Controls are placed after the content, allowing learners to encounter the information before deciding to move to the next item.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - ARIA roles and roledescriptions provide clear context and state.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - All carousel functionality is reachable and operable via keyboard.</li>
+                <li><strong>SC 2.2.2: Pause, Stop, Hide</strong> - The carousel does not auto-rotate, giving the user full control over the movement of content.</li>
+            </ul>
+        </div>
+    </div>
+</section>

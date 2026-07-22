@@ -1,0 +1,157 @@
+{
+    "properties": {
+        "title": "Hands-On, Sight Off: Working with NVDA",
+        "description": "Practical NVDA Testing for Dynamic Patterns and accessible custom elements.",
+        "thumbnail": "images/m1-image1.svg",
+        "access": {
+            "type": "teaser",
+            "teaser_link": "https://www.jacobwood.me/nvda/workshops.html"
+        },
+        "assets": {
+            "css": [
+                "css/styles.css"
+            ],
+            "js": []
+        },
+        "status": "published"
+    },
+    "modules": [
+        {
+            "group": "Getting Started",
+            "expanded": true,
+            "items": [
+                {
+                    "id": "welcome",
+                    "title": "Introduction",
+                    "src": "modules/welcome.html"
+                }
+            ]
+        },
+        {
+            "group": "Core E-Learning",
+            "expanded": true,
+            "items": [
+                {
+                    "id": "flipcard",
+                    "title": "Flip Cards",
+                    "src": "modules/flipcard.html"
+                },
+                {
+                    "id": "tabs",
+                    "title": "Tabs",
+                    "src": "modules/tabs.html"
+                },
+                {
+                    "id": "accordion",
+                    "title": "Accordion",
+                    "src": "modules/accordion.html"
+                },
+                {
+                    "id": "dragdrop-alt",
+                    "title": "Drag & Drop Alternative",
+                    "src": "modules/dragdrop-alt.html"
+                },
+                {
+                    "id": "click-reveal",
+                    "title": "Click-to-Reveal",
+                    "src": "modules/click-reveal.html"
+                },
+                {
+                    "id": "hotspots",
+                    "title": "Hotspot Image",
+                    "src": "modules/hotspots.html"
+                },
+                {
+                    "id": "timeline",
+                    "title": "Timeline",
+                    "src": "modules/timeline.html"
+                },
+                {
+                    "id": "branching",
+                    "title": "Branching Scenario",
+                    "src": "modules/branching.html"
+                },
+                {
+                    "id": "wizard",
+                    "title": "Multi-Step Wizard",
+                    "src": "modules/wizard.html"
+                },
+                {
+                    "id": "carousel",
+                    "title": "Carousel / Slider",
+                    "src": "modules/carousel.html"
+                }
+            ]
+        },
+        {
+            "group": "Layout & Structure",
+            "items": [
+                {
+                    "id": "tables",
+                    "title": "Interactive Tables",
+                    "src": "modules/tables.html"
+                },
+                {
+                    "id": "multicolumn",
+                    "title": "Multi-Column",
+                    "src": "modules/multicolumn.html"
+                }
+            ]
+        },
+        {
+            "group": "UI Utilities",
+            "items": [
+                {
+                    "id": "live-regions",
+                    "title": "Live Regions",
+                    "src": "modules/live-regions.html"
+                },
+                {
+                    "id": "modal",
+                    "title": "Modal Dialog",
+                    "src": "modules/modal.html"
+                },
+                {
+                    "id": "form-validation",
+                    "title": "Form Validation",
+                    "src": "modules/form-validation.html"
+                },
+                {
+                    "id": "tooltip",
+                    "title": "Tooltip / Info Hover",
+                    "src": "modules/tooltip.html"
+                },
+                {
+                    "id": "progress",
+                    "title": "Progress Bar",
+                    "src": "modules/progress.html"
+                }
+            ]
+        },
+        {
+            "group": "Anti-Patterns",
+            "items": [
+                {
+                    "id": "fake-buttons",
+                    "title": "Fake Buttons",
+                    "src": "modules/fake-buttons.html"
+                },
+                {
+                    "id": "fake-links",
+                    "title": "Fake Links",
+                    "src": "modules/fake-links.html"
+                }
+            ]
+        },
+        {
+            "group": "Wrap Up",
+            "items": [
+                {
+                    "id": "conclusion",
+                    "title": "Conclusion",
+                    "src": "modules/conclusion.html"
+                }
+            ]
+        }
+    ]
+}

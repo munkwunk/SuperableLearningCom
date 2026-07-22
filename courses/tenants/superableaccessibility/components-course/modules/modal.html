@@ -1,0 +1,69 @@
+<section class="pattern-container" id="modal-module">
+    <h1>Modal Dialog</h1>
+    <p>Modals are interactive components that sit on top of the main content. They are excellent for focus, but dangerous for accessibility if they don't trap focus and block background interaction.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Activate the accessible modal and identify the functional cues that indicate its role and initial focus.</p>
+        <p>2. Attempt to Tab outside of the modal and verify that your focus remains trapped within the dialog boundaries.</p>
+        <p>3. Use the <code>Escape</code> key and identify the functional cues that confirm focus has returned to the trigger button.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, the modal is just a <code>div</code>. Keyboard focus is not managed at all: the screen reader stays on the trigger button while the modal appears visually, and you can Tab right "through" the modal and interact with the page behind it.</p>
+        
+        <div class="bad-modal-trigger" style="padding: 1rem; border: 1px solid #ccc; background: #eee; cursor: pointer; display: inline-block;" onclick="document.getElementById('bad-modal').style.display='block'">
+            Open "Modal" (Inaccessible)
+        </div>
+        
+        <div id="bad-modal" style="display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: white; border: 2px solid red; padding: 2rem; z-index: 1000; box-shadow: 0 0 100px rgba(0,0,0,0.5);">
+            <h3>Broken Modal</h4>
+            <p>Try tabbing now. You'll find you can still click things on the main page, and your screen reader has no idea this content appeared!</p>
+            <button type="button" class="nav-btn" onclick="this.parentElement.style.display='none'">Close</button>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Initial Focus:</strong> When the modal opens, focus remains on the trigger. A screen reader user has no idea a new dialog has appeared unless they manually hunt for it.</li>
+                <li><strong>No Focus Trap:</strong> A modal must keep the user's focus within its boundaries until it is closed.</li>
+                <li><strong>Background Operability:</strong> The underlying page remains interactive, which can lead to users accidentally navigating away while the modal is "open."</li>
+                <li><strong>No Escape Key:</strong> Standard accessibility patterns require the <code>Escape</code> key to close a modal instantly.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Focus is not managed or trapped. It fails to move to the modal upon opening and does not prevent navigation to background content.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The modal lacks keyboard support for closing (Escape key) and does not prevent interaction with background elements.</li>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The <code>div</code> lacks the <code>dialog</code> role and an accessible name.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses the native <code>&lt;dialog&gt;</code> element. This handles focus trapping, backdrop dimming, and the Escape key automatically.</p>
+
+        <jw-modal trigger-text="Open Accessible Modal" title="Interactive Components">
+            <p>You've learned about tables, carousels, and now modals. These are the building blocks of interactive learning.</p>
+            <p>By using the <code>&lt;dialog&gt;</code> element, you've ensured that this information is reachable and controllable by everyone.</p>
+            <button type="button" class="nav-btn" onclick="this.closest('dialog').close()">Close Modal</button>
+        </jw-modal>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Native Dialog:</strong> Calling <code>dialog.showModal()</code> puts the browser into a specialized "modal" mode.</li>
+                <li><strong>Automatic Inert:</strong> Everything outside the <code>&lt;dialog&gt;</code> is automatically made <code>inert</code> (unreachable) by the browser.</li>
+                <li><strong>Focus Management:</strong> Focus is automatically moved into the modal when it opens, and returned to the trigger button when it closes.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Focus is automatically managed, trapped within the modal, and returned to the trigger on close.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Native <code>&lt;dialog&gt;</code> provides built-in keyboard support and focus trapping.</li>
+            </ul>
+        </div>
+    </div>
+</section>

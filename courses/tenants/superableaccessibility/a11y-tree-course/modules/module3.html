@@ -1,0 +1,120 @@
+<div class="module-container">
+  <h1>Module 3: Your Toolkit for Building a Better Tree</h1>
+  <div class="content-block">
+    <p class="intro-text">Understanding the two blueprints is one thing, but building them correctly is another. The
+      good
+      news is that you don't need complex tools to get started. The best practices are simple, powerful, and built right
+      into the web.</p>
+    <p>In this module, we'll cover the golden rule of accessible development and show you how to use your browser's
+      built-in tools to see your work through the "eyes" of assistive technology.</p>
+  </div>
+
+  <div class="concept-card">
+    <h2>The Golden Rule: Semantic HTML First</h2>
+    <p>If you remember only one thing from this course, make it this: <strong>Use the right HTML element for the right
+        job.</strong> This is called using semantic HTML.</p>
+    <p>When you use an element like <code>&lt;button&gt;</code>, <code>&lt;nav&gt;</code>, or <code>&lt;h1&gt;</code>,
+      you're using code that has meaning baked right in. The browser already knows what these elements are and how
+      they should behave.</p>
+    <div class="benefit-box">
+      <p>Think about a <code>&lt;button&gt;</code> element. When you use it, you get a huge amount of accessibility for
+        <strong>free</strong>:
+      </p>
+      <ul class="benefit-list">
+        <li><strong>Correct Role:</strong> The browser automatically adds the "button" role to the Accessibility Tree.
+        </li>
+        <li><strong>Keyboard Focus:</strong> It's naturally focusable with the Tab key.</li>
+        <li><strong>Keyboard Operation:</strong> It can be activated with both Enter and the Spacebar.</li>
+      </ul>
+    </div>
+
+    <div class="benefit-box cost-box mt-4 border-l-4 border-red-500 pl-4 bg-red-50">
+      <p>Now, consider a <code>&lt;div&gt;</code>. It has no semantic meaning. It’s just a box. To make it behave like a
+        button, you have to write custom code for <strong>everything</strong>:</p>
+      <ul class="benefit-list">
+        <li><strong>Role?</strong> You have to manually add <code>role="button"</code>.</li>
+        <li><strong>Focus?</strong> You have to manually add <code>tabindex="0"</code>.</li>
+        <li><strong>Keyboard?</strong> You have to write JavaScript listeners for both the Enter key and the Spacebar.
+        </li>
+      </ul>
+      <p class="mt-2 text-sm italic">That is a huge amount of extra work (and debt) for something you could have had for
+        free.</p>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <h2>When to Use ARIA (The "Spackle")</h2>
+    <p>Sometimes, you'll build complex components like custom menus or tab panels that don't have a perfect native
+      HTML equivalent. In these cases, you can use WAI-ARIA (Accessible Rich Internet Applications) to add the missing
+      semantics.</p>
+    <p>But ARIA should be your last resort, not your first choice. A great way to think of it is that HTML is the rebar,
+      and ARIA is the spackle. You use rebar to build the strong foundation of a house; you use spackle to patch small
+      holes.</p>
+    <p>Before you reach for ARIA, use this simple decision tree:</p>
+
+    <div class="mermaid-container center-text" aria-hidden="true">
+      <div class="mermaid">
+        graph TD
+        A["I need to build a UI component"] --> B{"Is there a native HTML element that does this?"};
+        B -- "Yes" --> C["Use it! e.g., &lt;button&gt;, &lt;input&gt;, &lt;details&gt;"];
+        B -- "No" --> D["Then, consider using ARIA to add missing semantics e.g., role=&quot;tab&quot;"];
+      </div>
+    </div>
+
+    <div class="sr-only">
+      <h3>ARIA Decision Tree (Text Alternative)</h3>
+      <p>A flowchart for deciding when to use ARIA.</p>
+      <ol>
+        <li>Start with the question: I need to build a UI component.</li>
+        <li>Next, ask: Is there a native HTML element that does this?
+          <ul>
+            <li>If the answer is Yes: Use the native HTML element. For example, use &lt;button&gt;, &lt;input&gt;,
+              or &lt;details&gt;.</li>
+            <li>If the answer is No: Then, you should consider using ARIA to add the missing semantics. For
+              example, add role="tab".</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <h2>How to Check Your Work</h2>
+    <p>You don't have to guess what's in the Accessibility Tree. Your browser's developer tools let you inspect it
+      directly. This is the most powerful skill you can learn for debugging accessibility issues.</p>
+    <p>Here’s how to find an element's Name, Role, and State in Chrome or Firefox.</p>
+
+    <figure class="visual-figure">
+      <img src="images/m3-image1.svg"
+        alt="A side-by-side comparison of Chrome and Firefox developer tools. Both show the Accessibility tab, with callouts highlighting the Name, Role, and State properties of a selected element."
+        class="screenshot-image">
+      <figcaption class="figure-caption">Simplified view of the Accessibility Inspector in Chrome (left) and Firefox
+        (right).</figcaption>
+    </figure>
+  </div>
+
+  <div class="interactive-game">
+    <div class="game-instruction">
+      <h3 tabindex="-1">Guided Activity: Let's Inspect a Real Component</h3>
+      <p>We're going to use the inspector to see the difference between a non-semantic component and a semantic one.</p>
+    </div>
+    <ol class="step-list">
+      <li>Open the <a href="https://www.jacobwood.me/demos/bad_example.html" target="_blank"
+          class="link-default">Inaccessible Demo Page</a> in a new tab.</li>
+      <li>Right-click the "Submit" button and choose "Inspect."</li>
+      <li>In the DevTools, find the <strong>Accessibility</strong> tab and look at the <strong>Role</strong>. Notice
+        that it's "generic" because it's built with a <code>&lt;div&gt;</code>.</li>
+      <li>Now, open the <a href="https://www.jacobwood.me/demos/good_example.html" target="_blank"
+          class="link-default">Accessible Demo Page</a> in another new tab.</li>
+      <li>Inspect the "Submit" button on this page.</li>
+      <li>Look at its <strong>Role</strong> in the Accessibility tab. Now it's correctly identified as a "button,"
+        because it was built with a proper <code>&lt;button&gt;</code> element.</li>
+    </ol>
+  </div>
+
+  <div class="content-block mt-8">
+    <h2>Coming Up</h2>
+    <p>You've learned the golden rule and how to inspect your work. Now it's time to put it all together. Next, you'll
+      face a final challenge to test your knowledge and cement these concepts.</p>
+  </div>
+</div>

@@ -1,0 +1,66 @@
+<h1 tabindex="-1">Your Toolkit for Building a Better Tree</h1>
+<p>Understanding the two blueprints is one thing, but building them correctly is another. The good news is that you don't need complex tools to get started. The best practices are simple, powerful, and built right into the web.</p>
+<p>In this module, we'll cover the golden rule of accessible development and show you how to use your browser's built-in tools to see your work through the "eyes" of assistive technology.</p>
+
+<h2>The Golden Rule: Semantic HTML First</h2>
+<p>If you remember only one thing from this course, make it this: <strong>Use the right HTML element for the right job.</strong> This is called using semantic HTML.</p>
+<p>When you use an element like <code>&lt;button&gt;</code>, <code>&lt;nav&gt;</code>, or <code>&lt;h1&gt;</code>, you're using code that has meaning baked right in. The browser already knows what these elements are and how they should behave.</p>
+<p>Think about a <code>&lt;button&gt;</code> element. When you use it, you get a huge amount of accessibility for <strong>free</strong>:</p>
+<ul>
+    <li><strong>Correct Role:</strong> The browser automatically adds the "button" role to the Accessibility Tree.</li>
+    <li><strong>Keyboard Focus:</strong> It's naturally focusable with the Tab key.</li>
+    <li><strong>Keyboard Operation:</strong> It can be activated with both Enter and the Spacebar.</li>
+</ul>
+<p>This principle applies even if you're not writing code by hand. If you're using an authoring tool like Storyline or a website builder, this means choosing the tool's built-in "Button" feature instead of drawing a generic shape and adding a click action to it.</p>
+<p>When you use a non-semantic <code>&lt;div&gt;</code> with a click event instead, you get none of that built-in functionality. Visually, it might look the same, but to the Accessibility Tree, it's just a generic container with no meaning. You would have to manually add the role, the keyboard focus, and the event listeners—a process that is complex and easy to get wrong.</p>
+
+<h2>When to Use ARIA (The "Spackle")</h2>
+<p>Sometimes, you'll build complex components like custom menus or tab panels that don't have a perfect native HTML equivalent. In these cases, you can use WAI-ARIA (Accessible Rich Internet Applications) to add the missing semantics.</p>
+<p>But ARIA should be your last resort, not your first choice. A great way to think of it is that HTML is the rebar, and ARIA is the spackle. You use rebar to build the strong foundation of a house; you use spackle to patch small holes.</p>
+<p>Before you reach for ARIA, use this simple decision tree:</p>
+
+<div class="mermaid" aria-hidden="true">
+graph TD
+    A["I need to build a UI component"] --> B{"Is there a native HTML element that does this?"};
+    B -- "Yes" --> C["Use it! e.g., &lt;button&gt;, &lt;input&gt;, &lt;details&gt;"];
+    B -- "No" --> D["Then, consider using ARIA to add missing semantics e.g., role=&quot;tab&quot;"];
+</div>
+
+<div class="sr-only">
+  <h3>ARIA Decision Tree (Text Alternative)</h3>
+  <p>A flowchart for deciding when to use ARIA.</p>
+  <ol>
+    <li>Start with the question: I need to build a UI component.</li>
+    <li>Next, ask: Is there a native HTML element that does this?
+      <ul>
+        <li>If the answer is Yes: Use the native HTML element. For example, use &lt;button&gt;, &lt;input&gt;, or &lt;details&gt;.</li>
+        <li>If the answer is No: Then, you should consider using ARIA to add the missing semantics. For example, add role="tab".</li>
+      </ul>
+    </li>
+  </ol>
+</div>
+
+
+<h2>How to Check Your Work</h2>
+<p>You don't have to guess what's in the Accessibility Tree. Your browser's developer tools let you inspect it directly. This is the most powerful skill you can learn for debugging accessibility issues.</p>
+<p>Here’s how to find an element's Name, Role, and State in Chrome or Firefox.</p>
+
+<figure>
+  <img src="images/m3-image1.svg" alt="A side-by-side comparison of Chrome and Firefox developer tools. Both show the Accessibility tab, with callouts highlighting the Name, Role, and State properties of a selected element." class="w-full rounded-lg shadow-lg">
+  <figcaption class="text-center text-sm text-neutral-mid mt-2">Simplified view of the Accessibility Inspector in Chrome (left) and Firefox (right).</figcaption>
+</figure>
+
+<h2>Guided Activity: Let's Inspect a Real Component</h2>
+<p>Now it's your turn to practice. We're going to use the inspector to see the difference between a non-semantic component and a semantic one.</p>
+<ol>
+    <li>Open the <a href="https://www.jacobwood.me/courses/poor_accessibility.html" target="_blank" class="link-default">Inaccessible Demo Page</a> in a new tab.</li>
+    <li>Right-click the "Submit" button and choose "Inspect."</li>
+    <li>In the DevTools, find the <strong>Accessibility</strong> tab and look at the <strong>Role</strong>. Notice that it's "generic" because it's built with a <code>&lt;div&gt;</code>.</li>
+    <li>Now, open the <a href="https://www.jacobwood.me/courses/proper_accessibility.html" target="_blank" class="link-default">Accessible Demo Page</a> in another new tab.</li>
+    <li>Inspect the "Submit" button on this page.</li>
+    <li>Look at its <strong>Role</strong> in the Accessibility tab. Now it's correctly identified as a "button," because it was built with a proper <code>&lt;button&gt;</code> element.</li>
+</ol>
+<p>You just performed your first accessibility audit! This simple check is something you can start doing in your own projects today to catch major issues before they reach your users.</p>
+<p>You now have the two most important tools an accessible developer can possess: the principle of "semantic HTML first" and the skill to inspect the Accessibility Tree. With these, you can analyze any component and understand how it will be perceived by assistive technology.</p>
+<p>You've learned the theory and the practice. In the final module, it's time to put your new knowledge to the test and discover where to go from here to continue your accessibility journey.</p>
+

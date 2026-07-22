@@ -1,0 +1,97 @@
+<section class="pattern-container" id="click-reveal-module">
+    <h1>Click-to-Reveal Panels</h1>
+    <p>Click-to-reveal is a fundamental e-learning interaction. It allows learners to explore content at their own pace. However, if implemented poorly, it can be a "black box" for screen reader users who may not know new content has appeared.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Tab to the accessible reveal panels.</p>
+        <p>2. Use the Spacebar or Enter key to toggle the content.</p>
+        <p>3. Identify the functional cues (Role, State, Name) announced by the screen reader. Then, continue tabbing to read the revealed content.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This panel uses a generic <code>div</code>. It is not focusable by keyboard, and there is no indication that it contains interactive content or what its current state is.</p>
+        
+        <div class="bad-reveal" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="background: #eee; padding: 1rem; cursor: pointer; border: 1px solid #ccc; font-weight: bold;">
+            Perceivable (Inaccessible)
+        </div>
+        <div class="bad-panel" style="display: none; padding: 1rem; border: 1px solid #ccc; border-top: none;">
+            Information must be presentable to users in ways they can perceive.
+        </div>
+        
+        <div class="bad-reveal" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="background: #eee; padding: 1rem; cursor: pointer; border: 1px solid #ccc; font-weight: bold; margin-top: 1rem;">
+            Operable (Inaccessible)
+        </div>
+        <div class="bad-panel" style="display: none; padding: 1rem; border: 1px solid #ccc; border-top: none;">
+            UI components and navigation must be operable.
+        </div>
+
+        <div class="bad-reveal" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="background: #eee; padding: 1rem; cursor: pointer; border: 1px solid #ccc; font-weight: bold; margin-top: 1rem;">
+            Understandable (Inaccessible)
+        </div>
+        <div class="bad-panel" style="display: none; padding: 1rem; border: 1px solid #ccc; border-top: none;">
+            Operation of the UI must be understandable.
+        </div>
+
+        <div class="bad-reveal" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="background: #eee; padding: 1rem; cursor: pointer; border: 1px solid #ccc; font-weight: bold; margin-top: 1rem;">
+            Robust (Inaccessible)
+        </div>
+        <div class="bad-panel" style="display: none; padding: 1rem; border: 1px solid #ccc; border-top: none;">
+            Content must be robust enough to be interpreted by a wide variety of user agents.
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Non-Interactive Element:</strong> A <code>div</code> does not appear in the tab order. Keyboard users will skip right over this.</li>
+                <li><strong>No State Feedback:</strong> NVDA users have no way of knowing if the panel is open or closed because there is no <code>aria-expanded</code> attribute.</li>
+                <li><strong>No Role:</strong> The screen reader sees this as plain text, not a button or a disclosure widget.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The trigger lacks a semantic role and expanded/collapsed state.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The <code>div</code> trigger is not focusable or operable via keyboard.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - The relationship between the trigger and the revealed content is not programmatically defined.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <code>&lt;button&gt;</code> and follows the Disclosure pattern. This ensures that the interaction is clear, focusable, and announces its state correctly.</p>
+
+        <jw-click-reveal title="Perceivable">
+            <p>Information and user interface components must be presentable to users in ways they can perceive.</p>
+        </jw-click-reveal>
+
+        <jw-click-reveal title="Operable">
+            <p>User interface components and navigation must be operable.</p>
+        </jw-click-reveal>
+
+        <jw-click-reveal title="Understandable">
+            <p>Information and the operation of the user interface must be understandable.</p>
+        </jw-click-reveal>
+
+        <jw-click-reveal title="Robust">
+            <p>Content must be robust enough that it can be interpreted by a wide variety of user agents, including assistive technologies.</p>
+        </jw-click-reveal>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Semantic Button:</strong> We use a real <code>&lt;button&gt;</code> that is automatically part of the tab order.</li>
+                <li><strong>Aria-Expanded:</strong> The <code>aria-expanded</code> attribute tells the user if the content is currently visible or hidden.</li>
+                <li><strong>Aria-Controls:</strong> This attribute creates a programmatic link between the button and the content panel it manages.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Native <code>&lt;button&gt;</code> and <code>aria-expanded</code> provide clear role and state.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Using a native <code>&lt;button&gt;</code> ensures the interaction is focusable and operable via keyboard.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - <code>aria-controls</code> programmatically links the trigger to its content.</li>
+            </ul>
+        </div>
+    </div>
+</section>

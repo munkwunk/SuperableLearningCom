@@ -1,0 +1,93 @@
+<section class="pattern-container" id="accordion-module">
+    <h1>Accordion</h1>
+    <p>Accordions allow users to toggle the visibility of sections of content. They are vital for managing cognitive load but must communicate their expanded/collapsed state to NVDA users.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate to the accessible accordion using the Tab key.</p>
+        <p>2. Listen for the "collapsed" or "expanded" state.</p>
+        <p>3. Toggle the accordion and Identify the functional cues (Role, State, Name) announced by the screen reader.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This accordion uses generic <code>div</code> tags. It lacks keyboard support and provides no indication to NVDA that it can be expanded.</p>
+        
+        <div class="bad-accordion" style="border: 1px solid #ccc; padding: 1rem;">
+            <div class="header" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="font-weight: bold; cursor: pointer;">
+                Perceivable
+            </div>
+            <div class="panel" style="display: none; padding: 0.5rem 0;">
+                Information must be presentable to users in ways they can perceive.
+            </div>
+            <div class="header" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="font-weight: bold; cursor: pointer; margin-top: 0.5rem;">
+                Operable
+            </div>
+            <div class="panel" style="display: none; padding: 0.5rem 0;">
+                User interface components and navigation must be operable.
+            </div>
+            <div class="header" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="font-weight: bold; cursor: pointer; margin-top: 0.5rem;">
+                Understandable
+            </div>
+            <div class="panel" style="display: none; padding: 0.5rem 0;">
+                Operation of the UI must be understandable.
+            </div>
+            <div class="header" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none' ? 'block' : 'none')" style="font-weight: bold; cursor: pointer; margin-top: 0.5rem;">
+                Robust
+            </div>
+            <div class="panel" style="display: none; padding: 0.5rem 0;">
+                Content must be robust enough to be interpreted by a wide variety of user agents.
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard Support:</strong> A <code>div</code> cannot be focused. Users who don't use a mouse are locked out.</li>
+                <li><strong>No State Communication:</strong> There is no <code>aria-expanded</code> attribute. NVDA doesn't know if the panel is open or closed.</li>
+                <li><strong>Missing Relationship:</strong> The header and panel aren't linked. NVDA cannot help the user "jump" to the content.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The interactive header lacks a button role and expanded/collapsed state.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - The relationship between the header and the panel is not programmatically defined.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <code>button</code> inside a heading, with <code>aria-expanded</code> and <code>aria-controls</code>.</p>
+
+        <jw-accordion>
+            <jw-accordion-item title="Perceivable" expanded>
+                <p>Information and user interface components must be presentable to users in ways they can perceive.</p>
+            </jw-accordion-item>
+            <jw-accordion-item title="Operable">
+                <p>User interface components and navigation must be operable.</p>
+            </jw-accordion-item>
+            <jw-accordion-item title="Understandable">
+                <p>Information and the operation of the user interface must be understandable.</p>
+            </jw-accordion-item>
+            <jw-accordion-item title="Robust">
+                <p>Content must be robust enough that it can be interpreted by a wide variety of user agents, including assistive technologies.</p>
+            </jw-accordion-item>
+        </jw-accordion>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Semantic Header:</strong> We wrap the trigger in an <code>&lt;h3&gt;</code> to provide structure and landmarks.</li>
+                <li><strong>State Feedback:</strong> The <code>aria-expanded</code> attribute updates in real-time, which NVDA announces immediately.</li>
+                <li><strong>Standard Interaction:</strong> Using a real button means all keyboard users (Tab, Enter, Space) are supported by default.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - <code>aria-expanded</code> and a native <code>&lt;button&gt;</code> provide clear role and state.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - <code>aria-controls</code> and heading structure programmatically define the relationship.</li>
+            </ul>
+        </div>
+    </div>
+</section>

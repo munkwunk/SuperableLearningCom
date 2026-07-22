@@ -1,0 +1,59 @@
+<section class="pattern-container" id="fake-buttons-module">
+    <h1>Fake Buttons (Anti-Pattern)</h1>
+    <p>The "First Rule of ARIA" states: <strong>"If you can use a native HTML element or attribute with the semantics and behavior you require already built in, then do so."</strong> Using a <code>div</code> as a button is one of the most common and damaging accessibility failures.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Try to activate the "Fake Button (Div)" using only your keyboard and note the lack of focus or interaction cues.</p>
+        <p>2. Tab to the "Native Semantic Button" and identify the functional cues that indicate its role and state.</p>
+        <p>3. Tab to the "ARIA Polyfilled" version and verify it provides the same functional cues as the native button.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, we use a <code>div</code>. It looks like a button, but it is invisible to keyboard navigation and screen reader roles.</p>
+        
+        <div class="bad-button-demo" style="padding: 1.5rem; border: 1px solid #ccc; background: #eee;">
+            <div style="padding: 0.75rem 1.5rem; background: #3B7A57; color: white; border-radius: 0.5rem; cursor: pointer; display: inline-block;" onclick="alert('You clicked the div!')">
+                Fake Button (Div)
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Tab Order:</strong> A <code>div</code> is not a tab stop. Keyboard-only users cannot reach this control.</li>
+                <li><strong>No Keyboard Activation:</strong> Native buttons respond to <code>Enter</code> and <code>Space</code>. A <code>div</code> with a <code>click</code> handler does not.</li>
+                <li><strong>No Role:</strong> NVDA announces this as "text," not a "button," so the user doesn't know it's interactive.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The <code>div</code> lacks a button role, so its purpose is not announced to screen readers.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The <code>div</code> is not focusable and does not respond to keyboard activation (Enter/Space).</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Comparison</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Comparison</h2>
+        <p>Compare the three approaches below. Notice how the native <code>&lt;button&gt;</code> is the simplest and most robust solution.</p>
+
+        <jw-button-demo></jw-button-demo>
+
+        <div class="meta-pedagogy">
+            <h3>Key Differences</h4>
+            <ul>
+                <li><strong>Div:</strong> Completely unusable for keyboard-only users. Interestingly, an NVDA user <em>can</em> technically activate it using arrow keys (Browse Mode), but because it has no role, they may not know it's a button.</li>
+                <li><strong>ARIA "Polyfill":</strong> Requires <code>role="button"</code>, <code>tabindex="0"</code>, and custom JS to handle keyboard events. This is reachable via the Tab key and announces correctly, but is more work to build and maintain.</li>
+                <li><strong>Native Button:</strong> 0 extra lines of code. Handles focus, Space, Enter, and the "button" role automatically. This is always the preferred approach.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Using a native <code>&lt;button&gt;</code> or <code>role="button"</code> ensures the correct role is announced.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Native buttons and properly polyfilled controls are focusable and respond to keyboard input.</li>
+            </ul>
+        </div>
+    </div>
+</section>

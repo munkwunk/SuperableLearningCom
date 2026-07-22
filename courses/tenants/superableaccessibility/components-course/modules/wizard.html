@@ -1,0 +1,132 @@
+<section class="pattern-container" id="wizard-module">
+    <h1>Multi-Step Form / Wizard</h1>
+    <p>Complex tasks are often broken into smaller, sequential steps to reduce cognitive load. This is known as a Wizard pattern. However, without proper structure, screen reader users can lose track of their progress or fail to realize that they have moved to a new step.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate through the accessible wizard and identify the functional cues that announce each new step and current progress.</p>
+        <p>2. Identify how focus management ensures the screen reader immediately announces the title of the new step upon transition.</p>
+        <p>3. Tab into the input fields and identify the functional cues provided by the <code>fieldset</code> and <code>legend</code> structure.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>In this broken version, the fields are just loosely placed in <code>div</code> containers. Stepping "Next" changes the content, but focus stays on the "Next" button, leaving the user with no idea what the new fields are. Additionally, some inputs lack programmatic labels entirely.</p>
+        
+        <div class="bad-wizard" style="padding: 1.5rem; border: 1px solid #ccc; background: #f9f9f9;">
+            <div id="bad-wizard-step">
+                <p><strong>Step 1: Contact Info</strong></p>
+                <div style="margin-bottom: 1rem;">
+                    <label>Full Name:</label><br>
+                    <input type="text" id="bad-wiz-name">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <span>Email Address:</span><br>
+                    <input type="text" id="bad-wiz-email">
+                </div>
+            </div>
+            <div id="bad-wizard-actions">
+                <button type="button" class="nav-btn" onclick="
+                    const name = document.getElementById('bad-wiz-name').value;
+                    const email = document.getElementById('bad-wiz-email').value;
+                    window.badWizData = { name, email };
+                    document.getElementById('bad-wizard-step').innerHTML = '<p><strong>Step 2: Accessibility Interests</strong></p><p>Check all that apply:</p><div style=\'margin-bottom: 0.5rem;\'><input type=\'checkbox\' id=\'bad-wiz-web\'> Web Accessibility</div><div style=\'margin-bottom: 0.5rem;\'><input type=\'checkbox\' id=\'bad-wiz-learn\'> E-Learning Accessibility</div><div style=\'margin-bottom: 1rem;\'><input type=\'checkbox\' id=\'bad-wiz-game\'> Game Accessibility</div>';
+                    this.onclick = function() {
+                        const web = document.getElementById('bad-wiz-web').checked;
+                        const learn = document.getElementById('bad-wiz-learn').checked;
+                        const game = document.getElementById('bad-wiz-game').checked;
+                        let interests = [];
+                        if(web) interests.push('Web Accessibility');
+                        if(learn) interests.push('E-Learning Accessibility');
+                        if(game) interests.push('Game Accessibility');
+                        document.getElementById('bad-wizard-step').innerHTML = '<p><strong>Step 3: Results Summary</strong></p><div style=\'padding: 1rem; background: #eee;\'><p><strong>Full Name:</strong> ' + window.badWizData.name + '</p><p><strong>Email Address:</strong> ' + window.badWizData.email + '</p><p><strong>Interests:</strong> ' + (interests.join(', ') || 'None selected') + '</p></div>';
+                        this.textContent = 'Finish';
+                        this.onclick = function() {
+                            document.getElementById('bad-wizard-step').innerHTML = '<h3>Wizard Complete</h3><p>Thank you for completing the process.</p>';
+                            this.style.display = 'none';
+                        };
+                    };
+                ">Next</button>
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Logical Grouping:</strong> There are no <code>&lt;fieldset&gt;</code> or <code>&lt;legend&gt;</code> tags to group the fields semantically.</li>
+                <li><strong>Unlabeled Controls:</strong> The "Email Address" field uses a <code>&lt;span&gt;</code> instead of a <code>&lt;label&gt;</code>. NVDA will simply announce "Edit, blank" when tabbing into it.</li>
+                <li><strong>Lack of Progress Orientation:</strong> Sighted users see "Step 1" vs "Step 2," but NVDA users aren't automatically notified of the step change because focus never moved.</li>
+                <li><strong>Dangling Focus:</strong> Clicking "Next" updates the screen, but the user is still focused on a button that might have changed its label or position, creating confusion.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - The grouping of related form fields and the current progress are not programmatically defined. Also, the label and input relationship is missing.</li>
+                <li><strong>SC 3.3.2: Labels or Instructions</strong> - Form controls are not programmatically labeled, making them difficult for screen reader users to identify.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Lack of focus management when switching steps prevents a logical navigation path.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <strong>Progress Bar</strong> (via <code>role="progressbar"</code>) and explicit <strong>Step Headings</strong> that receive focus upon transition.</p>
+
+        <jw-wizard>
+            <jw-step title="User Information">
+                <fieldset style="border: none; padding: 0;">
+                    <legend class="sr-only">Contact Details</legend>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="wiz-name" style="display: block; font-weight: 700; margin-bottom: 0.5rem;">Full Name:</label>
+                        <input type="text" id="wiz-name" name="wiz-name" class="jw-match-select" style="width: 100%;" placeholder="e.g., Jacob Wood">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="wiz-email" style="display: block; font-weight: 700; margin-bottom: 0.5rem;">Email Address:</label>
+                        <input type="email" id="wiz-email" name="wiz-email" class="jw-match-select" style="width: 100%;" placeholder="e.g., yourname@example.com">
+                    </div>
+                </fieldset>
+            </jw-step>
+
+            <jw-step title="Accessibility Interests">
+                <fieldset style="border: none; padding: 0;">
+                    <legend class="sr-only">Accessibility Interests</legend>
+                    <p>Check all that apply:</p>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="checkbox" id="int-web" name="wiz-interests" value="web">
+                        <label for="int-web">Web Accessibility</label>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="checkbox" id="int-elearn" name="wiz-interests" value="elearn">
+                        <label for="int-elearn">E-Learning Accessibility</label>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="checkbox" id="int-game" name="wiz-interests" value="game">
+                        <label for="int-game">Game Accessibility</label>
+                    </div>
+                </fieldset>
+            </jw-step>
+
+            <jw-step title="Results Summary" class="jw-wizard-results">
+                <!-- Results will be injected here -->
+                <p>Loading your results...</p>
+            </jw-step>
+        </jw-wizard>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Role="progressbar":</strong> We use a native ARIA role to announce the current completion percentage and step count (e.g., "Step 1 of 3").</li>
+                <li><strong>Focus management:</strong> When "Next" is pressed, focus moves to the <code>&lt;h3&gt;</code> of the new step. This forces NVDA to read the new step title and number immediately.</li>
+                <li><strong>Fieldsets and Legends:</strong> Each step uses semantic grouping to ensure that the relationship between fields is clear.</li>
+                <li><strong>Proper Labels:</strong> Every input has a programmatic <code>&lt;label&gt;</code> linked via <code>for</code> and <code>id</code>.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - Using fieldsets, legends, and progress roles programmatically defines the form structure and progress.</li>
+                <li><strong>SC 3.3.2: Labels or Instructions</strong> - Every form control is properly labeled, providing clear context for all users.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Moving focus to the new step heading ensures the user starts at the beginning of the new content.</li>
+            </ul>
+        </div>
+    </div>
+</section>

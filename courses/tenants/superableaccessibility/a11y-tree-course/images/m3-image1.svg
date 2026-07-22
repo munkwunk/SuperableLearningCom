@@ -1,0 +1,94 @@
+<svg width="800" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="devToolsTitle devToolsDesc">
+    <title id="devToolsTitle">DevTools Inspector Guide</title>
+    <desc id="devToolsDesc">A side-by-side comparison of Chrome and Firefox developer tools. Both show the Accessibility tab, with callouts highlighting the Name, Role, and State properties of a selected element.</desc>
+    
+    <style>
+        .win-bg { fill: #F9F9F7; stroke: #6E6E6E; stroke-width: 1; }
+        .header-bg { fill: #E0E0E0; }
+        .tab-bg { fill: #C0C0C0; }
+        .tab-active { fill: #F9F9F7; }
+        .text-main { font-family: 'Inter', sans-serif; font-size: 14px; fill: #1F1F1F; }
+        .text-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: bold; fill: #3B7A57; }
+        .text-code { font-family: monospace; font-size: 13px; fill: #1F1F1F; }
+        .highlight-box { fill: none; stroke: #B07A1E; stroke-width: 2; stroke-dasharray: 4; }
+        .arrow-line { stroke: #B07A1E; stroke-width: 1.5; marker-end: url(#arrowhead); }
+        .browser-title { font-size: 16px; font-weight: bold; fill: #1F1F1F; }
+    </style>
+    
+    <defs>
+        <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#B07A1E" />
+        </marker>
+    </defs>
+
+    <!-- Chrome Window -->
+    <g transform="translate(20, 20)">
+        <rect class="win-bg" width="370" height="410" rx="8"/>
+        <rect class="header-bg" width="370" height="30" rx="8" ry="8"/>
+        <text class="browser-title" x="10" y="20">Chrome DevTools</text>
+        
+        <!-- Tabs -->
+        <rect class="tab-bg" x="10" y="40" width="70" height="25" rx="4"/>
+        <text class="text-main" x="20" y="57">Elements</text>
+        <rect class="tab-bg" x="85" y="40" width="70" height="25" rx="4"/>
+        <text class="text-main" x="95" y="57">Console</text>
+        <rect class="tab-active" x="160" y="40" width="90" height="25" rx="4"/>
+        <text class="text-main text-label" x="167" y="57">Accessibility</text>
+        
+        <!-- Accessibility Pane -->
+        <g transform="translate(20, 80)">
+            <text class="text-main" x="0" y="15">&lt;div role="button"&gt;Submit&lt;/div&gt;</text>
+            <path d="M10 30 H 330" stroke="#E0E0E0" stroke-width="1"/>
+            <text class="text-label" x="0" y="50">Accessibility Tree</text>
+            
+            <g transform="translate(10, 70)">
+                <text class="text-code" x="0" y="15">▼ role='button', name='Submit'</text>
+            </g>
+            
+            <path d="M10 110 H 330" stroke="#E0E0E0" stroke-width="1"/>
+            <text class="text-label" x="0" y="130">Computed Properties</text>
+            
+            <!-- Highlighted Properties -->
+            <rect class="highlight-box" x="-5" y="145" width="200" height="80" rx="5"/>
+            <g transform="translate(10, 150)">
+                <text class="text-code" x="0" y="15"><tspan font-weight="bold">Name:</tspan> "Submit"</text>
+                <text class="text-code" x="0" y="40"><tspan font-weight="bold">Role:</tspan> "button"</text>
+                <text class="text-code" x="0" y="65"><tspan font-weight="bold">State:</tspan> focusable</text>
+            </g>
+             <line class="arrow-line" x1="210" y1="185" x2="195" y2="185"/>
+             <text class="text-label" x="215" y="189">Name, Role, &amp; State</text>
+        </g>
+    </g>
+
+    <!-- Firefox Window -->
+    <g transform="translate(410, 20)">
+        <rect class="win-bg" width="370" height="410" rx="8"/>
+        <rect class="header-bg" width="370" height="30" rx="8" ry="8"/>
+        <text class="browser-title" x="10" y="20">Firefox DevTools</text>
+        
+        <!-- Tabs -->
+        <rect class="tab-bg" x="10" y="40" width="70" height="25" rx="4"/>
+        <text class="text-main" x="18" y="57">Inspector</text>
+        <rect class="tab-bg" x="85" y="40" width="70" height="25" rx="4"/>
+        <text class="text-main" x="95" y="57">Console</text>
+        <rect class="tab-active" x="160" y="40" width="90" height="25" rx="4"/>
+        <text class="text-main text-label" x="167" y="57">Accessibility</text>
+        
+         <!-- Accessibility Pane -->
+        <g transform="translate(20, 80)">
+             <text class="text-main" x="0" y="15">&lt;div role="button"&gt;Submit&lt;/div&gt;</text>
+             <path d="M10 30 H 330" stroke="#E0E0E0" stroke-width="1"/>
+             <text class="text-label" x="0" y="50">Accessibility Properties</text>
+             
+             <!-- Highlighted Properties -->
+             <rect class="highlight-box" x="-5" y="65" width="300" height="85" rx="5"/>
+             <g transform="translate(10, 70)">
+                <text class="text-code" x="0" y="15"><tspan font-weight="bold">name:</tspan> "Submit"</text>
+                <text class="text-code" x="0" y="40"><tspan font-weight="bold">role:</tspan> pushbutton</text>
+                <text class="text-code" x="0" y="65"><tspan font-weight="bold">states:</tspan> focusable, focusable</text>
+             </g>
+             <line class="arrow-line" x1="300" y1="180" x2="200" y2="110"/>
+             <text class="text-label" x="220" y="200">Name, Role, &amp; State</text>
+        </g>
+    </g>
+</svg>

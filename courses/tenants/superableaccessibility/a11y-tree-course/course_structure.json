@@ -1,0 +1,54 @@
+{
+    "properties": {
+        "title": "Accessible by Design",
+        "description": "From DOM to a More Inclusive Web. Learn the foundations of the Accessibility Tree.",
+        "thumbnail": "images/m1-image1.svg",
+        "access": {
+            "type": "public",
+            "teaser_link": ""
+        },
+        "assets": {
+            "css": [
+                "css/style.css"
+            ],
+            "js": [
+                "js/course-init.js",
+                "https://unpkg.com/mermaid@8.14.0/dist/mermaid.min.js"
+            ]
+        },
+        "status": "published"
+    },
+    "modules": [
+        {
+            "group": "Foundations",
+            "expanded": true,
+            "items": [
+                {
+                    "id": "welcome",
+                    "title": "Welcome",
+                    "src": "modules/welcome.html"
+                },
+                {
+                    "id": "dom-vs-tree",
+                    "title": "DOM vs. Accessibility Tree",
+                    "src": "modules/module1.html"
+                },
+                {
+                    "id": "semantics",
+                    "title": "Semantic HTML",
+                    "src": "modules/module2.html"
+                },
+                {
+                    "id": "aria-basics",
+                    "title": "ARIA Basics",
+                    "src": "modules/module3.html"
+                },
+                {
+                    "id": "knowledge-check",
+                    "title": "Knowledge Check",
+                    "src": "modules/module4.html"
+                }
+            ]
+        }
+    ]
+}

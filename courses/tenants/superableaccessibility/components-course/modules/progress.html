@@ -1,0 +1,85 @@
+<section class="pattern-container" id="progress-module">
+    <h1>Progress Bar / Step Tracker</h1>
+    <p>Progress bars give users a visual indication of how much of a task or course they have completed. To be accessible, they must programmatically communicate their status and current value to screen readers.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate to the accessible progress bar and identify its label, role, and current value.</p>
+        <p>2. Activate the "Increase Progress" button and identify the functional cues that announce the value change.</p>
+        <p>3. Observe how the component provides both visual feedback and programmatic state updates simultaneously.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This progress bar is just a <code>div</code> with a background color. It is completely invisible to screen readers, and its value is only conveyed through color and width. <em>(Visual only: The bar below is approximately 65% full.)</em></p>
+        
+        <div class="bad-progress" id="bad-progress-bar" data-value="65" style="width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 1rem 0;">
+            <div id="bad-progress-inner" style="width: 65%; height: 100%; background: #3B7A57; border-radius: 10px;"></div>
+        </div>
+        
+        <div style="margin-top: 1rem;">
+            <button type="button" class="nav-btn" onclick="
+                const pb = document.getElementById('bad-progress-bar');
+                const inner = document.getElementById('bad-progress-inner');
+                let val = parseInt(pb.dataset.value);
+                val = Math.min(100, val + 10);
+                pb.dataset.value = val;
+                inner.style.width = val + '%';
+                console.log('Inaccessible progress updated to ' + val + '%');
+            ">Increase Progress</button>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>Silent Updates:</strong> Clicking the button updates the bar visually, but NVDA remains silent. The user has no idea if the action was successful or what the new value is.</li>
+                <li><strong>No Role:</strong> NVDA sees this as an empty <code>div</code>. It doesn't know it's a progress indicator.</li>
+                <li><strong>No Value:</strong> There are no <code>aria-valuenow</code> or <code>aria-valuemax</code> attributes to tell the user the current percentage.</li>
+                <li><strong>No Label:</strong> The progress bar isn't linked to a label, so the user doesn't know <strong>what</strong> progress is being tracked.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The progress indicator is implemented as a generic <code>div</code>, providing no programmatic role, name, or value.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - Visual state changes (progress updates) are not announced to screen reader users.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses <code>role="progressbar"</code>. Notice how NVDA announces the percentage and the label as soon as you navigate to it.</p>
+
+        <jw-progress-bar label="Course Completion" value="75" max="100" id="course-pb"></jw-progress-bar>
+        
+        <div style="margin-top: 1rem;">
+            <button type="button" class="nav-btn" onclick="
+                const pb = document.getElementById('course-pb');
+                const currentVal = parseInt(pb.getAttribute('value'));
+                if (currentVal < 100) {
+                    const newVal = Math.min(100, currentVal + 10);
+                    pb.setAttribute('value', newVal);
+                    if (newVal === 100) {
+                        window.jwAnnounce('Course completed.');
+                    } else {
+                        window.jwAnnounce('Progress updated.');
+                    }
+                }
+            ">Increase Progress</button>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Role="progressbar":</strong> Identifies the element's purpose to the accessibility tree.</li>
+                <li><strong>Aria-valuenow:</strong> Programmatically provides the current value.</li>
+                <li><strong>Aria-labelledby:</strong> Connects the progress bar to its descriptive label.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Use of <code>role="progressbar"</code> and ARIA attributes ensures purpose and state are communicated.</li>
+            </ul>
+        </div>
+    </div>
+</section>

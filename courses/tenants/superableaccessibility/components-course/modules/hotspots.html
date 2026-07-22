@@ -1,0 +1,79 @@
+<section class="pattern-container" id="hotspot-module">
+    <h1>Hotspot Image Interaction</h1>
+    <p>Hotspots are interactive areas on an image. They are frequently used for diagrams, maps, and technical illustrations. However, because they rely on spatial positioning, they are often a nightmare for accessibility if not handled correctly.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Tab through the hotspots on the logo diagram and identify their labels and roles.</p>
+        <p>2. Activate a hotspot and identify the functional cues that indicate focus has moved to the revealed content.</p>
+        <p>3. Use the <strong>Close Details</strong> button to dismiss the information and verify that your focus returns to the marker.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This "diagram" uses generic <code>div</code> elements that are absolutely positioned over the Growth for ALL logo. They are invisible to screen readers and unreachable by keyboard users.</p>
+        
+        <div class="bad-hotspot-container" style="position: relative; display: inline-block; width: 100%; max-width: 500px;">
+            <img src="courses/components-course/images/g4alogo.jpg" alt="" style="width: 100%; opacity: 0.3;">
+            <!-- Inaccessible hotspots -->
+            <div onclick="alert('Accessibility: Through access to knowledge and opportunities we learn new skills.')" style="position: absolute; left: 20%; top: 30%; width: 30px; height: 30px; background: rgba(255,0,0,0.5); border-radius: 50%; cursor: pointer;"></div>
+            <div onclick="alert('Learning: Learning can happen at any time, in any place.')" style="position: absolute; left: 70%; top: 30%; width: 30px; height: 30px; background: rgba(255,0,0,0.5); border-radius: 50%; cursor: pointer;"></div>
+            <div onclick="alert('Leadership: Leadership unlocks potential, even if you’re only a leader of one.')" style="position: absolute; left: 20%; top: 70%; width: 30px; height: 30px; background: rgba(255,0,0,0.5); border-radius: 50%; cursor: pointer;"></div>
+            <div onclick="alert('Growth: At the intersection is Growth, where we lift each other up and go farther together.')" style="position: absolute; left: 70%; top: 70%; width: 30px; height: 30px; background: rgba(255,0,0,0.5); border-radius: 50%; cursor: pointer;"></div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard Access:</strong> These <code>div</code> hotspots cannot be reached via the Tab key.</li>
+                <li><strong>No Alt Text or Labels:</strong> There is no descriptive text for the hotspots. An NVDA user wouldn't even know they are there.</li>
+                <li><strong>Unmanaged Popups:</strong> Using <code>alert()</code> is a crude way to show info, but even custom "popups" often fail to move focus, leaving the user lost.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 1.1.1: Non-text Content</strong> - The image and interactive areas lack descriptive text alternatives.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Hotspots implemented as <code>div</code> elements are not focusable or operable via keyboard.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - There is no focus management for revealed content, and alerts cannot be dismissed via keyboard in a controlled way.</li>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The interactive areas lack a programmatic role and accessible name.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <strong>Hotspot Container</strong> with semantic <code>&lt;button&gt;</code> markers. Activating a marker moves focus directly into the revealed content.</p>
+
+        <jw-hotspot-container src="courses/components-course/images/g4alogo.jpg" alt="Growth for ALL logo - illustrative diagram">
+            <jw-hotspot-marker x="20%" y="30%" label="Accessibility">
+                <p>Through access to knowledge and opportunities we learn new skills.</p>
+            </jw-hotspot-marker>
+            <jw-hotspot-marker x="70%" y="30%" label="Learning">
+                <p>Learning can happen at any time, in any place.</p>
+            </jw-hotspot-marker>
+            <jw-hotspot-marker x="20%" y="70%" label="Leadership">
+                <p>Leadership unlocks potential, even if you’re only a leader of one.</p>
+            </jw-hotspot-marker>
+            <jw-hotspot-marker x="70%" y="70%" label="Growth">
+                <p>At the intersection is Growth, where we lift each other up and go farther together.</p>
+            </jw-hotspot-marker>
+        </jw-hotspot-container>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Semantic Triggers:</strong> Each hotspot is a <code>&lt;button&gt;</code> with a descriptive <code>aria-label</code>.</li>
+                <li><strong>Focus Management:</strong> When a hotspot is activated, focus is moved into the newly visible info panel. This ensures NVDA reads the description immediately.</li>
+                <li><strong>Contextual Return:</strong> Closing the info panel returns focus to the exact hotspot marker that triggered it, maintaining the user's place on the page.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 1.1.1: Non-text Content</strong> - Meaningful image alternative and descriptive labels for interactive hotspots.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Each hotspot is a native <code>&lt;button&gt;</code>, ensuring keyboard focus and activation.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Focus moves logically to revealed content and returns to the trigger on close.</li>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Use of native buttons and <code>aria-label</code> provides correct role and name.</li>
+            </ul>
+        </div>
+    </div>
+</section>

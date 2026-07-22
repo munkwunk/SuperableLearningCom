@@ -1,0 +1,93 @@
+<section class="pattern-container" id="timeline-module">
+    <h1>Timeline Interaction</h1>
+    <p>Timelines present events in chronological order. They are common in history, process, and onboarding modules. A good timeline should allow learners to navigate easily between events and understand the sequence of time.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate to the timeline track and identify the functional cues that describe its role and orientation.</p>
+        <p>2. Use the Down and Up arrow keys and identify how the screen reader announces the transition between dates and the sequence (X of Y).</p>
+        <p>3. Navigate to a specific date and Tab into its details, identifying the cues that confirm you have moved into the related content area.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This timeline is built using a series of floating <code>div</code> elements. It relies entirely on visual position to convey order and has no semantic structure.</p>
+        
+        <div class="bad-timeline" style="border-left: 2px solid #ccc; margin-left: 20px; padding-left: 20px;">
+            <div style="margin-bottom: 2rem; position: relative;">
+                <div style="position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #666; border-radius: 50%;"></div>
+                <strong>1999: Perceivable</strong><br>
+                WCAG 1.0 emphasized making content perceivable.
+            </div>
+            <div style="margin-bottom: 2rem; position: relative;">
+                <div style="position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #666; border-radius: 50%;"></div>
+                <strong>2008: Operable</strong><br>
+                WCAG 2.0 introduced Operability as a core pillar.
+            </div>
+            <div style="margin-bottom: 2rem; position: relative;">
+                <div style="position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #666; border-radius: 50%;"></div>
+                <strong>2018: Understandable</strong><br>
+                WCAG 2.1 expanded on Understandable criteria.
+            </div>
+            <div style="margin-bottom: 2rem; position: relative;">
+                <div style="position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #666; border-radius: 50%;"></div>
+                <strong>2023: Robust</strong><br>
+                WCAG 2.2 continues to ensure Robustness across agents.
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No List Semantics:</strong> NVDA sees this as a stream of text. It doesn't announce "List with 4 items," so the user doesn't know the scope of the timeline.</li>
+                <li><strong>Poor Navigation:</strong> A keyboard user has to read through every word to find the next date. There is no way to quickly "jump" between events.</li>
+                <li><strong>No Relationship:</strong> The dates and the descriptions are just text blocks. There is no structural link between the "point in time" and the "event."</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The timeline elements lack appropriate roles and states to describe their interactive nature.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - The chronological sequence and grouping of events are not programmatically defined.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <strong>Vertical Tablist</strong>. The events are the "tabs," and the descriptions are the "panels." This allows for rapid navigation via arrow keys.</p>
+
+        <jw-timeline aria-label="Historical Timeline of WCAG Adoption">
+            <jw-timeline-item date="1999" title="WCAG 1.0 Adoption">
+                <h3>1999: WCAG 1.0 Adoption</h4>
+                <p>WCAG 1.0 was published by the W3C, establishing the first comprehensive set of guidelines for web accessibility, with a strong focus on making HTML content perceivable.</p>
+            </jw-timeline-item>
+            <jw-timeline-item date="2008" title="WCAG 2.0 and POUR">
+                <h3>2008: WCAG 2.0 and POUR</h4>
+                <p>WCAG 2.0 introduced the four core principles of accessibility: Perceivable, Operable, Understandable, and Robust (POUR), creating a technology-neutral framework.</p>
+            </jw-timeline-item>
+            <jw-timeline-item date="2018" title="WCAG 2.1 Expansion">
+                <h3>2018: WCAG 2.1 Expansion</h4>
+                <p>WCAG 2.1 expanded the guidelines to include critical criteria for mobile accessibility, low vision, and cognitive disabilities.</p>
+            </jw-timeline-item>
+            <jw-timeline-item date="2023" title="WCAG 2.2 Standards">
+                <h3>2023: WCAG 2.2 Standards</h4>
+                <p>WCAG 2.2 continues the evolution of the standards, adding nine new success criteria to improve accessibility for users with cognitive or learning disabilities, and on mobile devices.</p>
+            </jw-timeline-item>
+        </jw-timeline>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Vertical Tablist Pattern:</strong> Using <code>role="tablist"</code> and <code>aria-orientation="vertical"</code> tells NVDA exactly how to interact with the timeline.</li>
+                <li><strong>Arrow Key Traversal:</strong> Learners can use the Up and Down arrow keys to quickly move through time. This is much faster than tabbing through every element.</li>
+                <li><strong>Explicit Grouping:</strong> Each event's details are in a <code>tabpanel</code>, creating a clear programmatic relationship between the date and the content.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Implementing the tablist pattern provides clear roles and selection states.</li>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - Explicit grouping via tabpanels ensures the relationship between the date and its content is preserved.</li>
+            </ul>
+        </div>
+    </div>
+</section>

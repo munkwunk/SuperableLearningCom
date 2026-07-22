@@ -1,0 +1,191 @@
+<style>
+    /* Styling for the trigger elements to ensure they look virtually identical */
+    .jw-flip-card-trigger, .fake-trigger-btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-primary);
+        background-color: var(--color-primary);
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        margin-top: 1rem;
+        font-family: inherit;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .jw-flip-card-trigger:hover, .fake-trigger-btn:hover {
+        background-color: var(--color-secondary);
+        border-color: var(--color-secondary);
+    }
+
+    /* Styles inside the green back of the flipcard */
+    .jw-flip-card-back .jw-flip-card-trigger, 
+    .jw-flip-card-back .fake-trigger-btn {
+        background-color: white;
+        color: var(--color-primary);
+        border-color: white;
+    }
+
+    .jw-flip-card-back .jw-flip-card-trigger:hover, 
+    .jw-flip-card-back .fake-trigger-btn:hover {
+        background-color: var(--color-bg-light);
+        color: var(--color-secondary);
+        border-color: var(--color-bg-light);
+    }
+</style>
+
+<section class="pattern-container" id="flip-card-module">
+    <h1>Flip Cards</h1>
+    <p>Flip cards are a common e-learning pattern used to reveal hidden information. However, they are often implemented using only visual transitions, making them completely inaccessible to screen reader and keyboard users.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Use the keyboard to navigate to the accessible flip card.</p>
+        <p>2. Activate the card and identify the functional cues that indicate the state change (front vs. back).</p>
+        <p>3. Verify that the focus management provides immediate feedback after the card flips.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>These flip cards use <code>div</code> tags with click listeners. They cannot be focused by keyboard and provide no state information to NVDA.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <!-- Card 1 -->
+            <div class="bad-flip-card jw-flip-card">
+                <div class="jw-flip-card-inner">
+                    <div class="jw-flip-card-front">
+                        <div class="jw-flip-card-content">
+                            <strong>Perceivable</strong>
+                            <p>What does WCAG say about Perceivable?</p>
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = true; card.querySelector('.jw-flip-card-back').hidden = false;">Flip to Back</div>
+                    </div>
+                    <div class="jw-flip-card-back" hidden>
+                        <div class="jw-flip-card-content">
+                            Presentable to users in ways they can perceive.
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = false; card.querySelector('.jw-flip-card-back').hidden = true;">Flip to Front</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="bad-flip-card jw-flip-card">
+                <div class="jw-flip-card-inner">
+                    <div class="jw-flip-card-front">
+                        <div class="jw-flip-card-content">
+                            <strong>Operable</strong>
+                            <p>What does WCAG say about Operable?</p>
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = true; card.querySelector('.jw-flip-card-back').hidden = false;">Flip to Back</div>
+                    </div>
+                    <div class="jw-flip-card-back" hidden>
+                        <div class="jw-flip-card-content">
+                            UI components and navigation must be operable.
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = false; card.querySelector('.jw-flip-card-back').hidden = true;">Flip to Front</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bad-flip-card jw-flip-card">
+                <div class="jw-flip-card-inner">
+                    <div class="jw-flip-card-front">
+                        <div class="jw-flip-card-content">
+                            <strong>Understandable</strong>
+                            <p>What does WCAG say about Understandable?</p>
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = true; card.querySelector('.jw-flip-card-back').hidden = false;">Flip to Back</div>
+                    </div>
+                    <div class="jw-flip-card-back" hidden>
+                        <div class="jw-flip-card-content">
+                            Information and the operation of the UI must be understandable.
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = false; card.querySelector('.jw-flip-card-back').hidden = true;">Flip to Front</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="bad-flip-card jw-flip-card">
+                <div class="jw-flip-card-inner">
+                    <div class="jw-flip-card-front">
+                        <div class="jw-flip-card-content">
+                            <strong>Robust</strong>
+                            <p>What does WCAG say about Robust?</p>
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = true; card.querySelector('.jw-flip-card-back').hidden = false;">Flip to Back</div>
+                    </div>
+                    <div class="jw-flip-card-back" hidden>
+                        <div class="jw-flip-card-content">
+                            Content must be robust enough to be interpreted by a wide variety of user agents.
+                        </div>
+                        <div class="fake-trigger-btn" onclick="const card = this.closest('.bad-flip-card'); card.querySelector('.jw-flip-card-front').hidden = false; card.querySelector('.jw-flip-card-back').hidden = true;">Flip to Front</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard Access:</strong> The <code>div</code> elements are not focusable. Keyboard users cannot "flip" them.</li>
+                <li><strong>No Semantic Role:</strong> NVDA sees these as plain text, not interactive components.</li>
+                <li><strong>No State Announcement:</strong> When the "flip" happens visually, NVDA users receive no feedback that content has changed.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - The interactive element lacks a semantic role and state.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The component is not operable via keyboard.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Lack of focus management prevents a logical navigation path when content changes.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <code>button</code> to trigger the flip and manages the visibility of the front and back content using the <code>hidden</code> attribute.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <jw-flip-card title="Perceivable">
+                <jw-front><strong>Perceivable</strong><p>What does WCAG say about Perceivable?</p></jw-front>
+                <jw-back>Presentable to users in ways they can perceive.</jw-back>
+            </jw-flip-card>
+            <jw-flip-card title="Operable">
+                <jw-front><strong>Operable</strong><p>What does WCAG say about Operable?</p></jw-front>
+                <jw-back>UI components and navigation must be operable.</jw-back>
+            </jw-flip-card>
+            <jw-flip-card title="Understandable">
+                <jw-front><strong>Understandable</strong><p>What does WCAG say about Understandable?</p></jw-front>
+                <jw-back>Information and the operation of the UI must be understandable.</jw-back>
+            </jw-flip-card>
+            <jw-flip-card title="Robust">
+                <jw-front><strong>Robust</strong><p>What does WCAG say about Robust?</p></jw-front>
+                <jw-back>Content must be robust enough to be interpreted by a wide variety of user agents.</jw-back>
+            </jw-flip-card>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Semantic Button:</strong> We use a real <code>&lt;button&gt;</code> that is naturally focusable and provides a clear action label.</li>
+                <li><strong>Focus Management:</strong> When the card flips, focus is moved to the revealed container. This ensures the user is immediately aware of the new content.</li>
+                <li><strong>State Management:</strong> The <code>hidden</code> attribute ensures that only the relevant side is visible to both the eye and the screen reader.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Using a <code>&lt;button&gt;</code> provides the correct role and state.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The <code>&lt;button&gt;</code> is natively keyboard accessible.</li>
+                <li><strong>SC 2.4.3: Focus Order</strong> - Moving focus to the revealed content ensures a logical path.</li>
+            </ul>
+        </div>
+    </div>
+</section>

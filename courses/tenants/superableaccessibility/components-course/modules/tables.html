@@ -1,0 +1,122 @@
+<section class="pattern-container" id="tables-module">
+    <h1>Interactive Tables</h1>
+    <p>Data tables are essential for presenting structured information. However, when you add interactivity like sorting, it becomes a challenge to keep screen reader users informed of the state changes.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Navigate into the table and identify the functional cues that describe the table's dimensions.</p>
+        <p>2. Activate a sortable header and identify the functional cues (e.g., live region or state attribute) that confirm the new sort order.</p>
+        <p>3. Use table navigation commands (e.g., Ctrl+Alt+Arrows) and identify how the screen reader announces headers as you move through cells.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This table uses <code>div</code> elements for layout. It has no semantic relationship between headers and data, and clicking a "header" sorts visually but provides no programmatic feedback.</p>
+        
+        <div class="bad-table" id="bad-table-container" style="border: 1px solid #ccc; background: #eee; border-radius: 0.5rem; overflow: hidden;">
+            <div style="display: flex; background: #ddd; font-weight: bold; padding: 0.5rem;">
+                <div style="flex: 2; cursor: pointer;" onclick="sortBadTable(0)">Course Name</div>
+                <div style="flex: 1; cursor: pointer;" onclick="sortBadTable(1)">Level</div>
+                <div style="flex: 1; cursor: pointer;" onclick="sortBadTable(2)">Score</div>
+            </div>
+            <div id="bad-table-body">
+                <div class="bad-row" style="display: flex; padding: 0.5rem; border-top: 1px solid #ccc;">
+                    <div style="flex: 2;">Accessibility 101</div>
+                    <div style="flex: 1;">Beginner</div>
+                    <div style="flex: 1;">95</div>
+                </div>
+                <div class="bad-row" style="display: flex; padding: 0.5rem; border-top: 1px solid #ccc;">
+                    <div style="flex: 2;">Advanced ARIA</div>
+                    <div style="flex: 1;">Advanced</div>
+                    <div style="flex: 1;">88</div>
+                </div>
+                <div class="bad-row" style="display: flex; padding: 0.5rem; border-top: 1px solid #ccc;">
+                    <div style="flex: 2;">Cognitive Design</div>
+                    <div style="flex: 1;">Intermediate</div>
+                    <div style="flex: 1;">92</div>
+                </div>
+            </div>
+            <!-- Hack to execute script in SPA environment where <script> tags are ignored on injection -->
+            <img src="x" onerror="
+                window.sortBadTable = function(colIndex) {
+                    const body = document.getElementById('bad-table-body');
+                    const rows = Array.from(body.querySelectorAll('.bad-row'));
+                    const isAsc = body.dataset.sortCol == colIndex && body.dataset.sortDir === 'asc';
+                    const dir = isAsc ? 'desc' : 'asc';
+                    body.dataset.sortCol = colIndex;
+                    body.dataset.sortDir = dir;
+
+                    rows.sort((a, b) => {
+                        const valA = a.children[colIndex].textContent;
+                        const valB = b.children[colIndex].textContent;
+                        if (!isNaN(valA) && !isNaN(valB)) {
+                            return isAsc ? valB - valA : valA - valB;
+                        }
+                        return isAsc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+                    });
+
+                    body.innerHTML = '';
+                    rows.forEach(r => body.appendChild(r));
+                    console.log('Table sorted visually by column ' + colIndex);
+                };
+            " style="display:none;" alt="">
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Table Semantics:</strong> NVDA sees this as a list of text blocks. It doesn't know it's a table, so it can't navigate by row or column.</li>
+                <li><strong>Missing Header Relationship:</strong> There is no <code>scope="col"</code>, so the screen reader won't read the header name when you move through the cells.</li>
+                <li><strong>No Sort State:</strong> A sighted user sees the items move, but a screen reader user doesn't know which column is sorted or in what direction.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - Lack of semantic table markup prevents programmatic determination of headers and data cells.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - Visual sorting changes are not programmatically announced to the user.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a real <code>&lt;table&gt;</code> and uses <code>aria-sort</code> on the header buttons.</p>
+
+        <jw-interactive-table>
+            <jw-header>Name</jw-header>
+            <jw-header type="string">Level</jw-header>
+            <jw-header type="number">Score</jw-header>
+            
+            <jw-row>
+                <jw-cell>Accessibility 101</jw-cell>
+                <jw-cell>Beginner</jw-cell>
+                <jw-cell>95</jw-cell>
+            </jw-row>
+            <jw-row>
+                <jw-cell>Advanced ARIA</jw-cell>
+                <jw-cell>Advanced</jw-cell>
+                <jw-cell>88</jw-cell>
+            </jw-row>
+            <jw-row>
+                <jw-cell>Cognitive Design</jw-cell>
+                <jw-cell>Intermediate</jw-cell>
+                <jw-cell>92</jw-cell>
+            </jw-row>
+        </jw-interactive-table>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Semantic Markup:</strong> We use <code>&lt;table&gt;</code>, <code>&lt;th&gt;</code>, and <code>&lt;td&gt;</code>. NVDA can now use its table navigation commands (Ctrl+Alt+Arrows).</li>
+                <li><strong>Aria-Sort:</strong> The header buttons update their parent's <code>aria-sort</code> attribute to "ascending" or "descending".</li>
+                <li><strong>Polite Announcements:</strong> When sorted, a live region confirms the action: "Table sorted by Score, descending order."</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 1.3.1: Info and Relationships</strong> - Using native table elements provides the necessary relationships between headers and cells.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - Live regions and aria-sort updates provide status feedback when the table state changes.</li>
+            </ul>
+        </div>
+    </div>
+</section>

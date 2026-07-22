@@ -1,0 +1,84 @@
+<section class="pattern-container" id="tooltip-module">
+    <h1>Tooltip / Info Hover</h1>
+    <p>Tooltips provide extra context for icons or short labels. In e-learning, they are often used for glossary terms or "quick tips." However, they are notoriously difficult to get right for keyboard and screen reader users.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Tab through the text and stop on a tooltip trigger.</p>
+        <p>2. Activate the trigger (Enter/Space) and identify the functional cues that announce the supplemental content.</p>
+        <p>3. While the info is visible, press <code>Escape</code> and verify that focus remains on the trigger while the info is dismissed.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Example</h2>
+        <p>This "tooltip" uses CSS <code>:hover</code> on a non-interactive <code>span</code>. It cannot be seen by keyboard users and is never announced by NVDA.</p>
+        
+        <div class="bad-tooltip-demo" style="padding: 1rem; border: 1px solid #ccc; background: #eee;">
+            <p>
+                The POUR principles are 
+                <span style="color: blue; text-decoration: underline; cursor: help; position: relative;" onmouseover="this.querySelector('div').style.display='block'" onmouseout="this.querySelector('div').style.display='none'">
+                    POUR
+                    <div style="display: none; position: absolute; background: black; color: white; padding: 0.5rem; font-size: 0.8rem; width: 200px; z-index: 10;">Perceivable, Operable, Understandable, Robust</div>
+                </span>
+                foundational to web accessibility.
+            </p>
+            <p>
+                You should always check your 
+                <span style="color: blue; text-decoration: underline; cursor: help; position: relative;" onmouseover="this.querySelector('div').style.display='block'" onmouseout="this.querySelector('div').style.display='none'">
+                    Contrast
+                    <div style="display: none; position: absolute; background: black; color: white; padding: 0.5rem; font-size: 0.8rem; width: 200px; z-index: 10;">Color contrast must be at least 4.5:1 for normal text.</div>
+                </span>
+                before publishing.
+            </p>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard Access:</strong> A <code>span</code> is not focusable. Keyboard users can't trigger the tooltip.</li>
+                <li><strong>No Programmatic Association:</strong> Even if the user could hover, the screen reader doesn't know the popup content is related to the word.</li>
+                <li><strong>Dismissal Issues:</strong> A true accessible tooltip must be dismissible via the <code>Escape</code> key without moving focus.</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 1.4.13: Content on Hover or Focus</strong> - Supplemental content cannot be dismissed, is not persistent, or is not hoverable by the user.</li>
+                <li><strong>SC 2.1.1: Keyboard</strong> - Interactive information is not reachable via keyboard.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Accessible Version</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Accessible Example</h2>
+        <p>The accessible version uses a <code>&lt;button&gt;</code> trigger following the <strong>Disclosure Pattern</strong>. It supports Hover, Focus, and Click activation with immediate screen reader feedback.</p>
+
+        <p>
+            The POUR principles are 
+            <jw-tooltip text="Perceivable, Operable, Understandable, Robust"><strong>POUR</strong></jw-tooltip>
+            foundational to web accessibility.
+        </p>
+        
+        <p>
+            You should always check your 
+            <jw-tooltip text="Color contrast must be at least 4.5:1 for normal text."><strong>Contrast</strong></jw-tooltip>
+            before publishing.
+        </p>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed</h4>
+            <ul>
+                <li><strong>Focusable Trigger:</strong> We use a <code>&lt;button&gt;</code> that is part of the tab order.</li>
+                <li><strong>Aria-expanded:</strong> Tells the user if the additional information is currently visible.</li>
+                <li><strong>Immediate Feedback:</strong> Activating the button via Space, Enter, or Click triggers a live region announcement of the supplemental text.</li>
+                <li><strong>Aria-describedby:</strong> Ensures the content is also read automatically when the button receives focus.</li>
+                <li><strong>Escape Key Support:</strong> Pressing <code>Escape</code> dismisses the info and returns focus to the trigger.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 1.4.13: Content on Hover or Focus</strong> - The info is dismissible via Escape, stays visible while hovered, and is available to both mouse and keyboard.</li>
+                <li><strong>SC 4.1.2: Name, Role, Value</strong> - Use of <code>aria-expanded</code> and a semantic button provides clear role and state.</li>
+            </ul>
+        </div>
+    </div>
+</section>

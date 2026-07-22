@@ -1,0 +1,79 @@
+<section class="pattern-container" id="dragdrop-module">
+    <h1>Matching Interactions</h1>
+    <p>Matching tasks (like drag-and-drop) are common in e-learning. However, the method of interaction can determine whether a learner is included or excluded. Following <strong>Universal Design for Learning (UDL)</strong>, we should provide multiple means of action and expression.</p>
+
+    <div class="practice-task">
+        <h2>Practice Task</h2>
+        <p>1. Complete the matching game using only your keyboard.</p>
+        <p>2. Activate "Check Answers" and Identify the functional cues (Role, State, Name) announced by the screen reader.</p>
+        <p>3. Notice how the visual score display and the NVDA announcement work together to provide clarity.</p>
+    </div>
+
+    <div class="inaccessible-version">
+        <h2>Inaccessible Drag-and-Drop</h2>
+        <p>This "sorting game" uses the four POUR principles. It relies on mouse dragging and provides no keyboard access or screen reader announcements, even for the results.</p>
+        
+        <div class="bad-matching-sim" style="border: 1px solid #ccc; padding: 1.5rem; background: #f9f9f9; border-radius: 0.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="sim-column">
+                    <strong>Column A (Principle)</strong>
+                    <div style="padding: 0.75rem; border: 1px solid #999; margin: 0.5rem 0; background: white; cursor: move;">Perceivable</div>
+                    <div style="padding: 0.75rem; border: 1px solid #999; margin: 0.5rem 0; background: white; cursor: move;">Operable</div>
+                    <div style="padding: 0.75rem; border: 1px solid #999; margin: 0.5rem 0; background: white; cursor: move;">Understandable</div>
+                    <div style="padding: 0.75rem; border: 1px solid #999; margin: 0.5rem 0; background: white; cursor: move;">Robust</div>
+                </div>
+                <div class="sim-column">
+                    <strong>Column B (Drop Definition)</strong>
+                    <div style="min-height: 40px; border: 2px dashed #999; margin: 0.5rem 0; padding: 0.5rem; font-size: 0.85rem; background: #eee;">Presentable to users in ways they can perceive.</div>
+                    <div style="min-height: 40px; border: 2px dashed #999; margin: 0.5rem 0; padding: 0.5rem; font-size: 0.85rem; background: #eee;">UI components and navigation must be operable.</div>
+                    <div style="min-height: 40px; border: 2px dashed #999; margin: 0.5rem 0; padding: 0.5rem; font-size: 0.85rem; background: #eee;">Operation of the UI must be understandable.</div>
+                    <div style="min-height: 40px; border: 2px dashed #999; margin: 0.5rem 0; padding: 0.5rem; font-size: 0.85rem; background: #eee;">Interpreted by a wide variety of user agents.</div>
+                </div>
+            </div>
+            <button type="button" class="nav-btn" style="margin-top: 1rem; background-color: var(--color-accent);">Submit Answers</button>
+            <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">(Note: This button visually changes but never announces the score to NVDA.)</p>
+        </div>
+
+        <div class="meta-pedagogy">
+            <h3>Why it's broken</h4>
+            <ul>
+                <li><strong>No Keyboard/NVDA Access:</strong> The drag-and-drop items and drop zones are completely non-interactive for non-mouse users.</li>
+                <li><strong>Silent Feedback:</strong> When "Submit" is pressed, the screen reader remains silent, leaving the user with no idea of their performance.</li>
+                <li><strong>Violation of UDL:</strong> It provides only one way to interact (mouse) and one way to receive feedback (visual).</li>
+            </ul>
+            <h4>Compliance Failures</h4>
+            <ul>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The drag-and-drop interaction is only available via mouse.</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - The results of the matching task are not announced to screen readers.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="button" class="reveal-btn">Reveal Robust Alternative</button>
+
+    <div class="accessible-version" hidden>
+        <h2>Robust Accessible Alternative: Matching Game</h2>
+        <p>This version uses the same POUR principles but employs native <code>&lt;select&gt;</code> menus. It provides multi-modal feedback (visual and auditory) for a truly universal experience.</p>
+
+        <jw-matching-game label="Match WCAG Principles">
+            <jw-match-pair source="Perceivable" target="Presentable to users in ways they can perceive."></jw-match-pair>
+            <jw-match-pair source="Operable" target="UI components and navigation must be operable."></jw-match-pair>
+            <jw-match-pair source="Understandable" target="Operation of the UI must be understandable."></jw-match-pair>
+            <jw-match-pair source="Robust" target="Interpreted by a wide variety of user agents."></jw-match-pair>
+        </jw-matching-game>
+
+        <div class="meta-pedagogy">
+            <h3>How it's fixed (UDL Focus)</h4>
+            <ul>
+                <li><strong>Multiple Means of Action:</strong> Accessible via mouse, keyboard, and screen reader using standard patterns.</li>
+                <li><strong>Immediate Multi-Modal Feedback:</strong> Correct/Incorrect states are shown with colors (visual), icons (visual), and text (auditory via live regions).</li>
+                <li><strong>Persistent Results:</strong> The final score is displayed on-screen for everyone and announced specifically for NVDA users.</li>
+            </ul>
+            <h4>Compliance Success</h4>
+            <ul>
+                <li><strong>SC 2.1.1: Keyboard</strong> - The matching task is operable using standard form controls (select menus).</li>
+                <li><strong>SC 4.1.3: Status Messages</strong> - The score is announced via an ARIA live region upon submission.</li>
+            </ul>
+        </div>
+    </div>
+</section>
