@@ -487,7 +487,8 @@ $tenantMetadata = getTenantMetadata();
                 </div>
             </div>
             <div class="nav-links">
-                <button type="button" id="theme-toggle-btn" class="btn btn-outline-light btn-sm" aria-label="Toggle dark mode theme">🌙 Theme</button>
+                <button type="button" id="theme-toggle-btn" class="btn btn-outline-light btn-sm" aria-pressed="false"><span aria-hidden="true">🌙</span> Dark Mode</button>
+                <div id="theme-status" class="sr-only" aria-live="polite"></div>
                 <a href="<?= tenant_url('help.php') ?>" class="nav-link">Help & Docs</a>
                 <?php if (!$is_guest): ?>
                     <span class="text-sm">Hello, <strong><?= htmlspecialchars($current_user_name) ?></strong></span>
@@ -650,15 +651,28 @@ $tenantMetadata = getTenantMetadata();
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const themeBtn = document.getElementById('theme-toggle-btn');
+            const themeStatus = document.getElementById('theme-status');
             const savedTheme = localStorage.getItem('lms_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             
-            function applyTheme(theme) {
+            function applyTheme(theme, announce = false) {
                 if (theme === 'dark') {
                     document.documentElement.setAttribute('data-theme', 'dark');
-                    if (themeBtn) themeBtn.textContent = '☀️ Light Mode';
+                    if (themeBtn) {
+                        themeBtn.setAttribute('aria-pressed', 'true');
+                        themeBtn.innerHTML = '<span aria-hidden="true">☀️</span> Dark Mode';
+                    }
+                    if (announce && themeStatus) {
+                        themeStatus.textContent = 'Dark mode theme enabled';
+                    }
                 } else {
                     document.documentElement.removeAttribute('data-theme');
-                    if (themeBtn) themeBtn.textContent = '🌙 Dark Mode';
+                    if (themeBtn) {
+                        themeBtn.setAttribute('aria-pressed', 'false');
+                        themeBtn.innerHTML = '<span aria-hidden="true">🌙</span> Dark Mode';
+                    }
+                    if (announce && themeStatus) {
+                        themeStatus.textContent = 'Dark mode theme disabled';
+                    }
                 }
             }
 
@@ -669,7 +683,7 @@ $tenantMetadata = getTenantMetadata();
                     const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
                     const newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
                     localStorage.setItem('lms_theme', newTheme);
-                    applyTheme(newTheme);
+                    applyTheme(newTheme, true);
                 });
             }
         });
