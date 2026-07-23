@@ -1,0 +1,169 @@
+/* Superable Learning LMS — LC-JSON Default Component Styling */
+.lc-module-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+.module-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.module-summary {
+    font-size: 1.125rem;
+    color: #475569;
+    margin-bottom: 1.5rem;
+}
+
+.lc-question-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.lc-question-legend {
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 0 0.5rem;
+    color: #1e293b;
+}
+
+.lc-points-badge {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: normal;
+    margin-left: 0.5rem;
+}
+
+.lc-question-prompt {
+    font-size: 1.05rem;
+    margin: 0.75rem 0 1rem 0;
+}
+
+.lc-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.lc-option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    transition: background-color 0.15s ease;
+}
+
+.lc-option-item:hover {
+    background: #f1f5f9;
+}
+
+.lc-option-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+}
+
+.lc-option-input:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.lc-option-label {
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.lc-btn-submit {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.lc-btn-submit:hover {
+    background: #1d4ed8;
+}
+
+.lc-btn-submit:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+.lc-feedback-region {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.lc-feedback-region.correct {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.lc-feedback-region.partially-correct {
+    background-color: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fef3c7;
+}
+
+.lc-feedback-region.incorrect {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+    border: 1px solid #fecaca;
+}
+
+.lc-word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.lc-bank-word {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.lc-gap-input, .lc-text-input, .lc-textarea {
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.lc-textarea {
+    width: 100%;
+    box-sizing: border-box;
+}

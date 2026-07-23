@@ -37,6 +37,7 @@ class CourseImporter {
     public static function importZip($zipTmpPath, $tenantKey = null) {
         $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
         $targetCoursesDir = getTenantCoursesDir($tenantKey);
+        $advisories = [];
 
         if (!is_file($zipTmpPath)) {
             return ['success' => false, 'message' => 'Uploaded file is invalid or missing.'];
@@ -145,19 +146,38 @@ class CourseImporter {
             if (LCJsonConverter::isLCJson($manifestContent)) {
                 $isLcJsonImport = true;
                 $lcJsonContent = $manifestContent;
+                
+                $valResult = self::validateLCJsonStructure($lcJsonContent);
+                if (!$valResult['valid']) {
+                    $zip->close();
+                    return ['success' => false, 'message' => $valResult['message']];
+                }
+
                 $manifestData = json_decode($manifestContent, true);
                 $courseTitle = $manifestData['title'] ?? 'LC-JSON Course';
             } else {
-                $manifestData = json_decode($manifestContent, true);
-                if (!$manifestData || !isset($manifestData['properties']['title'])) {
+                $valResult = self::validateCourseStructure($manifestContent, $zip, $rootPrefix);
+                if (!$valResult['valid']) {
                     $zip->close();
-                    return ['success' => false, 'message' => 'Validation Error: `course_structure.json` is invalid or missing `properties.title`.'];
+                    return ['success' => false, 'message' => $valResult['message']];
                 }
+                if (!empty($valResult['advisories'])) {
+                    $advisories = array_merge($advisories, $valResult['advisories']);
+                }
+
+                $manifestData = json_decode($manifestContent, true);
                 $courseTitle = $manifestData['properties']['title'];
             }
         } else {
             $isLcJsonImport = true;
             $lcJsonContent = $zip->getFromIndex($lcJsonIndex);
+
+            $valResult = self::validateLCJsonStructure($lcJsonContent);
+            if (!$valResult['valid']) {
+                $zip->close();
+                return ['success' => false, 'message' => $valResult['message']];
+            }
+
             $manifestData = json_decode($lcJsonContent, true);
             $courseTitle = $manifestData['title'] ?? 'LC-JSON Course';
         }
@@ -176,8 +196,6 @@ class CourseImporter {
         if (!is_dir($destDir)) {
             mkdir($destDir, 0755, true);
         }
-
-        $advisories = [];
 
         // Extract allowed files into isolated tenant destination
         for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -378,6 +396,184 @@ class CourseImporter {
                    . "Options -Indexes\n";
             @file_put_contents($htaccessPath, $rules);
         }
+    }
+
+    /**
+     * Deeply validates a Superable course_structure.json manifest and verifies referenced files exist.
+     *
+     * @param string $manifestContent
+     * @param ZipArchive $zip
+     * @param string $rootPrefix
+     * @return array Array containing 'valid' => bool, 'message' => string, 'advisories' => array
+     */
+    private static function validateCourseStructure($manifestContent, $zip, $rootPrefix = '') {
+        $data = json_decode($manifestContent, true);
+        if ($data === null) {
+            return [
+                'valid' => false, 
+                'message' => 'JSON Syntax Error in course_structure.json: ' . json_last_error_msg()
+            ];
+        }
+
+        if (!isset($data['properties']) || !is_array($data['properties'])) {
+            return ['valid' => false, 'message' => 'Schema Error: Missing top-level "properties" object in course_structure.json.'];
+        }
+
+        $props = $data['properties'];
+        if (empty($props['title']) || !is_string($props['title'])) {
+            return ['valid' => false, 'message' => 'Schema Error: "properties.title" is required and must be a non-empty string.'];
+        }
+
+        // Validate access mode
+        if (isset($props['access']['type'])) {
+            $allowedAccess = ['public', 'protected', 'teaser', 'hidden'];
+            if (!in_array($props['access']['type'], $allowedAccess)) {
+                return ['valid' => false, 'message' => 'Schema Error: "properties.access.type" must be one of: ' . implode(', ', $allowedAccess) . '.'];
+            }
+        }
+
+        if (!isset($data['modules']) || !is_array($data['modules'])) {
+            return ['valid' => false, 'message' => 'Schema Error: Missing "modules" array in course_structure.json.'];
+        }
+
+        if (count($data['modules']) === 0) {
+            return ['valid' => false, 'message' => 'Schema Error: The "modules" array must contain at least one module.'];
+        }
+
+        $seenIds = [];
+        $advisories = [];
+
+        foreach ($data['modules'] as $index => $m) {
+            $num = $index + 1;
+            
+            // Check ID
+            if (empty($m['id']) || !is_string($m['id'])) {
+                return ['valid' => false, 'message' => "Schema Error: Module #{$num} is missing a valid 'id' string."];
+            }
+            if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $m['id'])) {
+                return ['valid' => false, 'message' => "Schema Error: Module #{$num} 'id' ('{$m['id']}') is invalid. Only alphanumeric characters, hyphens, and underscores are permitted."];
+            }
+            if (in_array($m['id'], $seenIds)) {
+                return ['valid' => false, 'message' => "Schema Error: Duplicate module 'id' ('{$m['id']}') found in course_structure.json."];
+            }
+            $seenIds[] = $m['id'];
+
+            // Check Title
+            if (empty($m['title']) || !is_string($m['title'])) {
+                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') is missing a valid 'title' string."];
+            }
+
+            // Check Source File
+            if (empty($m['src']) || !is_string($m['src'])) {
+                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') is missing a valid 'src' path."];
+            }
+
+            $src = $m['src'];
+            // Normalize slashes for zip lookup
+            $zipSrcPath = str_replace('\\', '/', $src);
+            $ext = strtolower(pathinfo($zipSrcPath, PATHINFO_EXTENSION));
+            if (!in_array($ext, ['html', 'htm'])) {
+                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') 'src' ('{$src}') must point to an HTML file (.html or .htm)."];
+            }
+
+            // Check File Existence in ZIP
+            $fullZipPath = $rootPrefix . $zipSrcPath;
+            if ($zip->locateName($fullZipPath) === false) {
+                return [
+                    'valid' => false,
+                    'message' => "Package Validation Error: The module source file '{$src}' referenced in course_structure.json does not exist in the ZIP package."
+                ];
+            }
+        }
+
+        // Validate optional asset file existence
+        if (isset($props['assets']) && is_array($props['assets'])) {
+            $assets = $props['assets'];
+            foreach (['css', 'js'] as $type) {
+                if (isset($assets[$type]) && is_array($assets[$type])) {
+                    foreach ($assets[$type] as $assetPath) {
+                        $zipAssetPath = $rootPrefix . str_replace('\\', '/', $assetPath);
+                        if ($zip->locateName($zipAssetPath) === false) {
+                            $advisories[] = "[Package Warning] Asset file '{$assetPath}' listed in manifest properties.assets.{$type} was not found inside the ZIP package.";
+                        }
+                    }
+                }
+            }
+        }
+
+        return ['valid' => true, 'advisories' => $advisories];
+    }
+
+    /**
+     * Validates an LC-JSON specification manifest structure.
+     *
+     * @param string $jsonContent
+     * @return array Array containing 'valid' => bool, 'message' => string
+     */
+    private static function validateLCJsonStructure($jsonContent) {
+        $data = json_decode($jsonContent, true);
+        if ($data === null) {
+            return [
+                'valid' => false,
+                'message' => 'JSON Syntax Error in LC-JSON manifest: ' . json_last_error_msg()
+            ];
+        }
+
+        if (empty($data['documentType']) || !is_string($data['documentType'])) {
+            return ['valid' => false, 'message' => 'LC-JSON Schema Error: Missing "documentType" property.'];
+        }
+
+        $docType = $data['documentType'];
+        if (!in_array($docType, ['Course', 'QuestionSet'])) {
+            return ['valid' => false, 'message' => 'LC-JSON Schema Error: "documentType" must be "Course" or "QuestionSet".'];
+        }
+
+        if (empty($data['title']) || !is_string($data['title'])) {
+            return ['valid' => false, 'message' => 'LC-JSON Schema Error: "title" is required and must be a non-empty string.'];
+        }
+
+        if ($docType === 'Course') {
+            if (!isset($data['units']) || !is_array($data['units'])) {
+                return ['valid' => false, 'message' => 'LC-JSON Course Error: Missing "units" array.'];
+            }
+            if (count($data['units']) === 0) {
+                return ['valid' => false, 'message' => 'LC-JSON Course Error: The "units" array must contain at least one unit.'];
+            }
+            foreach ($data['units'] as $uIndex => $unit) {
+                $uNum = $uIndex + 1;
+                if (empty($unit['title'])) {
+                    return ['valid' => false, 'message' => "LC-JSON Course Error: Unit #{$uNum} is missing a 'title'."];
+                }
+                if (!isset($unit['lessons']) || !is_array($unit['lessons'])) {
+                    return ['valid' => false, 'message' => "LC-JSON Course Error: Unit #{$uNum} is missing a 'lessons' array."];
+                }
+                foreach ($unit['lessons'] as $lIndex => $lesson) {
+                    $lNum = $lIndex + 1;
+                    if (empty($lesson['title'])) {
+                        return ['valid' => false, 'message' => "LC-JSON Course Error: Unit #{$uNum}, Lesson #{$lNum} is missing a 'title'."];
+                    }
+                }
+            }
+        } else {
+            // QuestionSet validation
+            if (!isset($data['questions']) || !is_array($data['questions'])) {
+                return ['valid' => false, 'message' => 'LC-JSON QuestionSet Error: Missing "questions" array.'];
+            }
+            foreach ($data['questions'] as $qIndex => $q) {
+                $qNum = $qIndex + 1;
+                if (empty($q['type']) || !is_string($q['type'])) {
+                    return ['valid' => false, 'message' => "LC-JSON QuestionSet Error: Question #{$qNum} is missing a 'type'."];
+                }
+                if (empty($q['globalId']) || !is_string($q['globalId'])) {
+                    return ['valid' => false, 'message' => "LC-JSON QuestionSet Error: Question #{$qNum} is missing a 'globalId'."];
+                }
+                if (empty($q['prompt']) || !is_string($q['prompt'])) {
+                    return ['valid' => false, 'message' => "LC-JSON QuestionSet Error: Question #{$qNum} is missing a 'prompt'."];
+                }
+            }
+        }
+
+        return ['valid' => true];
     }
 
     private static function deleteDirectoryRecursive($dir) {

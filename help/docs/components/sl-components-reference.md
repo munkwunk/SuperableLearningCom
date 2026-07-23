@@ -215,6 +215,63 @@ Dynamically fetches, renders, scores, and emits xAPI analytics for LC-JSON 1.0 `
 
 ---
 
+### 2.13 Hotspot Image Component (`<jw-hotspot-container>`)
+Creates an interactive image hotspot layout. Users can select marked hotspots to trigger popups with detailed textual explanations. Fully accessible via keyboard navigation, screen reader outline focus, and dynamic `aria-expanded` toggle states.
+
+```html
+<jw-hotspot-container src="images/eye-anatomy.png" alt="Anatomy diagram of the human eye">
+  <jw-hotspot-marker x="20%" y="30%" label="Cornea">
+    <p>The cornea is the transparent front part of the eye that covers the iris and pupil.</p>
+  </jw-hotspot-marker>
+  <jw-hotspot-marker x="45%" y="55%" label="Retina">
+    <p>The retina is the light-sensitive layer of tissue at the back of the eyeball.</p>
+  </jw-hotspot-marker>
+</jw-hotspot-container>
+```
+* **Attributes**:
+  * `src` (required): URL path to the base image.
+  * `alt` (required): Accessibility description of the overall image context.
+  * `x`, `y` (on `<jw-hotspot-marker>`): Absolute coordinates (e.g. `20%`, `55%`) where the interactive marker is positioned over the image.
+  * `label` (on `<jw-hotspot-marker>`): Accessible label used as the marker's button label and detailed popup title.
+
+---
+
+### 2.14 Matching Game / Drag-and-Drop Alt Component (`<jw-matching-game>`)
+A keyboard-accessible alternative to drag-and-drop match widgets. Uses dropdown select lists and politeness alerts to match terms with their correct definitions.
+
+```html
+<jw-matching-game label="CSS Selectors Matching challenge">
+  <jw-match-pair source="h1" target="Selects all level 1 headings."></jw-match-pair>
+  <jw-match-pair source=".highlight" target="Selects elements with a class named highlight."></jw-match-pair>
+  <jw-match-pair source="#main" target="Selects the element with the ID main."></jw-match-pair>
+</jw-matching-game>
+```
+* **Attributes**:
+  * `label` (optional): Accessible description of the matching list's objective.
+  * `source` (on `<jw-match-pair>`): The term or concept to match.
+  * `target` (on `<jw-match-pair>`): The corresponding definition or target value.
+
+---
+
+### 2.15 Accessible Content Carousel (`<jw-carousel>`)
+Renders sliding presentation slide panels with linear keyboard reading order, slide focus announcements, and pagination buttons.
+
+```html
+<jw-carousel aria-label="Course Highlights">
+  <jw-slide>
+    <h3>Slide 1: Dynamic Data</h3>
+    <p>Learn how server-side variables adapt branding settings.</p>
+  </jw-slide>
+  <jw-slide>
+    <h3>Slide 2: Focus Management</h3>
+    <p>Understand how outline focus loops prevent tab escaping.</p>
+  </jw-slide>
+</jw-carousel>
+```
+* **Attributes**:
+  * `aria-label` (required): Accessible description of the carousel slides context.
+
+---
 
 ## 3. Declarative xAPI Analytics Tracking
 

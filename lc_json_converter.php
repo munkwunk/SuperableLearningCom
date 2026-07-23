@@ -299,11 +299,10 @@ class LCJsonConverter {
                 break;
         }
 
-        // Hint render if present
         if (!empty($q['hint'])) {
-            $html .= "    <jw-click-reveal button-text=\"Show Hint\" hint=\"Request help for this item\">\n";
+            $html .= "    <sl-click-reveal button-text=\"Show Hint\" hint=\"Request help for this item\">\n";
             $html .= "      <p><strong>Hint:</strong> " . htmlspecialchars($q['hint'], ENT_QUOTES, 'UTF-8') . "</p>\n";
-            $html .= "    </jw-click-reveal>\n";
+            $html .= "    </sl-click-reveal>\n";
         }
 
         // Live ARIA feedback region

@@ -1,0 +1,36 @@
+{
+    "properties": {
+        "title": "LC-JSON Master Test Course",
+        "description": "Comprehensive test course for all LC-JSON question types.",
+        "thumbnail": "",
+        "access": {
+            "type": "public"
+        },
+        "assets": {
+            "css": [
+                "css/style.css"
+            ],
+            "js": [
+                "js/main.js"
+            ]
+        },
+        "lc_json": {
+            "specVersion": "1.0",
+            "converted": true,
+            "converted_at": "2026-07-23T23:34:23+00:00"
+        }
+    },
+    "modules": [
+        {
+            "group": "Unit 1: Core Accessibility",
+            "expanded": true,
+            "items": [
+                {
+                    "id": "u1-l1",
+                    "title": "Lesson 1: ARIA Basics",
+                    "src": "modules/u1-l1.html"
+                }
+            ]
+        }
+    ]
+}

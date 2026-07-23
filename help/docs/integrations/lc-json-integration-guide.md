@@ -9,7 +9,7 @@
 Superable Learning LMS provides **full Phase 1 & Phase 2 native support** for the **LC-JSON 1.0 Specification** ([github.com/lc-json/specification](https://github.com/lc-json/specification)):
 
 * **Phase 1 (Server-Side Conversion Engine)**: Automatically inspects uploaded `.zip` or `.json` packages, detects LC-JSON `Course` and `QuestionSet` documents, and converts them into 100% WCAG 2.2 AA compliant Superable Learning course packages ([lc_json_converter.php](file:///C:/Users/jacob/projects/superablelearning.com/lc_json_converter.php)).
-* **Phase 2 (Client-Side `<jw-quiz>` Web Component)**: A native Web Component (`<jw-quiz>`) built directly into [assets/components/jw-components.js](file:///C:/Users/jacob/projects/superablelearning.com/assets/components/jw-components.js) that dynamically fetches, renders, scores, and emits xAPI statement tracking for LC-JSON files live in the browser.
+* **Phase 2 (Client-Side `<sl-quiz>` Web Component)**: A native Web Component (`<sl-quiz>`) built directly into [assets/components/sl-components.js](file:///C:/Users/jacob/projects/superablelearning.com/assets/components/sl-components.js) that dynamically fetches, renders, scores, and emits xAPI statement tracking for LC-JSON files live in the browser.
 
 ---
 

@@ -122,8 +122,10 @@ function parseDocumentHeader($markdown, $filename, $categoryKey) {
         $aliases[] = 'packaging-guide';
     } elseif ($slug === 'course-builder-guide') {
         $aliases[] = 'builder-guide';
-    } elseif ($slug === 'jw-components-reference') {
+    } elseif ($slug === 'sl-components-reference') {
+        $aliases[] = 'sl-components';
         $aliases[] = 'jw-components';
+        $aliases[] = 'jw-components-reference';
     } elseif ($slug === 'lc-json-integration-guide') {
         $aliases[] = 'lc-json';
     }

@@ -34,8 +34,8 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
-    <!-- JW Components for Interactive Preview rendering -->
-    <script src="<?= $urlPrefix ?>assets/components/jw-components.js" defer></script>
+    <!-- Superable Components for Interactive Preview rendering -->
+    <script src="<?= $urlPrefix ?>assets/components/sl-components.js" defer></script>
 
     <style>
         :root {
@@ -444,6 +444,9 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
                     <button type="button" class="btn btn-outline btn-sm" onclick="exportDraftJSON()">
                         <i class="fa-solid fa-download" aria-hidden="true"></i> Export Draft JSON
                     </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="copyDraftJSON(this)">
+                        <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Draft JSON
+                    </button>
                     <button type="button" class="btn btn-outline btn-sm" onclick="triggerImportJSON()">
                         <i class="fa-solid fa-upload" aria-hidden="true"></i> Import Draft JSON
                     </button>
@@ -624,12 +627,12 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
                             <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Prompt
                         </button>
                     </div>
-                    <textarea id="prompt-meta-text" readonly rows="8" class="w-full text-xs font-mono p-2 bg-gray-50 border rounded" aria-label="Step A Metadata Prompt Text">Please generate the metadata for a new e-learning course on [INSERT TOPIC HERE].
+                    <textarea id="prompt-meta-text" readonly rows="9" class="w-full text-xs font-mono p-2 bg-gray-50 border rounded" aria-label="Step A Metadata Prompt Text">Please generate the metadata for a new e-learning course on [INSERT TOPIC HERE].
 Output a valid JSON object with:
 1. `title`: Concise title
 2. `description`: Brief description
 3. `css_content`: Custom CSS styles for accents, cards, and buttons
-4. `js_content`: Custom JavaScript logic if needed.
+4. `js_content`: Custom JavaScript logic if needed. Note: Because pages are injected dynamically, do NOT bind event listeners directly on load. Always use global Event Delegation on the document (e.g. `document.addEventListener('click', ...)`).
 Return ONLY valid JSON.</textarea>
                 </div>
 
@@ -641,16 +644,48 @@ Return ONLY valid JSON.</textarea>
                             <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Prompt
                         </button>
                     </div>
-                    <textarea id="prompt-module-text" readonly rows="8" class="w-full text-xs font-mono p-2 bg-gray-50 border rounded" aria-label="Step B Module Prompt Text">Generate an accessible WCAG 2.2 AA HTML module fragment for:
+                    <textarea id="prompt-module-text" readonly rows="9" class="w-full text-xs font-mono p-2 bg-gray-50 border rounded" aria-label="Step B Module Prompt Text">Generate an accessible WCAG 2.2 AA HTML module fragment for:
 Module Title: [INSERT MODULE TITLE]
 Topic & Key Points: [INSERT TOPIC/CONCEPTS]
 
 Requirements:
 - Start with a single <h1> heading.
 - Do NOT include <html>, <head>, or <body> tags. Output only <section> or <article> HTML.
-- Include interactive JW components such as <jw-accordion>, <jw-tabs>, or <jw-flipcard> if relevant.
+- Include interactive JW components such as <jw-accordion>, <jw-tabs>, <jw-flipcard>, <jw-hotspot-container>, or <jw-matching-game> if relevant.
 - Provide descriptive text and accessible semantic markup.
+- If writing script tags inside this module HTML, wrap all DOM queries and widget initializations in a 50ms delay (e.g., `setTimeout(() => { ... }, 50)`) to ensure the wrapper player has injected the page and upgraded custom elements before execution.
 Return the clean HTML fragment.</textarea>
+                </div>
+
+                <!-- Step C Prompt -->
+                <div class="builder-card col-span-1 md:col-span-2 mt-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="m-0 font-bold text-lg text-teal-800">Step C: Final Course Package Compilation Prompt</h3>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="copyPrompt('prompt-package-text', this, 'Step C Compilation Prompt')">
+                            <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Prompt
+                        </button>
+                    </div>
+                    <textarea id="prompt-package-text" readonly rows="13" class="w-full text-xs font-mono p-2 bg-gray-50 border rounded" aria-label="Step C Compilation Prompt Text">Compile all our course sections into a single monolithic JSON payload matching this exact schema:
+
+{
+  "properties": {
+    "title": "[Insert Course Title]",
+    "description": "[Insert Course Description]",
+    "access": { "type": "public" }
+  },
+  "css_content": "[Paste the CSS custom styles block from Step A]",
+  "js_content": "[Paste the JS custom script block from Step A. Ensure it uses document-level event delegation (e.g. document.addEventListener('click', ...))]",
+  "modules": [
+    {
+      "id": "[unique-slug]",
+      "title": "[Module Title]",
+      "filename": "modules/[filename].html",
+      "html_content": "[Paste escaping HTML fragment from Step B here. Ensure any embedded scripts use a 50ms setTimeout delay to avoid dynamic timing race conditions]"
+    }
+  ]
+}
+
+Make sure to format the JSON correctly. Every HTML fragment in the `html_content` field must have its double quotes escaped (\") and newlines replaced with \n, or written as a single line, so that it is valid JSON. Return ONLY the final JSON payload inside a markdown ```json ``` code block.</textarea>
                 </div>
             </div>
         </div>
@@ -789,7 +824,7 @@ Return the clean HTML fragment.</textarea>
 
             // Initialize with Module #1 (starter content) and Module #2 (empty for pasting) if no draft exists
             if (!loadDraftFromLocalStorage()) {
-                addModuleCard('Welcome & Overview', '<section class="content-area">\n  <h1>Welcome & Overview</h1>\n  <p>Welcome to this course! Explore the interactive modules in the builder.</p>\n  <jw-accordion>\n    <jw-accordion-item title="Course Prerequisites">\n      <p>No prior background required.</p>\n    </jw-accordion-item>\n  </jw-accordion>\n</section>');
+                addModuleCard('Welcome & Overview', '<section class="content-area">\n  <h1>Welcome & Overview</h1>\n  <p>Welcome to this course! Explore the interactive modules in the builder.</p>\n  <sl-accordion>\n    <sl-accordion-item title="Course Prerequisites">\n      <p>No prior background required.</p>\n    </sl-accordion-item>\n  </sl-accordion>\n</section>');
                 addModuleCard('', ''); // Module 2 starts completely clean and empty
             }
 
@@ -981,6 +1016,10 @@ Return the clean HTML fragment.</textarea>
                             <div>• <code>&lt;jw-scenario&gt;</code></div>
                             <div>• <code>&lt;jw-timeline&gt;</code></div>
                             <div>• <code>&lt;jw-wizard&gt;</code></div>
+                            <div>• <code>&lt;jw-hotspot-container&gt;</code></div>
+                            <div>• <code>&lt;jw-matching-game&gt;</code></div>
+                            <div>• <code>&lt;jw-carousel&gt;</code></div>
+                            <div>• <code>&lt;jw-quiz&gt;</code></div>
                             <div>• <code>&lt;jw-progress-bar&gt;</code></div>
                             <div>• <code>&lt;jw-multi-column&gt;</code></div>
                         </div>
@@ -1084,9 +1123,22 @@ Return the clean HTML fragment.</textarea>
                     </div>
 
                     <div class="form-group mt-2">
-                        <label for="${moduleId}-content">
-                            Module Content (HTML Fragment or Module JSON)
-                        </label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="${moduleId}-content" class="m-0">
+                                Module Content (HTML Fragment or Module JSON)
+                            </label>
+                            <div class="btn-group flex gap-2" style="flex-direction: row-reverse;">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="insertMediaAsset('${moduleId}', 'audio')" aria-label="Insert Audio asset" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: var(--builder-border); border-width: 1.5px;">
+                                    <i class="fa-solid fa-volume-high text-amber-600" aria-hidden="true"></i> + Audio
+                                </button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="insertMediaAsset('${moduleId}', 'file')" aria-label="Insert Downloadable File asset" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: var(--builder-border); border-width: 1.5px;">
+                                    <i class="fa-solid fa-file-arrow-down text-blue-600" aria-hidden="true"></i> + Download
+                                </button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="insertMediaAsset('${moduleId}', 'image')" aria-label="Insert Image asset with Alt text" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: var(--builder-border); border-width: 1.5px;">
+                                    <i class="fa-solid fa-image text-teal-600" aria-hidden="true"></i> + Image
+                                </button>
+                            </div>
+                        </div>
                         <textarea id="${moduleId}-content" class="module-content-input" rows="8" placeholder="Paste HTML fragment (<section><h1>Title</h1><p>...</p></section>) or JSON block...">${escapeHtml(initialContent)}</textarea>
                     </div>
 
@@ -1281,6 +1333,24 @@ Return the clean HTML fragment.</textarea>
             showStatus('Exported builder draft JSON file.', false);
         }
 
+        function copyDraftJSON(btn) {
+            const data = gatherBuilderData();
+            const text = JSON.stringify(data, null, 2);
+            
+            function onSuccess() {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> Copied!';
+                setTimeout(() => btn.innerHTML = orig, 2500);
+                showStatus('Draft JSON copied to clipboard! Ready to paste into your AI assistant.', false);
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(() => fallbackCopyText(text, onSuccess));
+            } else {
+                fallbackCopyText(text, onSuccess);
+            }
+        }
+
         function triggerImportJSON() {
             document.getElementById('import-json-file').click();
         }
@@ -1325,13 +1395,13 @@ Return the clean HTML fragment.</textarea>
         function getAbsoluteAssetUrls() {
             const pageUrl = window.location.href;
             const baseUrl = pageUrl.substring(0, pageUrl.lastIndexOf('/') + 1);
-            const jwComponentsUrl = new URL('<?= $urlPrefix ?>assets/components/jw-components.js', baseUrl).href;
+            const slComponentsUrl = new URL('<?= $urlPrefix ?>assets/components/sl-components.js', baseUrl).href;
             const styleCssUrl = new URL('<?= $urlPrefix ?>style.css', baseUrl).href;
-            return { jwComponentsUrl, styleCssUrl };
+            return { slComponentsUrl, styleCssUrl };
         }
 
         function generateModulePreviewDocument(moduleHtml, customCss, customJs) {
-            const { jwComponentsUrl, styleCssUrl } = getAbsoluteAssetUrls();
+            const { slComponentsUrl, styleCssUrl } = getAbsoluteAssetUrls();
 
             return `<!DOCTYPE html>
 <html lang="en">
@@ -1344,7 +1414,7 @@ Return the clean HTML fragment.</textarea>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${styleCssUrl}">
-    <script src="${jwComponentsUrl}"><\/script>
+    <script src="${slComponentsUrl}"><\/script>
     <style>
         body { padding: 2rem; background: #ffffff; font-family: 'Atkinson Hyperlegible', sans-serif; }
         .content-area { max-width: 900px; margin: 0 auto; }
@@ -1401,6 +1471,7 @@ Return the clean HTML fragment.</textarea>
             const modal = document.getElementById('preview-modal');
             modal.classList.add('active');
             document.getElementById('close-modal-btn').focus();
+            showStatus(`Opened live preview for module: ${title}. Press Escape to close, or use Tab to navigate inside the preview window.`, false);
         }
 
         function previewFullCourse(triggerBtn) {
@@ -1513,6 +1584,7 @@ Return the clean HTML fragment.</textarea>
             const modal = document.getElementById('preview-modal');
             modal.classList.add('active');
             document.getElementById('close-modal-btn').focus();
+            showStatus('Opened live full course preview player. Press Escape to close, or use Tab to navigate inside the player window.', false);
         }
 
         function closePreviewModal() {
@@ -1528,6 +1600,67 @@ Return the clean HTML fragment.</textarea>
             if (currentPreviewBlobUrl) {
                 window.open(currentPreviewBlobUrl, '_blank');
             }
+        }
+
+        // In-Memory Asset Cache for ZIP Bundling
+        const globalZipAssets = {};
+
+        function insertMediaAsset(moduleId, type) {
+            const textarea = document.getElementById(moduleId + '-content');
+            if (!textarea) return;
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            
+            if (type === 'image') fileInput.accept = 'image/*';
+            else if (type === 'audio') fileInput.accept = 'audio/*';
+            else fileInput.accept = '.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt';
+
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const filename = file.name;
+                let targetPath = '';
+                let htmlTag = '';
+
+                if (type === 'image') {
+                    // Force Alt text prompt
+                    const altText = prompt("Enter accessibility Alt Text for this image (required for screen reader users):", "");
+                    if (altText === null) return; // User cancelled
+                    
+                    const cleanAlt = altText.trim() || "Image description";
+                    targetPath = `images/${filename}`;
+                    htmlTag = `<img src="${targetPath}" alt="${escapeHtml(cleanAlt)}" class="course-image" style="max-width:100%; height:auto; margin:1rem 0; border-radius:0.375rem;">\n`;
+                } else if (type === 'audio') {
+                    targetPath = `audio/${filename}`;
+                    htmlTag = `<audio src="${targetPath}" controls class="course-audio" style="width:100%; margin:1rem 0;"></audio>\n`;
+                } else {
+                    const linkText = prompt("Enter visible link text for this file download (e.g., Download Workbook):", filename);
+                    if (linkText === null) return; // User cancelled
+                    
+                    const cleanText = linkText.trim() || "Download file";
+                    targetPath = `files/${filename}`;
+                    htmlTag = `<a href="${targetPath}" download class="link-cta" style="display:inline-flex; align-items:center; gap:0.5rem; margin:0.5rem 0;">\n    <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> ${escapeHtml(cleanText)}\n</a>\n`;
+                }
+
+                // Store file in our global map
+                globalZipAssets[targetPath] = file;
+
+                // Insert into textarea at current cursor position
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                textarea.value = text.substring(0, start) + htmlTag + text.substring(end);
+                
+                // Put focus back to textarea and move cursor
+                textarea.focus();
+                textarea.selectionStart = textarea.selectionEnd = start + htmlTag.length;
+                
+                showStatus(`Inserted media asset "${filename}" as ${type} at cursor position.`, false);
+            };
+
+            fileInput.click();
         }
 
         // ================= ZIP GENERATION ENGINE =================
@@ -1546,6 +1679,47 @@ Return the clean HTML fragment.</textarea>
             buildAndDownloadZip(data);
         }
 
+        function parseRawJSONPayload(raw) {
+            let clean = raw.trim();
+            if (clean.includes('```json')) {
+                clean = clean.split('```json')[1].split('```')[0].trim();
+            } else if (clean.includes('```')) {
+                clean = clean.split('```')[1].split('```')[0].trim();
+            }
+
+            try {
+                return JSON.parse(clean);
+            } catch (err) {
+                let pos = -1;
+                let line = -1;
+                let col = -1;
+
+                // V8/Chrome style
+                const posMatch = err.message.match(/at position (\d+)/);
+                if (posMatch) {
+                    pos = parseInt(posMatch[1], 10);
+                    const before = clean.substring(0, pos);
+                    const lines = before.split('\n');
+                    line = lines.length;
+                    col = lines[lines.length - 1].length + 1;
+                }
+
+                // Firefox/Safari style
+                const lineColMatch = err.message.match(/line (\d+) column (\d+)/);
+                if (lineColMatch) {
+                    line = parseInt(lineColMatch[1], 10);
+                    col = parseInt(lineColMatch[2], 10);
+                }
+
+                if (line !== -1) {
+                    const rawLines = clean.split('\n');
+                    const errorLine = rawLines[line - 1] || '';
+                    throw new Error(`JSON syntax error on line ${line}, column ${col}: "${errorLine.trim()}" (${err.message})`);
+                }
+                throw err;
+            }
+        }
+
         function loadRawJSONIntoBuilder() {
             const raw = document.getElementById('raw-json-input').value.trim();
             if (!raw) {
@@ -1554,11 +1728,7 @@ Return the clean HTML fragment.</textarea>
             }
 
             try {
-                let clean = raw;
-                if (clean.includes('```json')) clean = clean.split('```json')[1].split('```')[0].trim();
-                else if (clean.includes('```')) clean = clean.split('```')[1].split('```')[0].trim();
-                
-                const parsed = JSON.parse(clean);
+                const parsed = parseRawJSONPayload(raw);
                 const title = parsed.properties?.title || parsed.title || 'Imported Course';
                 const description = parsed.properties?.description || parsed.description || '';
                 const access = parsed.properties?.access?.type || 'public';
@@ -1592,11 +1762,7 @@ Return the clean HTML fragment.</textarea>
             }
 
             try {
-                let clean = raw;
-                if (clean.includes('```json')) clean = clean.split('```json')[1].split('```')[0].trim();
-                else if (clean.includes('```')) clean = clean.split('```')[1].split('```')[0].trim();
-                
-                const parsed = JSON.parse(clean);
+                const parsed = parseRawJSONPayload(raw);
                 buildAndDownloadZip({
                     title: parsed.properties?.title || 'Imported Course',
                     description: parsed.properties?.description || '',
@@ -1647,6 +1813,13 @@ Return the clean HTML fragment.</textarea>
 
             const defaultSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#319795"/><text x="50" y="55" font-size="14" fill="white" text-anchor="middle" font-family="sans-serif">Course</text></svg>';
             zip.file('images/thumb.svg', defaultSvg);
+
+            // Add dynamically uploaded media assets to ZIP
+            for (const path in globalZipAssets) {
+                if (globalZipAssets.hasOwnProperty(path)) {
+                    zip.file(path, globalZipAssets[path]);
+                }
+            }
 
             zip.generateAsync({ type: 'blob' }).then(function(content) {
                 saveAs(content, courseId + '-package.zip');

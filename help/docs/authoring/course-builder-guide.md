@@ -69,9 +69,15 @@ To eliminate AI prompt token truncation when using free web-based LLMs (Gemini, 
 
 1. **Step A (Metadata & Styles)**: Define course title, access mode, custom CSS, and JS.
 2. **Step B (Block-by-Block Module Authoring)**: Paste HTML fragments one module at a time.
-3. **Dynamic Re-Indexing**: Add, delete, duplicate, and reorder modules with automatic 1-based ordinal re-indexing (`Module #1`, `Module #2`, etc.).
-4. **Live Sandbox Previews**: Test single module components (`👁️ Preview Module`) or full-course player navigation (`▶️ Full Course Live Preview`).
-5. **Draft Export & ZIP Generation**: Save drafts locally, export JSON manifests, and generate 1-click LMS upload packages.
+3. **Media Asset Insertion Toolbar**:
+   * Each module content textarea is equipped with a media toolbar: `[📷 + Image]`, `[📎 + Download]`, and `[🎵 + Audio]`.
+   * **In-Memory Asset Caching**: Selecting a local file caches it in browser memory (`globalZipAssets`). On final package generation, the builder dynamically packages these assets inside the course ZIP under `images/`, `files/`, or `audio/` with zero backend server upload delays.
+   * **Enforced Alt-Text & Input Prompts**: Inserting an image prompts the author to input a screen reader description (enforcing accessibility). Inserting a file prompts the author for descriptive link text before generating the HTML anchor tag.
+   * **Keyboard-First Navigation Layout**: The buttons are placed immediately preceding the textarea in the DOM tree, but styled visually using flexbox `row-reverse`. When a screen reader user presses `Shift + Tab` backwards from the content area, the cursor lands directly on **`+ Image`** (most common), followed by `+ Download` and `+ Audio`. Upon selecting a file and completing the inputs, focus is programmatically restored to the textarea (auto-entering screen reader Focus Mode) right after the new tag.
+   * **Placeholder / Selection Insertion**: Authors who aren't HTML-savvy can instruct the LLM to write placeholders like `[INSERT INFOGRAPHIC HERE]`. Highlighting this text in the content card and clicking `+ Image` replaces the highlighted selection with the correct HTML tag. If no text is selected, the tag is safely appended to the end of the file.
+4. **Dynamic Re-Indexing**: Add, delete, duplicate, and reorder modules with automatic 1-based ordinal re-indexing (`Module #1`, `Module #2`, etc.).
+5. **Live Sandbox Previews**: Test single module components (`👁️ Preview Module`) or full-course player navigation (`▶️ Full Course Live Preview`).
+6. **Draft Export & ZIP Generation**: Save drafts locally, copy/export JSON manifests, and generate 1-click LMS upload packages.
 
 ---
 
@@ -145,6 +151,6 @@ To ensure screen readers announce status updates (like reordering, deletions, an
 
 ---
 
-## 6. Full JW Components Library
+## 6. Full Superable Learning (SL) Components Library
 
-For complete API specifications, code samples, and attributes for all 12+ web components (`<jw-accordion>`, `<jw-tabs>`, `<jw-flip-card>`, `<jw-click-reveal>`, `<jw-modal>`, `<jw-scenario>`, `<jw-timeline>`, `<jw-wizard>`, `<jw-progress-bar>`, `<jw-multi-column>`), refer to [JW_COMPONENTS_REFERENCE.md](file:///C:/Users/jacob/projects/superablelearning.com/help/docs/components/jw-components-reference.md).
+For complete API specifications, code samples, and attributes for all 12+ web components (`<sl-accordion>`, `<sl-tabs>`, `<sl-flip-card>`, `<sl-click-reveal>`, `<sl-modal>`, `<sl-scenario>`, `<sl-timeline>`, `<sl-wizard>`, `<sl-progress-bar>`, `<sl-multi-column>`), refer to [sl-components-reference.md](file:///C:/Users/jacob/projects/superablelearning.com/help/docs/components/sl-components-reference.md).

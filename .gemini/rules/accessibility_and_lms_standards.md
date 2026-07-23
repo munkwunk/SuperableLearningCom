@@ -39,3 +39,17 @@
 
 ## SPA Asset Cache-Busting
 - In single-page application (SPA) players, append dynamic timestamp query parameters (`?v=<?= time() ?>`) to external script tags to prevent HTTP browser caching of updated JS libraries.
+
+## Dynamic SPA Script Loading & Event Delegation
+- In dynamic single-page applications that load content fragments via AJAX, global script files (such as `js/main.js`) must use **Event Delegation** on the global `document` element (e.g. `document.addEventListener('click', ...)`) rather than direct bindings to prevent event listener loss when views are replaced.
+- For local scripts embedded within injected HTML templates or scripts that manipulate custom upgraded elements (like `<jw-accordion>`), wrap DOM selectors and setups in a **50ms timeout delay** (`setTimeout(() => { ... }, 50)`) to guarantee the page has finished rendering and custom components are fully upgraded before execution.
+
+## Keyboard-First DOM Ordering & Visual Layout
+- When placing a set of utility buttons (e.g., insertion actions) directly above a textarea, arrange the DOM tree sequence such that the most common button (e.g., `+ Image` in the packager) is the last element immediately preceding the textarea in the DOM tree. 
+- Use CSS `flex-direction: row-reverse;` on the button container to visually render the most common button on the far left. This ensures that visual layout remains logical (left-to-right) while a screen reader user tabbing backwards (`Shift + Tab`) from the textarea instantly focuses the most common action first.
+- Once a dynamic insertion or modal flow is completed, always programmatically restore focus directly back to the textarea (`textarea.focus()`) and restore the text cursor position.
+
+## Web Component Brand Prefix & Backward Compatibility (sl- and jw-)
+- All native web components must support the primary `sl-` (Superable Learning) prefix for new custom elements (e.g. `<sl-accordion>`, `<sl-tabs>`).
+- To prevent breaking existing published course packages, always register a corresponding legacy `jw-` prefix subclass alias (e.g. `<jw-accordion>`) in `sl-components.js` using empty subclassing to prevent constructor reuse exceptions.
+- Within web component classes, write child query selectors to scan for either tag prefix (e.g. `this.querySelectorAll('jw-accordion-item, sl-accordion-item')`).

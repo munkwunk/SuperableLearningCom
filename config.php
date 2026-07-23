@@ -391,6 +391,83 @@ function getContrastRatio($hex1, $hex2) {
 }
 
 /**
+ * Validates custom CSS for accessibility compliance (contrast, outlines, skip links) and security (imports, protocols, bindings).
+ *
+ * @param string $css
+ * @param array &$errors
+ * @return bool
+ */
+function validateCustomCss($css, &$errors) {
+    // 1. Accessibility Checks: Focus Outlines
+    if (preg_match('/outline\s*:\s*(none|0|transparent|hidden)/i', $css) || 
+        preg_match('/outline-width\s*:\s*(0|none)/i', $css) || 
+        preg_match('/outline-style\s*:\s*(none|hidden)/i', $css) || 
+        preg_match('/outline-color\s*:\s*(transparent)/i', $css)) {
+        $errors[] = "Focus Indicators: Custom CSS is not allowed to hide focus outlines (e.g., using 'outline: none' or 'outline: 0').";
+    }
+
+    // 2. Accessibility Checks: Hiding Skip Links & Screen Reader Text
+    if (preg_match('/\.skip-link\b[^{]*\{[^}]*display\s*:\s*none/i', $css) ||
+        preg_match('/\.skip-link\b[^{]*\{[^}]*visibility\s*:\s*hidden/i', $css) ||
+        preg_match('/\.skip-link\b[^{]*\{[^}]*opacity\s*:\s*0/i', $css) ||
+        preg_match('/\.sr-only\b[^{]*\{[^}]*display\s*:\s*none/i', $css) ||
+        preg_match('/\.sr-only\b[^{]*\{[^}]*visibility\s*:\s*hidden/i', $css)) {
+        $errors[] = "Accessibility: Hiding skip links (`.skip-link`) or screen-reader-only text (`.sr-only`) is prohibited.";
+    }
+
+    // 3. Security Checks: Block external stylesheet imports
+    if (preg_match('/@import\s+/i', $css)) {
+        $errors[] = "Security: Custom stylesheet imports (`@import`) are prohibited to prevent external assets from loading.";
+    }
+
+    // 4. Security Checks: Block malicious url(...) payloads (external protocols, tracking scripts, and javascript)
+    if (preg_match_all('/url\s*\(([^)]+)\)/i', $css, $urlMatches)) {
+        foreach ($urlMatches[1] as $rawUrl) {
+            $cleanUrl = trim($rawUrl, " \t\n\r\0\x0B\"'");
+            // Allow relative image paths but block absolute urls, javascript, and data-uris
+            if (preg_match('/^(https?:|ftp:|javascript:|data:|chrome:|\/\/)/i', $cleanUrl)) {
+                $errors[] = "Security: External resource URLs or data/script URIs inside `url()` are prohibited to prevent tracking, data leakage, and script execution.";
+            }
+        }
+    }
+
+    // 5. Security Checks: Block legacy browser CSS script injection tricks
+    if (preg_match('/behavior\s*:/i', $css) || 
+        preg_match('/expression\s*\(/i', $css) || 
+        preg_match('/-moz-binding/i', $css)) {
+        $errors[] = "Security: Legacy style-based script injections (such as `behavior`, `expression`, or `-moz-binding`) are prohibited.";
+    }
+
+    // 6. Contrast Checks: Brand Variable Color Contratios (against light and dark limits)
+    if (preg_match_all('/--color-primary\s*:\s*(#[a-f0-9]{3,6})/i', $css, $matches)) {
+        foreach ($matches[1] as $color) {
+            $hex = expandHexColor($color);
+            if (getContrastRatio($hex, '#ffffff') < 4.5) {
+                $errors[] = "Contrast Check: Your custom --color-primary override ({$color}) fails the WCAG 2.2 AA contrast ratio of 4.5:1 against white text.";
+            }
+        }
+    }
+    if (preg_match_all('/--color-accent\s*:\s*(#[a-f0-9]{3,6})/i', $css, $matches)) {
+        foreach ($matches[1] as $color) {
+            $hex = expandHexColor($color);
+            if (getContrastRatio($hex, '#ffffff') < 4.5 && getContrastRatio($hex, '#0f172a') < 4.5) {
+                $errors[] = "Contrast Check: Your custom --color-accent override ({$color}) does not meet 4.5:1 contrast against either light (#ffffff) or dark (#0f172a) backgrounds.";
+            }
+        }
+    }
+
+    return empty($errors);
+}
+
+function expandHexColor($hex) {
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+    }
+    return '#' . $hex;
+}
+
+/**
  * Darkens a hex color by a given percentage to achieve compliant WCAG contrast.
  */
 function darkenHexColor($hex, $percent = 0.15) {
@@ -614,10 +691,57 @@ function validate_database_security($dbPath) {
 }
 
 /**
- * Returns a configured PDO instance connected to the tenant SQLite database.
+ * SuperableDatabase wrapper class that extends PDO.
+ * Isolates SQL queries and provides a translation hook for database migrations (e.g. SQLite to PostgreSQL).
+ */
+class SuperableDatabase extends PDO {
+    private $tenantKey;
+
+    public function __construct($dsn, $username = null, $password = null, $options = null, $tenantKey = null) {
+        parent::__construct($dsn, $username, $password, $options);
+        $this->tenantKey = $tenantKey;
+    }
+
+    public function getTenantKey() {
+        return $this->tenantKey;
+    }
+
+    #[\ReturnTypeWillChange]
+    public function prepare($query, $options = []) {
+        $translatedQuery = $this->translateQuery($query);
+        return parent::prepare($translatedQuery, $options);
+    }
+
+    #[\ReturnTypeWillChange]
+    public function query($query, $fetchMode = null, ...$fetchModeArgs) {
+        $translatedQuery = $this->translateQuery($query);
+        if ($fetchMode === null) {
+            return parent::query($translatedQuery);
+        }
+        return parent::query($translatedQuery, $fetchMode, ...$fetchModeArgs);
+    }
+
+    #[\ReturnTypeWillChange]
+    public function exec($statement) {
+        $translatedQuery = $this->translateQuery($statement);
+        return parent::exec($translatedQuery);
+    }
+
+    /**
+     * Translates database queries to handle SQL syntax variations across databases.
+     * Ready to be expanded for PostgreSQL routing.
+     */
+    private function translateQuery($sql) {
+        // Future translation mappings go here
+        return $sql;
+    }
+}
+
+/**
+ * Returns a configured SuperableDatabase instance connected to the tenant SQLite database.
  *
  * @param string|null $tenantKey
- * @return PDO
+ * @return SuperableDatabase
  */
 function get_db_connection($tenantKey = null) {
     $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
@@ -640,7 +764,7 @@ function get_db_connection($tenantKey = null) {
     validate_database_security($dbPath);
 
     try {
-        $pdo = new PDO('sqlite:' . $dbPath);
+        $pdo = new SuperableDatabase('sqlite:' . $dbPath, null, null, null, $tenantKey);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $pdo->exec('PRAGMA foreign_keys = ON;');
@@ -695,6 +819,16 @@ function ensure_tables_exist($pdo) {
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id, course_id, module_id),
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS interaction_telemetry (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            course_id TEXT NOT NULL,
+            module_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            event_value TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
 
         $stmt = $pdo->query("SELECT COUNT(*) FROM users");
@@ -830,4 +964,72 @@ function logTenantActivity($action, $details = '') {
     
     $logLine = "[{$timestamp}] User: {$user} (ID: {$userId}) | Action: {$action} | Details: {$details}" . PHP_EOL;
     @file_put_contents($logFile, $logLine, FILE_APPEND);
+}
+
+/**
+ * Resolves a course directory by checking the primary tenant directory and fallbacks.
+ *
+ * @param string $course_id
+ * @param string|null $tenantKey
+ * @return string|null Absolute path to course directory, or null if not found
+ */
+function resolveCourseDir($course_id, $tenantKey = null) {
+    if (empty($course_id)) {
+        return null;
+    }
+    $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
+    $primaryCoursesDir = getTenantCoursesDir($tenantKey);
+    $course_dir = $primaryCoursesDir . DIRECTORY_SEPARATOR . basename($course_id);
+
+    if (is_dir($course_dir) && file_exists($course_dir . DIRECTORY_SEPARATOR . 'course_structure.json')) {
+        return $course_dir;
+    }
+
+    $fallbackDirs = [
+        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'superableaccessibility',
+        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'local-dev',
+        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses'
+    ];
+
+    $tenantsBaseDir = LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants';
+    if (is_dir($tenantsBaseDir)) {
+        foreach (scandir($tenantsBaseDir) as $tFolder) {
+            if ($tFolder === '.' || $tFolder === '..') continue;
+            $fallbackDirs[] = $tenantsBaseDir . DIRECTORY_SEPARATOR . $tFolder;
+        }
+    }
+
+    foreach ($fallbackDirs as $fDir) {
+        $candidate = $fDir . DIRECTORY_SEPARATOR . basename($course_id);
+        if (is_dir($candidate) && file_exists($candidate . DIRECTORY_SEPARATOR . 'course_structure.json')) {
+            return $candidate;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Recursively resolves actual H1 titles for modules from their local files.
+ *
+ * @param array $items
+ * @param string $course_dir
+ */
+function pre_process_manifest_modules(&$items, $course_dir) {
+    if (!is_array($items)) {
+        return;
+    }
+    foreach ($items as &$item) {
+        if (isset($item['group'])) {
+            pre_process_manifest_modules($item['items'], $course_dir);
+        } else if (isset($item['src'])) {
+            $file_path = $course_dir . DIRECTORY_SEPARATOR . $item['src'];
+            if (file_exists($file_path)) {
+                $html_content = file_get_contents($file_path);
+                if (preg_match('/<h1[^>]*>(.*?)<\/h1>/si', $html_content, $matches)) {
+                    $item['h1_title'] = strip_tags($matches[1]);
+                }
+            }
+        }
+    }
 }

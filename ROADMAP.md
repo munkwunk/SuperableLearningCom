@@ -38,8 +38,14 @@ These tasks leverage the existing codebase and database connections, focusing on
 
 ---
 
-## 🛠️ Phase 2: Core Platform Development (Requires Additional Work)
-These features require changes to the database schemas, new operational flows, or third-party integrations, spanning several development cycles.
+## 🛠️ Phase 2: Core Platform & LMOS Foundation (Requires Additional Work)
+These features require changes to the database schemas, new operational flows, or third-party integrations, spanning several development cycles. They also build the foundation for the LMOS kernel.
+
+### Architecture & LMOS Readiness
+*   **Database Abstraction Layer**: Refactor raw PDO instances in `config.php` and `api.php` behind a database connector wrapper to allow SQLite-to-PostgreSQL routing in the future.
+*   **API-First Endpoints**: Implement JSON API endpoints for user metadata, course structures, and progress logs to prepare for external Node.js/Python runners.
+*   **Decouple Course Player**: Restructure `player.php` into a controller that outputs course JSON to a unified client-side rendering player, facilitating Puppeteer headless tests.
+*   **Telemetry Buffer Endpoint**: Add an interaction tracking API endpoint (`api.php?action=log_interaction`) to buffer player telemetry in the SQLite databases for cognitive load heuristics.
 
 ### Sandbox (Free)
 *   **Automatic Cleanup Routines**: Implement a background cleanup script (runnable via cron) that automatically flags or purges assets of Sandbox accounts inactive for over 90 days.
@@ -51,13 +57,13 @@ These features require changes to the database schemas, new operational flows, o
 ### Premium ($20/mo)
 *   **Role-Based Access Control (RBAC)**: Extend the database schema to support three user roles (Admin, Editor, Viewer) and restrict actions in `admin.php` and course editing views based on these roles.
 *   **Shared Course Library & Brand Settings**: Enable multi-admin synchronization so all 3 Premium admins can collaborate on the same course files and branding templates.
-*   **Advanced JSON Validation**: Integrate a JSON schema validator in `course_importer.php` to perform deep structure checks on LC-JSON manifests.
+*   [x] **Advanced JSON Validation**: Integrate a JSON schema validator in `course_importer.php` to perform deep structure checks on LC-JSON manifests.
 *   **Component-Level Previews**: Create a modal preview wrapper in the packager/builder to test single UI web components (e.g., contrast check individual buttons or text inputs).
-*   **Light Analytics Dashboard**: Build a database-backed analytics view tracking completion rates, average time spent per module, and quiz pass/fail statistics.
+*   [x] **Light Analytics Dashboard**: Build a database-backed analytics view tracking completion rates, average time spent per module, and quiz pass/fail statistics.
 *   **xAPI/LRS Integration**: Build an LRS connection wizard to transmit standardized xAPI statements to external Learning Record Stores.
 
 ### Branding (Cross‑Tier)
-*   **Safe Custom CSS Injection**: Implement a PHP-based CSS parser to validate custom stylesheet uploads for Premium tenants, blocking potential security exploits (e.g., CSS injection) and ensuring focus ring states are not hidden.
+*   [x] **Safe Custom CSS Injection**: Implement a PHP-based CSS parser to validate custom stylesheet uploads for Premium tenants, blocking potential security exploits (e.g., CSS injection) and ensuring focus ring states are not hidden.
 
 ### Accessibility Add‑Ons (Operational Services)
 *   **Subscription Review Credit Tracking**: Update the database schema to allocate and track monthly review credits for subscription customers, carrying over or resetting quotas.
@@ -66,8 +72,21 @@ These features require changes to the database schemas, new operational flows, o
 
 ---
 
-## 🚀 Phase 3: Future & Long-Term Roadmap (Optional / Future Enhancements)
-Strategic features and optional tooling designed to enhance value across all tiers over the long term.
+## 🚀 Phase 3: LMOS Services & Enterprise Orchestration (Long-Term / Strategic)
+Strategic features and optional tooling designed to establish the platform as a full-fledged, accessibility-first Learning Management Operating System.
+
+### Accessibility Kernel & Microservices
+*   **Node.js Rendering Service**: Deploy Puppeteer/Playwright microservice to capture course screenshots, extract accessibility trees, and run WCAG audits.
+*   **Python AI Service**: Introduce machine learning service for automated image analysis, alt-text generation, and reading complexity indexing.
+*   **Event/Queue System Integration**: Deploy Redis or RabbitMQ queues to handle asynchronous auditing and ingestion tasks without blocking web workers.
+
+### Cognitive Load Engine
+*   **Interaction Data Processor**: Consume telemetry metrics (dwell time, navigation paths, pause intervals) to score student fatigue and cognitive burden.
+*   **Adaptive Player Interface**: Enable dynamic content chunking and interface pacing based on cognitive heuristics.
+
+### Migration & Interoperability
+*   **LMS Migration Pipeline**: Support importing zip files from Canvas, Blackboard, and Moodle, converting course structures to LC-JSON on ingestion.
+*   **Multi-Disability Accommodation Profile**: Introduce the "Accommodation Passport" enabling users to set system-wide preferences (Fatigue mode, Screen-reader focus mode, Motor accessibility mode).
 
 ### Sandbox (Free)
 *   **Onboarding & Interactive Walkthrough**: Implement a step-by-step tour for new creators showcasing players, LC-JSON packages, and accessibility validation tools.

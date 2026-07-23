@@ -93,7 +93,41 @@ The `course_structure.json` file defines the course title, metadata, access cont
         allowfullscreen></iframe>
 
 4. Built-In UI Components Support:
-* Build modules using the LMS built-in web components: <jw-accordion>, <jw-tabs>, <jw-flipcard>, <jw-modal>, and <jw-click-reveal>.
+* Build interactive views using the LMS built-in web components:
+  * `<jw-accordion>` / `<jw-accordion-item>`: Accordion collapsible details sections.
+  * `<jw-tabs>` / `<jw-tab>`: Accessible tabbed content interfaces.
+  * `<jw-flipcard>`: Interactive front/back flip card cards.
+  * `<jw-click-reveal>`: Expandable solution button reveal blocks.
+  * `<jw-modal>`: A11y focus-trapped custom modal panels.
+  * `<jw-scenario>`: Interactive branch decision scenario pathways.
+  * `<jw-timeline>`: Keyboard-navigable chronological timelines.
+  * `<jw-wizard>`: Step-by-step guided task wizards.
+  * `<jw-hotspot-container>` / `<jw-hotspot-marker>`: Image overlays with hotspot details popups (`src`, `alt`, and `x`/`y` coordinates required).
+  * `<jw-matching-game>` / `<jw-match-pair>`: Keyboard-accessible drop-down matching lists (`source` and `target` matching pairs required).
+  * `<jw-carousel>` / `<jw-slide>`: Keyboard-navigable slideshow slider panels.
+  * `<jw-progress-bar>`: Progress trackers with `role="progressbar"`.
+  * `<jw-multi-column>` / `<jw-column>`: Structured reading column containers.
+  * `<jw-quiz>`: Sandbox rendering quiz engine loading external/inline LC-JSON `QuestionSet` manifests.
+
+5. Custom JS Firing Delays & Event Delegation:
+* Dynamic Injection Timing: Because modules are loaded dynamically, global scripts in `js/main.js` cannot bind listeners directly on page load. Direct queries (e.g. `document.querySelector('#btn')`) will return `null`.
+* Global Scripts: In `js/main.js`, always use **Event Delegation** on the global `document` element to capture dynamic clicks:
+  ```javascript
+  document.addEventListener('click', function(e) {
+      if (e.target.matches('.my-action-button')) {
+          // Custom handler logic...
+      }
+  });
+  ```
+* Embedded/Local Scripts & Web Components: If writing scripts directly inside module HTML files or initializing widgets on load, wrap DOM lookups and setup inside a **50ms timeout delay** (`setTimeout`). This gives the player wrapper sufficient time to inject the DOM fragment and upgrade custom elements:
+  ```javascript
+  setTimeout(() => {
+      const widget = document.getElementById('my-accordion-widget');
+      if (widget) {
+          // Safe to query and manipulate upgraded components
+      }
+  }, 50);
+  ```
 
 ## 4. WCAG 2.2 AA Accessibility Mandates
 Design every module to comply with WCAG 2.2 AA standards:
@@ -143,3 +177,16 @@ if (window.xapi) {
     });
 }
 ```
+
+## 6. Support for .prax Course Format Translation
+You natively understand the `.prax` plain-text course format (featuring YAML frontmatter, markdown headings, page boundaries using `---`, and blocks like `as: choice`, `as: accordion`, `as: tab`, `as: match`). 
+
+When a user inputs or pastes a `.prax` course file, parse the plain-text grammar and translate it directly into a standard 100% WCAG 2.2 AA compliant Superable Learning course package matching our monolithic JSON schema. Map the `.prax` block types to our built-in web components:
+* `as: accordion` $\rightarrow$ `<jw-accordion>`
+* `as: tab` $\rightarrow$ `<jw-tabs>`
+* `as: choice` $\rightarrow$ `<jw-quiz>` (using inline JSON `<script type="application/json">` blocks)
+* `as: match` $\rightarrow$ `<jw-matching-game>`
+* `as: comparison` $\rightarrow$ `<jw-flipcard>` or `<jw-multi-column>`
+* Asset blocks (e.g. `/assets/image.png`) $\rightarrow$ `<img src="images/image.png">` (ensuring alt-text descriptions are extracted and enforced)
+* Page boundaries (`---`) $\rightarrow$ individual module HTML pages.
+

@@ -47,35 +47,9 @@ if (strpos($course_id, '?') !== false) {
 
 // 3. Security Check & Course Validation
 $activeTenant = resolveTenantKey();
-$primaryCoursesDir = getTenantCoursesDir($activeTenant);
-$course_dir = $primaryCoursesDir . DIRECTORY_SEPARATOR . basename($course_id);
+$course_dir = resolveCourseDir($course_id, $activeTenant);
 
-// If course not found in primary tenant dir, search all tenant directories and web root fallback
-if (!is_dir($course_dir) && !empty($course_id)) {
-    $fallbackDirs = [
-        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'superableaccessibility',
-        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'local-dev',
-        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses'
-    ];
-
-    $tenantsBaseDir = LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants';
-    if (is_dir($tenantsBaseDir)) {
-        foreach (scandir($tenantsBaseDir) as $tFolder) {
-            if ($tFolder === '.' || $tFolder === '..') continue;
-            $fallbackDirs[] = $tenantsBaseDir . DIRECTORY_SEPARATOR . $tFolder;
-        }
-    }
-
-    foreach ($fallbackDirs as $fDir) {
-        $candidate = $fDir . DIRECTORY_SEPARATOR . basename($course_id);
-        if (is_dir($candidate) && file_exists($candidate . DIRECTORY_SEPARATOR . 'course_structure.json')) {
-            $course_dir = $candidate;
-            break;
-        }
-    }
-}
-
-if (empty($course_id) || !is_dir($course_dir)) {
+if (empty($course_id) || !$course_dir) {
     // Basic friendly error matching UI specs
     $error_html = '
     <!DOCTYPE html>
@@ -102,6 +76,12 @@ if (!file_exists($manifest_path)) {
     die("Error: Course manifest missing.");
 }
 $manifest = json_decode(file_get_contents($manifest_path), true);
+if ($manifest === null) {
+    die("Error: Course manifest has an invalid format (JSON syntax error).");
+}
+if (isset($manifest['modules'])) {
+    pre_process_manifest_modules($manifest['modules'], $course_dir);
+}
 
 // Access Control Check
 $access = $manifest['properties']['access'] ?? ['type' => 'public'];
@@ -165,8 +145,8 @@ $assets = $manifest['properties']['assets'] ?? [];
         <link rel="stylesheet" href="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/<?= htmlspecialchars($css) ?>">
     <?php endforeach; endif; ?>
     
-    <!-- Always load JW Components for rich interactivity support -->
-    <script src="assets/components/jw-components.js?v=<?= time() ?>" defer></script>
+    <!-- Always load Superable custom web components for rich interactivity support -->
+    <script src="assets/components/sl-components.js?v=<?= time() ?>" defer></script>
 
     <!-- xAPI Service (Always load, defaults to console.log if no LMS launch) -->
     <script src="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
@@ -336,7 +316,8 @@ $assets = $manifest['properties']['assets'] ?? [];
             tenantKey: <?= json_encode($activeTenant) ?>,
             userId: <?= json_encode($user_id) ?>,
             userName: <?= json_encode($user_name) ?>,
-            userEmail: <?= json_encode($user_email) ?>
+            userEmail: <?= json_encode($user_email) ?>,
+            manifest: <?= json_encode($manifest) ?>
         };
     </script>
 </head>
@@ -357,61 +338,9 @@ $assets = $manifest['properties']['assets'] ?? [];
         
         <!-- Sidebar for Module Links -->
         <aside class="sidebar bg-light">
-            <nav class="sidebar-nav" aria-label="Course Navigation">
+            <nav class="sidebar-nav" id="course-nav" aria-label="Course Navigation">
                 <h2 class="text-lg m-0 mb-4 text-neutral-mid">Course Navigation</h2>
-                
-                <?php
-                // Recursive Sidebar Function
-                function render_sidebar_modules($items, $course_dir, &$mod_count) {
-                    $html = '<ul class="module-list">';
-                    foreach ($items as $item) {
-                        if (isset($item['group'])) {
-                            // Render Accordion Group (no-region added to prevent nested landmarks)
-                            $html .= '<li>';
-                            $html .= '<jw-accordion level="3" no-region>';
-                            $html .= '<jw-accordion-item title="'.htmlspecialchars($item['group']).'" '.(isset($item['expanded']) && $item['expanded'] ? 'expanded' : '').'>';
-                            $html .= render_sidebar_modules($item['items'], $course_dir, $mod_count);
-                            $html .= '</jw-accordion-item>';
-                            $html .= '</jw-accordion>';
-                            $html .= '</li>';
-                        } else {
-                            // Render Module Button
-                            $file_path = $course_dir . DIRECTORY_SEPARATOR . $item['src'];
-                            $h1_title = '';
-                            if (file_exists($file_path)) {
-                                $html_content = file_get_contents($file_path);
-                                if (preg_match('/<h1[^>]*>(.*?)<\/h1>/si', $html_content, $matches)) {
-                                    $h1_title = strip_tags($matches[1]);
-                                }
-                            }
-                            
-                            $raw_title = $h1_title ? $h1_title : $item['title'];
-                            $raw_title = preg_replace('/^Module\s*\d+:\s*/i', '', trim($raw_title));
-                            
-                            if (strtolower($raw_title) === 'module ' . $mod_count || empty($raw_title)) {
-                                $formatted_title = "Module {$mod_count}";
-                            } else {
-                                $formatted_title = "Module {$mod_count}: " . $raw_title;
-                            }
-
-                            $html .= '<li>';
-                            $html .= '<button class="module-btn" 
-                                            data-module-id="'.htmlspecialchars($item['id']).'"
-                                            data-src="'.htmlspecialchars($item['src']).'"
-                                            aria-current="false">
-                                        '.htmlspecialchars($formatted_title).'
-                                      </button>';
-                            $html .= '</li>';
-                            $mod_count++;
-                        }
-                    }
-                    $html .= '</ul>';
-                    return $html;
-                }
-
-                $sidebar_mod_count = 1;
-                echo render_sidebar_modules($modules, $course_dir, $sidebar_mod_count);
-                ?>
+                <!-- Rendered dynamically via JavaScript -->
             </nav>
         </aside>
 
@@ -428,11 +357,99 @@ $assets = $manifest['properties']['assets'] ?? [];
     <!-- Player Logic Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Dynamic Sidebar Generation
+            const navContainer = document.getElementById('course-nav');
+            let sidebarModCount = 1;
+
+            function renderSidebarModules(items, parentElement) {
+                const list = document.createElement('ul');
+                list.className = 'module-list';
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    if (item.group !== undefined) {
+                        // Render Accordion Group
+                        const accordion = document.createElement('jw-accordion');
+                        accordion.setAttribute('level', '3');
+                        accordion.setAttribute('no-region', '');
+
+                        const accordionItem = document.createElement('jw-accordion-item');
+                        accordionItem.setAttribute('title', item.group);
+                        if (item.expanded) {
+                            accordionItem.setAttribute('expanded', '');
+                        }
+
+                        renderSidebarModules(item.items, accordionItem);
+                        accordion.appendChild(accordionItem);
+                        li.appendChild(accordion);
+                    } else {
+                        // Render Module Button
+                        const btn = document.createElement('button');
+                        btn.className = 'module-btn';
+                        btn.setAttribute('data-module-id', item.id);
+                        btn.setAttribute('data-src', item.src);
+                        btn.setAttribute('aria-current', 'false');
+
+                        let rawTitle = item.h1_title ? item.h1_title : (item.title || '');
+                        rawTitle = rawTitle.replace(/^Module\s*\d+:\s*/i, '').trim();
+
+                        let formattedTitle = '';
+                        if (rawTitle.toLowerCase() === 'module ' + sidebarModCount || rawTitle === '') {
+                            formattedTitle = `Module ${sidebarModCount}`;
+                        } else {
+                            formattedTitle = `Module ${sidebarModCount}: ${rawTitle}`;
+                        }
+
+                        btn.textContent = formattedTitle;
+                        sidebarModCount++;
+
+                        btn.addEventListener('click', () => {
+                            if (btn.getAttribute('aria-current') !== 'true') {
+                                loadModuleContent(btn);
+                            }
+                        });
+
+                        li.appendChild(btn);
+                    }
+                    list.appendChild(li);
+                });
+
+                parentElement.appendChild(list);
+            }
+
+            // Build the sidebar
+            if (LMS_CONTEXT.manifest && LMS_CONTEXT.manifest.modules) {
+                renderSidebarModules(LMS_CONTEXT.manifest.modules, navContainer);
+            }
+
             // Keep a real array of buttons to easily find index by context
             const moduleBtnsArray = Array.from(document.querySelectorAll('.module-btn'));
             const contentContainer = document.getElementById('course-content');
             let currentModuleId = null;
             let currentModuleIndex = 0;
+            let moduleStartTime = Date.now();
+
+            // Local Telemetry API Logging Helper
+            async function logLocalInteraction(moduleId, eventType, eventValue = null) {
+                if (!moduleId) return;
+                try {
+                    await fetch(`api.php?tenant=${LMS_CONTEXT.tenantKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'log_interaction',
+                            course_id: LMS_CONTEXT.courseId,
+                            module_id: moduleId,
+                            event_type: eventType,
+                            event_value: eventValue
+                        })
+                    });
+                } catch (error) {
+                    console.error("Local telemetry log failed:", error);
+                }
+            }
             
             // Dynamic JS Asset Loading
             const courseAssets = {
@@ -454,7 +471,7 @@ $assets = $manifest['properties']['assets'] ?? [];
             contentContainer.addEventListener('click', (e) => {
                 // 1. Track Download eBook, Workshop details and other link clicks
                 const link = e.target.closest('a');
-                if (link && window.xapi) {
+                if (link) {
                     const href = link.getAttribute('href') || '';
                     const linkText = link.textContent.trim();
                     
@@ -469,37 +486,44 @@ $assets = $manifest['properties']['assets'] ?? [];
                     if (isTrackedLink) {
                         const isDownload = href.includes('download') || href.includes('buildxcl.com') || link.hasAttribute('download');
                         
-                        // Use standard ADL verb to guarantee acceptance by LRS, but with custom display
-                        const verb = {
-                            "id": "http://adlnet.gov/expapi/verbs/interacted",
-                            "display": { "en-US": isDownload ? "downloaded" : "accessed" }
-                        };
-
-                        // Generate a clean sub-activity ID under the course namespace to avoid CORS/LRS rejection
-                        let cleanLinkId = '';
-                        if (isDownload) {
-                            cleanLinkId = 'download-ebook';
-                        } else if (href.includes('workshops.html')) {
-                            cleanLinkId = 'view-workshops';
-                        } else {
-                            // Fallback to a clean string of the pathname
-                            try {
-                                const urlObj = new URL(link.href);
-                                cleanLinkId = (urlObj.hostname + urlObj.pathname).replace(/[^a-zA-Z0-9]/g, '-');
-                            } catch (err) {
-                                cleanLinkId = href.replace(/[^a-zA-Z0-9]/g, '-');
-                            }
-                        }
-                        const activityId = `${window.xapi.courseId}/links/${cleanLinkId}`;
-
-                        window.xapi.sendStatement(verb, {
-                            "id": activityId,
-                            "definition": {
-                                "name": { "en-US": linkText },
-                                "description": { "en-US": `User clicked link: ${linkText} (${link.href})` },
-                                "type": isDownload ? "http://adlnet.gov/expapi/activities/file" : "http://adlnet.gov/expapi/activities/link"
-                            }
+                        // Local Telemetry Log
+                        logLocalInteraction(currentModuleId, isDownload ? 'download_file' : 'click_link', {
+                            text: linkText,
+                            href: link.href
                         });
+
+                        // xAPI Tracking
+                        if (window.xapi) {
+                            const verb = {
+                                "id": "http://adlnet.gov/expapi/verbs/interacted",
+                                "display": { "en-US": isDownload ? "downloaded" : "accessed" }
+                            };
+
+                            // Generate a clean sub-activity ID under the course namespace to avoid CORS/LRS rejection
+                            let cleanLinkId = '';
+                            if (isDownload) {
+                                cleanLinkId = 'download-ebook';
+                            } else if (href.includes('workshops.html')) {
+                                cleanLinkId = 'view-workshops';
+                            } else {
+                                try {
+                                    const urlObj = new URL(link.href);
+                                    cleanLinkId = (urlObj.hostname + urlObj.pathname).replace(/[^a-zA-Z0-9]/g, '-');
+                                } catch (err) {
+                                    cleanLinkId = href.replace(/[^a-zA-Z0-9]/g, '-');
+                                }
+                            }
+                            const activityId = `${window.xapi.courseId}/links/${cleanLinkId}`;
+
+                            window.xapi.sendStatement(verb, {
+                                "id": activityId,
+                                "definition": {
+                                    "name": { "en-US": linkText },
+                                    "description": { "en-US": `User clicked link: ${linkText} (${link.href})` },
+                                    "type": isDownload ? "http://adlnet.gov/expapi/activities/file" : "http://adlnet.gov/expapi/activities/link"
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -514,9 +538,17 @@ $assets = $manifest['properties']['assets'] ?? [];
                         accessibleVersion.hidden = false;
                         e.target.hidden = true; // Hide the button once revealed
                         
-                        // xAPI Tracking
-                        if (window.xapi) {
-                            const moduleTitle = moduleBtnsArray[currentModuleIndex].textContent.replace('(Completed)', '').trim();
+                        const moduleTitle = moduleBtnsArray[currentModuleIndex] ? moduleBtnsArray[currentModuleIndex].textContent.replace('(Completed)', '').trim() : '';
+
+                        // Local Telemetry Log (Only log if user-initiated)
+                        if (e.isTrusted) {
+                            logLocalInteraction(currentModuleId, 'reveal_accessible', {
+                                module_title: moduleTitle
+                            });
+                        }
+
+                        // xAPI Tracking (Only track if user-initiated)
+                        if (window.xapi && e.isTrusted) {
                             window.xapi.sendStatement(window.xapi.verbs.INTERACTED, {
                                 "id": `${window.xapi.courseId}/modules/${currentModuleId}/reveal-accessible`,
                                 "definition": {
@@ -545,6 +577,8 @@ $assets = $manifest['properties']['assets'] ?? [];
                 }
             });
 
+            const revealedModules = new Set();
+
             // 1. Initial State Sync (Check what's already completed)
             async function syncProgressState() {
                 try {
@@ -561,8 +595,15 @@ $assets = $manifest['properties']['assets'] ?? [];
                             }
                         });
                     }
+
+                    if (data.revealed && Array.isArray(data.revealed)) {
+                        data.revealed.forEach(modId => revealedModules.add(modId));
+                    }
+
+                    return data;
                 } catch (error) {
                     console.error("Failed to sync progress:", error);
+                    return null;
                 }
             }
 
@@ -570,6 +611,13 @@ $assets = $manifest['properties']['assets'] ?? [];
             async function loadModuleContent(button) {
                 const src = button.getAttribute('data-src');
                 const moduleId = button.getAttribute('data-module-id');
+
+                // Log dwell time for the module we are leaving
+                if (currentModuleId && currentModuleId !== moduleId) {
+                    const durationSeconds = Math.round((Date.now() - moduleStartTime) / 1000);
+                    logLocalInteraction(currentModuleId, 'dwell_time', { seconds: durationSeconds });
+                }
+                moduleStartTime = Date.now();
                 
                 // Determine our new index
                 currentModuleIndex = moduleBtnsArray.indexOf(button);
@@ -723,6 +771,14 @@ $assets = $manifest['properties']['assets'] ?? [];
                         document.getElementById('btn-next-module').addEventListener('click', navigateNext);
                     }
 
+                    // Restore previously revealed accessible version state
+                    if (revealedModules.has(moduleId)) {
+                        const revealBtn = contentContainer.querySelector('.reveal-btn');
+                        if (revealBtn) {
+                            revealBtn.click();
+                        }
+                    }
+
                     // Accessibility: Focus Management
                     const firstHeading = contentContainer.querySelector('h1, h2');
                     if (firstHeading) {
@@ -776,6 +832,9 @@ $assets = $manifest['properties']['assets'] ?? [];
                     const data = await response.json();
                     
                     if (data.status === 'success') {
+                        // Local Telemetry Log
+                        logLocalInteraction(currentModuleId, 'course_completed');
+
                         // xAPI Course Completion Tracking
                         if (window.xapi) {
                             window.xapi.sendStatement(window.xapi.verbs.COMPLETED, {
@@ -919,18 +978,10 @@ $assets = $manifest['properties']['assets'] ?? [];
                 }
             }
 
-            // 5. Bind Sidebar Clicks
-            moduleBtnsArray.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    // Prevent reloading if already active
-                    if (btn.getAttribute('aria-current') !== 'true') {
-                        loadModuleContent(btn);
-                    }
-                });
-            });
+
 
             // 6. Init (Sync progress, then load first module)
-            syncProgressState().then(() => {
+            syncProgressState().then((data) => {
                 // Send xAPI Course Initialized Statement to register course ID and metadata in LRS
                 if (window.xapi) {
                     const alreadyInitialized = window.xapiService && window.xapiService.isInitialized;
@@ -946,9 +997,64 @@ $assets = $manifest['properties']['assets'] ?? [];
                     }
                 }
 
-                const firstModule = document.querySelector('.module-btn[aria-current="true"]') || moduleBtnsArray[0];
-                if (firstModule) {
-                    loadModuleContent(firstModule);
+                // Restore last read active module (Present choice card to user)
+                let targetModule = null;
+                if (data && data.last_active_module_id) {
+                    targetModule = document.querySelector(`.module-btn[data-module-id="${data.last_active_module_id}"]`);
+                }
+
+                if (targetModule && targetModule !== moduleBtnsArray[0]) {
+                    const moduleTitle = targetModule.textContent.replace('(Completed)', '').trim();
+                    contentContainer.innerHTML = `
+                        <div class="resume-prompt-card" role="status" style="background-color: #f8fafc; border: 2px solid var(--color-primary); border-radius: 0.5rem; padding: 2rem; max-width: 600px; margin: 4rem auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: left;">
+                            <h2 class="text-xl font-bold m-0 mb-4" style="color: var(--color-text-dark);">Welcome back!</h2>
+                            <p class="m-0 mb-6 text-neutral-dark" style="font-size: 1.05rem; line-height: 1.5; color: var(--color-text-dark);">Would you like to pick up where you left off on <strong>${moduleTitle}</strong>?</p>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <button id="btn-resume-yes" class="nav-btn" style="background-color: var(--color-primary); color: white; border-color: var(--color-primary); cursor: pointer;" aria-label="Resume course at ${moduleTitle}">
+                                    Yes, Resume Course
+                                </button>
+                                <button id="btn-resume-no" class="nav-btn" style="cursor: pointer;" aria-label="Start course from the beginning">
+                                    Start from Beginning
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('btn-resume-yes').addEventListener('click', () => {
+                        loadModuleContent(targetModule);
+                    });
+
+                    document.getElementById('btn-resume-no').addEventListener('click', () => {
+                        if (moduleBtnsArray[0]) {
+                            loadModuleContent(moduleBtnsArray[0]);
+                        }
+                    });
+
+                    const yesBtn = document.getElementById('btn-resume-yes');
+                    if (yesBtn) {
+                        yesBtn.focus();
+                    }
+                } else {
+                    const firstModule = document.querySelector('.module-btn[aria-current="true"]') || moduleBtnsArray[0];
+                    if (firstModule) {
+                        loadModuleContent(firstModule);
+                    }
+                }
+            });
+
+            // Log final dwell time when user leaves/closes page
+            window.addEventListener('pagehide', () => {
+                if (currentModuleId) {
+                    const durationSeconds = Math.round((Date.now() - moduleStartTime) / 1000);
+                    const payload = {
+                        action: 'log_interaction',
+                        course_id: LMS_CONTEXT.courseId,
+                        module_id: currentModuleId,
+                        event_type: 'dwell_time',
+                        event_value: JSON.stringify({ seconds: durationSeconds })
+                    };
+                    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                    navigator.sendBeacon(`api.php?tenant=${LMS_CONTEXT.tenantKey}`, blob);
                 }
             });
 

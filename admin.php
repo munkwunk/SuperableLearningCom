@@ -587,41 +587,6 @@ $storageUsedBytes = getTenantStorageUsage();
 $storageUsedMb = round($storageUsedBytes / 1048576, 2);
 $storageQuotaMb = getTenantStorageQuota();
 $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 1024)) * 100, 1));
-// Helper functions for custom CSS accessibility validation
-function validateCustomCss($css, &$errors) {
-    if (preg_match('/outline\s*:\s*(none|0|transparent|hidden)/i', $css) || 
-        preg_match('/outline-width\s*:\s*(0|none)/i', $css) || 
-        preg_match('/outline-color\s*:\s*(transparent)/i', $css)) {
-        $errors[] = "Focus Indicators: Custom CSS is not allowed to hide focus outlines (e.g., using 'outline: none' or 'outline: 0').";
-    }
-
-    if (preg_match_all('/--color-primary\s*:\s*(#[a-f0-9]{3,6})/i', $css, $matches)) {
-        foreach ($matches[1] as $color) {
-            $hex = expandHexColor($color);
-            if (getContrastRatio($hex, '#ffffff') < 4.5) {
-                $errors[] = "Contrast Check: Your custom --color-primary override ({$color}) fails the WCAG 2.2 AA contrast ratio of 4.5:1 against white text.";
-            }
-        }
-    }
-    if (preg_match_all('/--color-accent\s*:\s*(#[a-f0-9]{3,6})/i', $css, $matches)) {
-        foreach ($matches[1] as $color) {
-            $hex = expandHexColor($color);
-            if (getContrastRatio($hex, '#ffffff') < 4.5 && getContrastRatio($hex, '#0f172a') < 4.5) {
-                $errors[] = "Contrast Check: Your custom --color-accent override ({$color}) does not meet 4.5:1 contrast against either light (#ffffff) or dark (#0f172a) backgrounds.";
-            }
-        }
-    }
-    
-    return empty($errors);
-}
-
-function expandHexColor($hex) {
-    $hex = ltrim($hex, '#');
-    if (strlen($hex) === 3) {
-        $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
-    }
-    return '#' . $hex;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -712,6 +677,9 @@ function expandHexColor($hex) {
             </button>
             <button class="tab-btn" id="tab-keys-btn" role="tab" aria-selected="false" aria-controls="panel-keys" tabindex="-1">
                 🔑 Course Codes
+            </button>
+            <button class="tab-btn" id="tab-analytics-btn" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1">
+                📈 Learning Analytics
             </button>
             <button class="tab-btn" id="tab-billing-btn" role="tab" aria-selected="false" aria-controls="panel-billing" tabindex="-1">
                 📊 Plan & Storage
@@ -1381,6 +1349,202 @@ function expandHexColor($hex) {
                         <button type="submit" class="btn btn-teal">Submit Audit Request</button>
                     </form>
                 </div>
+            </section>
+        </div>
+
+        <!-- ===================================================================
+             TAB 6: LEARNING ANALYTICS
+             =================================================================== -->
+        <div id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics-btn" class="admin-tabpanel" hidden>
+            <section class="card mb-6">
+                <h1 class="m-0 text-2xl mb-2" id="tab-heading-analytics">📈 Learning Analytics & Heuristics</h1>
+                
+                <?php if ($tenantPlan !== 'premium'): ?>
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 3rem 1.5rem; text-align: center; max-width: 600px; margin: 2rem auto;">
+                        <span style="font-size: 3rem;" aria-hidden="true">🔒</span>
+                        <h2 style="color: var(--color-primary); margin-top: 1rem;">Learning Analytics is Locked</h2>
+                        <p class="text-neutral-mid mb-4">
+                            Student module completion rates, average reading dwell durations, accessibility accommodation reveals, and interaction metrics are available on the <strong>Premium</strong> tier.
+                        </p>
+                        <a href="pricing.php" class="btn btn-primary" style="background: var(--color-accent); border: none;">View Upgrade Options &rarr;</a>
+                    </div>
+                <?php else: ?>
+                    <p class="text-neutral-mid mb-4">Monitor student progress, track page dwell durations, and analyze assistive technology reveals to identify cognitive load hotspots.</p>
+                    
+                    <?php
+                    // Fetch real analytics data from SQLite database for current Premium tenant
+                    try {
+                        // 1. Total Telemetry Event Count
+                        $stmtCount = $pdo->query("SELECT COUNT(*) FROM interaction_telemetry");
+                        $totalEvents = $stmtCount->fetchColumn();
+
+                        // 2. Total Course Completions Count
+                        $stmtCompCount = $pdo->query("SELECT COUNT(*) FROM module_progress WHERE is_completed = 1");
+                        $totalCompletions = $stmtCompCount->fetchColumn();
+
+                        // 3. Unique Active Students Count
+                        $stmtUsers = $pdo->query("
+                            SELECT COUNT(DISTINCT user_id) FROM (
+                                SELECT user_id FROM module_progress
+                                UNION ALL
+                                SELECT user_id FROM interaction_telemetry
+                            )
+                        ");
+                        $activeUsersCount = $stmtUsers->fetchColumn();
+
+                        // 4. Grouped Telemetry Event Breakdown (Clicks, Reveals, Dwell)
+                        $stmtBreakdown = $pdo->query("
+                            SELECT event_type, COUNT(*) as count 
+                            FROM interaction_telemetry 
+                            GROUP BY event_type 
+                            ORDER BY count DESC
+                        ");
+                        $breakdown = $stmtBreakdown->fetchAll(PDO::FETCH_ASSOC);
+
+                        // 5. Fetch Average Dwell Time per Module (Heuristics for cognitive load)
+                        // Note: event_value stores JSON e.g. {"seconds": 45} for 'dwell_time'
+                        $stmtDwells = $pdo->query("
+                            SELECT course_id, module_id, event_value 
+                            FROM interaction_telemetry 
+                            WHERE event_type = 'dwell_time'
+                        ");
+                        $dwellRows = $stmtDwells->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        $dwellTotals = [];
+                        $dwellCounts = [];
+                        foreach ($dwellRows as $row) {
+                            $val = json_decode($row['event_value'], true);
+                            $seconds = isset($val['seconds']) ? intval($val['seconds']) : 0;
+                            if ($seconds > 0) {
+                                $key = htmlspecialchars($row['course_id']) . ' / ' . htmlspecialchars($row['module_id']);
+                                $dwellTotals[$key] = ($dwellTotals[$key] ?? 0) + $seconds;
+                                $dwellCounts[$key] = ($dwellCounts[$key] ?? 0) + 1;
+                            }
+                        }
+
+                        // 6. Fetch Solution Reveal Rates per Module
+                        $stmtReveals = $pdo->query("
+                            SELECT course_id, module_id, COUNT(*) as count 
+                            FROM interaction_telemetry 
+                            WHERE event_type = 'reveal_accessible' 
+                            GROUP BY course_id, module_id
+                        ");
+                        $revealStats = $stmtReveals->fetchAll(PDO::FETCH_ASSOC);
+
+                    } catch (PDOException $e) {
+                        $totalEvents = 0;
+                        $totalCompletions = 0;
+                        $activeUsersCount = 0;
+                        $breakdown = [];
+                        $dwellTotals = [];
+                        $dwellCounts = [];
+                        $revealStats = [];
+                        error_log("Analytics Dashboard DB Query Failure: " . $e->getMessage());
+                    }
+                    ?>
+
+                    <!-- Summary Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                        <div class="card" style="background: var(--color-bg-light); border: 1px solid #cbd5e1; padding: 1.5rem; text-align: center;">
+                            <h2 style="margin: 0; font-size: 0.9rem; text-transform: uppercase; color: var(--color-neutral-mid);">Active Students</h2>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 2.25rem; font-weight: 700; color: var(--color-primary);"><?= intval($activeUsersCount) ?></p>
+                        </div>
+                        <div class="card" style="background: var(--color-bg-light); border: 1px solid #cbd5e1; padding: 1.5rem; text-align: center;">
+                            <h2 style="margin: 0; font-size: 0.9rem; text-transform: uppercase; color: var(--color-neutral-mid);">Completed Modules</h2>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 2.25rem; font-weight: 700; color: var(--color-primary);"><?= intval($totalCompletions) ?></p>
+                        </div>
+                        <div class="card" style="background: var(--color-bg-light); border: 1px solid #cbd5e1; padding: 1.5rem; text-align: center;">
+                            <h2 style="margin: 0; font-size: 0.9rem; text-transform: uppercase; color: var(--color-neutral-mid);">Interaction Events</h2>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 2.25rem; font-weight: 700; color: var(--color-primary);"><?= intval($totalEvents) ?></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Module Heuristics & Cognitive Load Table -->
+                        <div class="card" style="border: 1px solid #cbd5e1; padding: 1.5rem; background: white;">
+                            <h2 style="margin-top: 0; font-size: 1.25rem; color: var(--color-primary);" class="mb-3">⏱️ Average Module Dwell Durations</h2>
+                            <?php if (empty($dwellTotals)): ?>
+                                <p class="text-neutral-mid text-sm">No dwell time telemetry records found yet.</p>
+                            <?php else: ?>
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse;" class="text-left text-sm">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid #cbd5e1;">
+                                                <th style="padding: 0.5rem 0.25rem;">Course / Module</th>
+                                                <th style="padding: 0.5rem 0.25rem;">Recordings</th>
+                                                <th style="padding: 0.5rem 0.25rem;">Avg Duration</th>
+                                                <th style="padding: 0.5rem 0.25rem;">Cognitive Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($dwellTotals as $key => $totalSeconds): 
+                                                $count = $dwellCounts[$key] ?: 1;
+                                                $avg = round($totalSeconds / $count);
+                                                // Tag cognitive status based on heuristics (e.g. > 120 seconds might indicate high cognitive complexity)
+                                                $status = $avg > 120 ? '🔴 High Load' : ($avg > 45 ? '🟡 Moderate' : '🟢 Normal');
+                                                $statusColor = $avg > 120 ? 'var(--color-critical-text)' : ($avg > 45 ? 'var(--color-warning-text)' : 'var(--color-success-text)');
+                                                ?>
+                                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                                    <td style="padding: 0.75rem 0.25rem; font-weight: 700;"><?= $key ?></td>
+                                                    <td style="padding: 0.75rem 0.25rem;"><?= $count ?></td>
+                                                    <td style="padding: 0.75rem 0.25rem;"><?= $avg ?>s</td>
+                                                    <td style="padding: 0.75rem 0.25rem; font-weight: 700; color: <?= $statusColor ?>;"><?= $status ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Accessibility Accommodation Reveals Table -->
+                        <div class="card" style="border: 1px solid #cbd5e1; padding: 1.5rem; background: white;">
+                            <h2 style="margin-top: 0; font-size: 1.25rem; color: var(--color-primary);" class="mb-3">👁️ Solution Reveal Statistics</h2>
+                            <?php if (empty($revealStats)): ?>
+                                <p class="text-neutral-mid text-sm">No solution reveal telemetry events recorded yet.</p>
+                            <?php else: ?>
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse;" class="text-left text-sm">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid #cbd5e1;">
+                                                <th style="padding: 0.5rem 0.25rem;">Course / Module</th>
+                                                <th style="padding: 0.5rem 0.25rem;">Total Reveals</th>
+                                                <th style="padding: 0.5rem 0.25rem;">Action Recommendation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($revealStats as $stat): 
+                                                $count = intval($stat['count']);
+                                                // Provide tips if reveals are high (e.g. they should upgrade accessibility guidelines default styling)
+                                                $tip = $count > 5 ? '⚠️ Review layout clarity' : '✅ Good engagement';
+                                                $tipColor = $count > 5 ? 'var(--color-warning-text)' : 'var(--color-success-text)';
+                                                ?>
+                                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                                    <td style="padding: 0.75rem 0.25rem; font-weight: 700;"><?= htmlspecialchars($stat['course_id']) ?> / <?= htmlspecialchars($stat['module_id']) ?></td>
+                                                    <td style="padding: 0.75rem 0.25rem;"><?= $count ?></td>
+                                                    <td style="padding: 0.75rem 0.25rem; font-weight: 700; color: <?= $tipColor ?>;"><?= $tip ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Event Breakdown List -->
+                    <div class="card mt-6" style="border: 1px solid #cbd5e1; padding: 1.5rem; background: white;">
+                        <h2 style="margin-top: 0; font-size: 1.25rem; color: var(--color-primary);" class="mb-3">📊 Captured Log Types Breakdown</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <?php foreach ($breakdown as $b): ?>
+                                <div style="background: var(--color-bg-light); border: 1px solid #cbd5e1; border-radius: 0.375rem; padding: 1rem; text-align: center;">
+                                    <strong style="display: block; font-size: 0.95rem;" class="mb-1"><?= htmlspecialchars($b['event_type']) ?></strong>
+                                    <span style="font-size: 1.5rem; font-weight: bold; color: var(--color-accent);"><?= intval($b['count']) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </section>
         </div>
 

@@ -91,9 +91,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             exit;
         }
 
-        // Guests have no persistent state in the database
+        // Guests have no persistent progress, but we can resolve their last read module from telemetry
         if ($is_guest) {
-            echo json_encode(['completed' => []]);
+            try {
+                $stmtLast = $pdo->prepare("SELECT module_id FROM interaction_telemetry WHERE user_id = ? AND course_id = ? ORDER BY timestamp DESC LIMIT 1");
+                $stmtLast->execute([$user_id, $course_id]);
+                $lastActive = $stmtLast->fetchColumn() ?: null;
+                
+                // Fetch revealed accessible solutions for guest
+                $stmtRev = $pdo->prepare("SELECT DISTINCT module_id FROM interaction_telemetry WHERE user_id = ? AND course_id = ? AND event_type = 'reveal_accessible'");
+                $stmtRev->execute([$user_id, $course_id]);
+                $revealed = $stmtRev->fetchAll(PDO::FETCH_COLUMN);
+
+                echo json_encode([
+                    'completed' => [],
+                    'revealed' => $revealed,
+                    'last_active_module_id' => $lastActive
+                ]);
+            } catch (PDOException $e) {
+                echo json_encode([
+                    'completed' => [],
+                    'revealed' => [],
+                    'last_active_module_id' => null
+                ]);
+            }
             exit;
         }
 
@@ -102,11 +123,145 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $stmt->execute([$user_id, $course_id]);
             $completed = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-            echo json_encode(['completed' => $completed]);
+            // Fetch revealed accessible solutions
+            $stmtRev = $pdo->prepare("SELECT DISTINCT module_id FROM interaction_telemetry WHERE user_id = ? AND course_id = ? AND event_type = 'reveal_accessible'");
+            $stmtRev->execute([$user_id, $course_id]);
+            $revealed = $stmtRev->fetchAll(PDO::FETCH_COLUMN);
+
+            // Fetch last active module ID (last completed or last telemetry action)
+            $stmtLast = $pdo->prepare("
+                SELECT module_id FROM (
+                    SELECT module_id, timestamp FROM module_progress WHERE user_id = :uid AND course_id = :cid
+                    UNION ALL
+                    SELECT module_id, timestamp FROM interaction_telemetry WHERE user_id = :uid AND course_id = :cid
+                ) ORDER BY timestamp DESC LIMIT 1
+            ");
+            $stmtLast->execute(['uid' => $user_id, 'cid' => $course_id]);
+            $lastActive = $stmtLast->fetchColumn() ?: null;
+
+            echo json_encode([
+                'completed' => $completed,
+                'revealed' => $revealed,
+                'last_active_module_id' => $lastActive
+            ]);
         } catch (PDOException $e) {
             error_log("API Database Error (get_state): " . $e->getMessage());
             http_response_code(500);
             echo json_encode(['error' => 'Database error']);
+        }
+        exit;
+    } elseif ($action === 'get_user_metadata') {
+        if ($is_guest) {
+            echo json_encode([
+                'id' => $user_id,
+                'email' => 'guest@example.com',
+                'full_name' => 'Guest User',
+                'is_admin' => false,
+                'role' => 'Guest'
+            ]);
+        } else {
+            try {
+                $stmt = $pdo->prepare("SELECT id, email, full_name, is_admin FROM users WHERE id = ?");
+                $stmt->execute([$user_id]);
+                $user = $stmt->fetch();
+                if ($user) {
+                    echo json_encode([
+                        'id' => $user['id'],
+                        'email' => $user['email'],
+                        'full_name' => $user['full_name'],
+                        'is_admin' => (bool)$user['is_admin'],
+                        'role' => $user['is_admin'] ? 'Admin' : 'Student'
+                    ]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'User not found']);
+                }
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Database error']);
+            }
+        }
+        exit;
+    } elseif ($action === 'get_course_structure') {
+        $course_id = $_GET['course_id'] ?? '';
+        if (empty($course_id)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing course_id']);
+            exit;
+        }
+
+        $course_dir = resolveCourseDir($course_id, $tenantKey);
+        if (!$course_dir) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Course not found']);
+            exit;
+        }
+
+        $manifest_path = $course_dir . DIRECTORY_SEPARATOR . 'course_structure.json';
+        if (!file_exists($manifest_path)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Course structure missing']);
+            exit;
+        }
+
+        $content = file_get_contents($manifest_path);
+        $manifest = json_decode($content, true);
+        if ($manifest === null) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Failed to parse course structure']);
+            exit;
+        }
+
+        if (isset($manifest['modules'])) {
+            pre_process_manifest_modules($manifest['modules'], $course_dir);
+        }
+
+        echo json_encode($manifest);
+        exit;
+    } elseif ($action === 'get_progress_logs') {
+        $course_id = $_GET['course_id'] ?? '';
+        if (empty($course_id)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing course_id']);
+            exit;
+        }
+
+        $target_user = $user_id;
+        $is_admin = false;
+
+        if (!$is_guest && is_numeric($user_id)) {
+            try {
+                $uCheck = $pdo->prepare("SELECT is_admin FROM users WHERE id = ?");
+                $uCheck->execute([$user_id]);
+                $uInfo = $uCheck->fetch();
+                $is_admin = $uInfo && $uInfo['is_admin'];
+            } catch (PDOException $e) {
+                // Ignore
+            }
+        }
+
+        if ($is_admin && !empty($_GET['target_user_id'])) {
+            $target_user = $_GET['target_user_id'];
+        }
+
+        try {
+            $stmt = $pdo->prepare("SELECT module_id, is_completed, timestamp FROM module_progress WHERE user_id = ? AND course_id = ?");
+            $stmt->execute([$target_user, $course_id]);
+            $completions = $stmt->fetchAll();
+
+            $stmt = $pdo->prepare("SELECT module_id, event_type, event_value, timestamp FROM interaction_telemetry WHERE user_id = ? AND course_id = ? ORDER BY timestamp ASC");
+            $stmt->execute([$target_user, $course_id]);
+            $telemetry = $stmt->fetchAll();
+
+            echo json_encode([
+                'user_id' => $target_user,
+                'course_id' => $course_id,
+                'completions' => $completions,
+                'telemetry' => $telemetry
+            ]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error retrieving logs: ' . $e->getMessage()]);
         }
         exit;
     }
@@ -147,6 +302,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             echo json_encode(['status' => 'success']);
         } catch (PDOException $e) {
             error_log("API Database Error (mark_complete): " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error']);
+        }
+        exit;
+    } elseif ($action === 'log_interaction') {
+        $course_id = $jsonBody['course_id'] ?? $_POST['course_id'] ?? '';
+        $module_id = $jsonBody['module_id'] ?? $_POST['module_id'] ?? '';
+        $event_type = $jsonBody['event_type'] ?? $_POST['event_type'] ?? '';
+        $event_value = $jsonBody['event_value'] ?? $_POST['event_value'] ?? null;
+
+        if (empty($course_id) || empty($module_id) || empty($event_type)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing course_id, module_id, or event_type']);
+            exit;
+        }
+
+        if (is_array($event_value) || is_object($event_value)) {
+            $event_value = json_encode($event_value);
+        }
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO interaction_telemetry (user_id, course_id, module_id, event_type, event_value) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$user_id, $course_id, $module_id, $event_type, $event_value]);
+
+            echo json_encode(['status' => 'success']);
+        } catch (PDOException $e) {
+            error_log("API Database Error (log_interaction): " . $e->getMessage());
             http_response_code(500);
             echo json_encode(['error' => 'Database error']);
         }
