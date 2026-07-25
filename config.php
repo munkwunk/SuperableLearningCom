@@ -31,6 +31,13 @@ if (session_status() === PHP_SESSION_NONE) {
     }
     ini_set('session.cookie_samesite', 'Lax');
     session_start();
+    
+    // Prevent browser caching of dynamic PHP pages (fixes stale login/guest page views)
+    if (!headers_sent()) {
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+    }
 }
 
 // Generate CSRF Token for Form Security
