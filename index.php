@@ -578,7 +578,7 @@ $tenantMetadata = getTenantMetadata();
                 <?php endif; ?>
 
                 <div>
-                    <h1 class="brand-title"><?= htmlspecialchars($heroTitle) ?></h1>
+                    <div class="brand-title"><?= htmlspecialchars($heroTitle) ?></div>
                     <p class="text-sm" style="margin:0; color: #FFFFFF;"><?= htmlspecialchars($heroSub) ?></p>
                 </div>
             </div>
@@ -611,7 +611,7 @@ $tenantMetadata = getTenantMetadata();
         <?php endif; ?>
 
         <div class="flex-between mb-3">
-            <h2 style="margin: 0;">Available Courses</h2>
+            <h1 style="margin: 0;">Available Courses</h1>
         </div>
 
         <?php if (empty($courses)): ?>
@@ -623,7 +623,7 @@ $tenantMetadata = getTenantMetadata();
             <div class="card-grid card-grid-3">
                 <?php foreach ($courses as $course): ?>
                     <article class="card">
-                        <h3 class="card-title"><?= $course['title'] ?></h3>
+                        <h2 class="card-title"><?= $course['title'] ?></h2>
                         
                         <?php if (!$is_guest): ?>
                             <?php if ($course['is_completed']): ?>
@@ -699,7 +699,7 @@ $tenantMetadata = getTenantMetadata();
                 <div class="card">
                     <h3>Unlock Course with Invitation Key</h3>
                     <?php if ($unlock_message): ?>
-                        <div role="status" aria-live="polite" class="alert alert-<?= $unlock_message_type ?> mb-2">
+                        <div id="unlock-alert" tabindex="-1" role="status" aria-live="polite" class="alert alert-<?= $unlock_message_type ?> mb-2" style="outline: none;">
                             <?= htmlspecialchars($unlock_message) ?>
                         </div>
                     <?php endif; ?>
@@ -717,7 +717,7 @@ $tenantMetadata = getTenantMetadata();
                 <div class="card">
                     <h3>Change Password</h3>
                     <?php if ($password_message): ?>
-                        <div role="status" aria-live="polite" class="alert alert-<?= $password_message_type ?> mb-2">
+                        <div id="password-alert" tabindex="-1" role="status" aria-live="polite" class="alert alert-<?= $password_message_type ?> mb-2" style="outline: none;">
                             <?= htmlspecialchars($password_message) ?>
                         </div>
                     <?php endif; ?>
@@ -745,6 +745,16 @@ $tenantMetadata = getTenantMetadata();
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Auto-focus status alerts on page load for screen reader announcement
+            const passwordAlert = document.getElementById('password-alert');
+            if (passwordAlert) {
+                passwordAlert.focus();
+            }
+            const unlockAlert = document.getElementById('unlock-alert');
+            if (unlockAlert) {
+                unlockAlert.focus();
+            }
+
             const themeBtn = document.getElementById('theme-toggle-btn');
             const savedTheme = localStorage.getItem('lms_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             

@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST" action="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
             <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
-                <input type="email" name="email" id="email" class="form-control" required autocomplete="email">
+                <input type="email" name="email" id="email" class="form-control" required autocomplete="username" value="<?= isset($email) ? htmlspecialchars($email) : '' ?>">
             </div>
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
