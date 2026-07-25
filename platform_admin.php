@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $tenantKey  = sanitizeTenantKey($_POST['tenant_key'] ?? '');
             $clientName = trim($_POST['client_name'] ?? '');
             $domain     = trim($_POST['domain'] ?? '');
-            $plan       = trim($_POST['plan'] ?? 'standard');
+            $plan       = trim($_POST['plan'] ?? 'sandbox');
             $adminEmail = trim($_POST['admin_email'] ?? '');
             $adminPass  = $_POST['admin_password'] ?? 'password123';
 
@@ -120,7 +120,7 @@ $customDomainMap = getCustomDomainMap();
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div>
                 <h1 class="m-0 text-2xl" style="color: white;">Platform Super Admin Dashboard</h1>
-                <p class="m-0 mt-1 text-sm" style="color: #cbd5e0;">Superable Learning SaaS Client & Tenant Management</p>
+                <p class="m-0 mt-1 text-sm" style="color: #FFFFFF;">Superable Learning SaaS Client & Tenant Management</p>
             </div>
             <div class="flex gap-6 items-center">
                 <a href="index.php" class="text-white font-bold">← Platform Homepage</a>
@@ -166,9 +166,9 @@ $customDomainMap = getCustomDomainMap();
                     <div class="form-group">
                         <label for="plan">Subscription Plan</label>
                         <select name="plan" id="plan">
-                            <option value="standard">Standard (500 MB Cap)</option>
-                            <option value="premium">Premium (500 MB Cap)</option>
-                            <option value="enterprise">Enterprise (500 MB Cap)</option>
+                            <option value="sandbox">Sandbox (Free - 250 MB Cap)</option>
+                            <option value="pro">Pro ($10/mo - 500 MB Cap)</option>
+                            <option value="premium">Premium ($20/mo - 1 GB Cap)</option>
                         </select>
                     </div>
 
@@ -209,8 +209,8 @@ $customDomainMap = getCustomDomainMap();
                             <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                             <td><code><?= htmlspecialchars($t['tenant_key']) ?></code></td>
                             <td><?= htmlspecialchars($t['domain']) ?></td>
-                            <td><?= htmlspecialchars(ucfirst($t['plan'])) ?></td>
-                            <td><?= $t['storage_mb'] ?> MB / 500 MB</td>
+                            <td><?= htmlspecialchars(ucfirst(getTenantPlan($t['tenant_key']))) ?></td>
+                            <td><?= $t['storage_mb'] ?> MB / <?= getTenantStorageQuota($t['tenant_key']) ?> MB</td>
                             <td>
                                 <span class="badge badge-<?= $t['status'] === 'active' ? 'active' : 'suspended' ?>">
                                     <?= htmlspecialchars(strtoupper($t['status'])) ?>

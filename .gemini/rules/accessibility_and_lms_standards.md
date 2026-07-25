@@ -24,11 +24,11 @@
   1. **Full Credit** ($100\%$ mastery): Green styling (`#f0fdf4`, text `#166534`), `✓` icon, *"Correct! You earned X out of Y points."*
   2. **Partially Correct** ($0 < \text{score} < 100\%$ progressing): Warm Amber styling (`#fffbeb`, text `#b45309`), `⚠` icon, *"Partially Correct. You earned X out of Y points. Please review your selections."*
   3. **No Credit** ($0\%$ needs review): Red styling (`#fee2e2`, text `#991b1b`), `✗` icon, *"Incorrect. You earned 0 out of Y points. Please review the content and try again."*
-- Announce all feedback via `window.jwAnnounce(message, 'assertive')`.
+- Announce all feedback via `window.slAnnounce(message, 'assertive')` (or legacy `window.jwAnnounce`).
 
 ## Toggle Buttons vs. ARIA Live Regions
 - Toggle buttons using `aria-expanded="true/false"` (accordions, disclosure panels, TOC toggles) are announced natively by screen readers.
-- Do NOT fire secondary live region alerts (`window.jwAnnounce('expanded/collapsed')`) on button clicks to prevent double-reading. Reserve live regions for dynamic background updates and score announcements.
+- Do NOT fire secondary live region alerts (`window.slAnnounce('expanded/collapsed')`) on button clicks to prevent double-reading. Reserve live regions for dynamic background updates and score announcements.
 
 ## Decorative Icons & Whitespace Nodes
 - Always add `aria-hidden="true"` to decorative icon elements (e.g. `<i class="fa-solid ..." aria-hidden="true"></i>`).

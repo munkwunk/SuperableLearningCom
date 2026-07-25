@@ -659,8 +659,9 @@ document.addEventListener('click', (e) => {
         feedbackRegion.textContent = (isCorrect ? '✓ ' : '✗ ') + message;
     }
 
-    if (window.jwAnnounce) {
-        window.jwAnnounce(message, 'assertive');
+    const announce = window.slAnnounce || window.jwAnnounce;
+    if (announce) {
+        announce(message, 'assertive');
     }
 
     if (window.xapi) {

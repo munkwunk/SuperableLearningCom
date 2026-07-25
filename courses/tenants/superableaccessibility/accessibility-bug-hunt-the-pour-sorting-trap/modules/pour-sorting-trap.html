@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The POUR Sorting Trap</title>
+</head>
+<body>
+<section class="pour-module" aria-labelledby="pour-heading">
+
+    <h1 id="pour-heading">The POUR Sorting Trap</h1>
+
+    <p class="lede">
+        WCAG's four principles — <strong>Perceivable</strong>, <strong>Operable</strong>,
+        <strong>Understandable</strong>, and <strong>Robust</strong> (POUR) — are the foundation
+        every accessibility guideline is built on. Below, you'll sort real-world examples into
+        the principle they best demonstrate.
+    </p>
+
+    <h2>A quick refresher</h2>
+    <div class="principle-grid">
+        <div class="principle-card">
+            <h3>Perceivable</h3>
+            <p>Information and interface components must be presentable to users in ways they can perceive — text alternatives, captions, sufficient contrast.</p>
+        </div>
+        <div class="principle-card">
+            <h3>Operable</h3>
+            <p>Interface components and navigation must be operable — including by keyboard alone, with no traps and no strict time limits.</p>
+        </div>
+        <div class="principle-card">
+            <h3>Understandable</h3>
+            <p>Information and the operation of the interface must be understandable — predictable behavior, clear instructions, helpful error messages.</p>
+        </div>
+        <div class="principle-card">
+            <h3>Robust</h3>
+            <p>Content must be robust enough to be interpreted reliably by a wide variety of user agents, including assistive technologies.</p>
+        </div>
+    </div>
+
+    <sl-accordion>
+        <sl-accordion-item title="Why does this matter in practice?">
+            <p>
+                Each principle maps to concrete, testable behaviors. A missing keyboard handler
+                is an Operable failure. A layout that clips content at high zoom is a Perceivable
+                failure. Instructions that don't match what actually happens are an Understandable
+                failure. And a custom widget that assistive tech can't parse is a Robust failure.
+                This activity below quietly demonstrates a few of these at once — see if you can
+                spot them before we debrief as a group.
+            </p>
+        </sl-accordion-item>
+    </sl-accordion>
+
+    <h2>Activity: Sort the examples</h2>
+
+    <div class="instructions" role="note" aria-label="Keyboard instructions">
+        <h3>Keyboard-only instructions</h3>
+        <p>Try completing this activity using <strong>only your keyboard</strong> — no mouse or trackpad:</p>
+        <ol>
+            <li>Press <kbd>Tab</kbd> to move focus to a card.</li>
+            <li>Press <kbd>Space</kbd> to "lift" the card.</li>
+            <li>Use the <kbd>Arrow keys</kbd> to move it toward the correct drop zone.</li>
+            <li>Press <kbd>Space</kbd> again to drop it in place.</li>
+            <li>Press <kbd>Escape</kbd> at any time to cancel and put the card back.</li>
+        </ol>
+    </div>
+
+    <!-- Intentional trap: looks like a clickable "skip this activity" alternative, but it's a
+         plain <div> with no button semantics, no tabindex, and no keyboard access at all.
+         Keyboard users will tab straight past it without ever knowing it's there. -->
+    <div class="fake-alt-link" id="fakeAltLink">Click here for a keyboard alternative</div>
+
+    <div class="pour-board-wrapper">
+        <div class="pour-board" id="pourBoard">
+            <div class="pour-zone" data-zone="perceivable">
+                <h3>Perceivable</h3>
+                <div class="zone-drop-area" data-zone="perceivable" aria-label="Perceivable drop zone"></div>
+            </div>
+            <div class="pour-zone" data-zone="operable">
+                <h3>Operable</h3>
+                <div class="zone-drop-area" data-zone="operable" aria-label="Operable drop zone"></div>
+            </div>
+            <div class="pour-zone" data-zone="understandable">
+                <h3>Understandable</h3>
+                <div class="zone-drop-area" data-zone="understandable" aria-label="Understandable drop zone"></div>
+            </div>
+            <div class="pour-zone" data-zone="robust">
+                <h3>Robust</h3>
+                <div class="zone-drop-area" data-zone="robust" aria-label="Robust drop zone"></div>
+            </div>
+        </div>
+    </div>
+
+    <h3>Cards</h3>
+    <div class="card-tray" id="cardTray" aria-label="Draggable example cards">
+        <button type="button" class="pour-card" draggable="true" data-principle="perceivable">Alt text on images</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="perceivable">Captions on video</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="operable">Menus reachable by keyboard</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="operable">No strict time limit on a form</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="understandable">Clear, specific error messages</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="understandable">Consistent navigation across pages</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="robust">Valid, semantic HTML</button>
+        <button type="button" class="pour-card" draggable="true" data-principle="robust">ARIA used correctly, not just added</button>
+    </div>
+
+    <button type="button" class="pour-submit-btn" id="pourSubmitBtn">Submit answers</button>
+
+    <!-- Feedback "modal": intentionally never receives focus and traps nothing. Correctness
+         is conveyed by zone border/background color alone, with no icon or text label. -->
+    <div class="feedback-modal" id="pourFeedbackModal" hidden>
+        <div class="feedback-modal-inner">
+            <p id="pourScoreText">Results</p>
+            <button type="button" class="feedback-close-btn" id="pourModalCloseBtn">Close</button>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>

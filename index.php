@@ -26,8 +26,8 @@ if ($isPlatformSite) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Superable Learning — Accessible Multi-Tenant LMS Engine</title>
-    <meta name="description" content="Superable Learning is an accessible, isolated multi-tenant learning management system built for WCAG 2.2 AA compliance, rapid HTML/SCORM course delivery, and custom branding.">
+    <title>Superable Learning — Overcoming barriers through accessible learning</title>
+    <meta name="description" content="Superable Learning is a modern, accessibility-first learning platform designed specifically for small organizations, nonprofits, community groups, and growing businesses.">
     <link rel="stylesheet" href="style.css">
     <?= renderTenantBrandingCss('local-dev') ?>
 </head>
@@ -38,23 +38,27 @@ if ($isPlatformSite) {
     <header class="site-header">
         <div class="container-wide header-inner">
             <div class="brand-group">
-                <a href="index.php" class="brand-title">Superable Learning</a>
-                <span class="badge-platform">PLATFORM</span>
+                <div>
+                    <a href="index.php" class="brand-title" style="display: block; line-height: 1.1;">Superable Learning</a>
+                    <p class="text-xs" style="margin: 0; color: #FFFFFF; font-weight: 500; letter-spacing: 0.02em;">Overcoming barriers through accessible learning</p>
+                </div>
             </div>
             <nav class="nav-links" aria-label="Platform Main Navigation">
                 <a href="index.php" class="nav-link active" aria-current="page">Home</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#why-superable" class="nav-link">Why Superable</a>
+                <a href="#workspace-finder" class="nav-link">Find Workspace</a>
                 <a href="#features" class="nav-link">Features</a>
                 <a href="#architecture" class="nav-link">Architecture</a>
                 <a href="pricing.php" class="nav-link">Pricing</a>
                 <a href="help.php" class="nav-link">Help & Docs</a>
-                <a href="#workspace-finder" class="nav-link">Find Workspace</a>
                 <?php if (!$is_guest && $is_admin): ?>
                     <a href="platform_admin.php" class="btn btn-teal btn-sm">Platform Admin</a>
                 <?php endif; ?>
                 <?php if ($is_guest): ?>
                     <a href="login.php?tenant=local-dev" class="btn btn-outline-light btn-sm">Sign In</a>
                 <?php else: ?>
-                    <span class="text-sm" style="color: white;">Logged in as <strong><?= htmlspecialchars($current_user_name) ?></strong></span>
+                    <span class="text-sm" style="color: white; margin-right: 0.5rem;">Logged in as <strong><?= htmlspecialchars($current_user_name) ?></strong></span>
                     <a href="logout.php" class="nav-link text-sm">Logout</a>
                 <?php endif; ?>
             </nav>
@@ -66,16 +70,16 @@ if ($isPlatformSite) {
         <div class="container text-center">
             <div class="mb-3">
                 <span class="badge-wcag">
-                    <span class="badge-wcag-dot"></span> WCAG 2.2 AA Certified Engine
+                    <span class="badge-wcag-dot"></span> Accessibility-First, WCAG 2.2 AA Compliant
                 </span>
             </div>
-            <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">Empowering Accessible E-Learning for Every Organization</h1>
+            <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">Training that finally works for small organizations.</h1>
             <p class="hero-subtitle max-w-3xl" style="margin-left: auto; margin-right: auto;">
-                The high-performance multi-tenant learning management system engineered for WCAG 2.2 AA accessibility, isolated database security, screen readers, and seamless HTML/SCORM course delivery.
+                Accessible, simple, and built for everyone.
             </p>
 
             <div class="hero-actions flex flex-wrap justify-center gap-4 mt-4">
-                <a href="#workspace-finder" class="btn btn-lg">Find Your Workspace</a>
+                <a href="#workspace-finder" class="btn btn-accent btn-lg">Find Your Workspace</a>
                 <a href="pricing.php" class="btn btn-outline-light btn-lg">Explore Pricing</a>
                 <?php if ($is_guest): ?>
                     <a href="login.php?tenant=local-dev" class="btn btn-teal btn-lg">Platform Admin Login</a>
@@ -91,11 +95,11 @@ if ($isPlatformSite) {
                     <div class="flex flex-wrap justify-center gap-2">
                         <?php foreach ($availableTenants as $t): ?>
                             <a href="index.php?tenant=<?= urlencode($t['tenant_key']) ?>" class="tenant-chip" title="Launch portal for <?= htmlspecialchars($t['name']) ?>">
-                                <span>🏢</span> <?= htmlspecialchars($t['name']) ?>
+                                <span aria-hidden="true">🏢</span> <?= htmlspecialchars($t['name']) ?>
                             </a>
                         <?php endforeach; ?>
                         <a href="index.php?tenant=superableaccessibility" class="tenant-chip" title="Launch Accessibility Showcase Tenant">
-                            <span>♿</span> Superable Accessibility Showcase
+                            <span aria-hidden="true">♿</span> Superable Accessibility Showcase
                         </a>
                     </div>
                 </div>
@@ -105,6 +109,98 @@ if ($isPlatformSite) {
 
     <!-- Main Platform Content Body -->
     <main id="main-content" class="container-wide main-content">
+
+        <!-- What It Is Section -->
+        <section id="about" class="card py-8 mb-8" style="background: white; border: 1px solid #E2E8F0; border-radius: 1rem; margin-top: 2rem;">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold mb-4" style="color: var(--color-primary); margin-top: 0;">What It Is</h2>
+                <p class="text-lg text-neutral-mid max-w-3xl mx-auto mb-6">
+                    <strong>Superable Learning</strong> is a modern, accessibility‑first learning platform designed specifically for small organizations, nonprofits, community groups, and growing businesses.
+                </p>
+                <p class="text-lg text-neutral-mid max-w-3xl mx-auto mb-8">
+                    It gives you a clean, simple home for all your training — onboarding, compliance, volunteer education, customer learning, professional development, and everything in between.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-8">
+                    <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🛠️</div>
+                        <h3 class="text-lg font-bold mb-2" style="margin-top: 0; color: var(--color-primary);">No IT Team</h3>
+                        <p class="text-sm text-neutral-mid mb-0">Set up in minutes without any technical expertise. We handle the hosting, security, and accessibility compliance.</p>
+                    </div>
+                    <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🧩</div>
+                        <h3 class="text-lg font-bold mb-2" style="margin-top: 0; color: var(--color-primary);">No Complexity</h3>
+                        <p class="text-sm text-neutral-mid mb-0">A clean, distraction-free interface designed for humans. No onboarding or training required to start learning.</p>
+                    </div>
+                    <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🏷️</div>
+                        <h3 class="text-lg font-bold mb-2" style="margin-top: 0; color: var(--color-primary);">No Enterprise Price Tag</h3>
+                        <p class="text-sm text-neutral-mid mb-0">Affordable, transparent plans built to fit the budget of small teams, local nonprofits, and community groups.</p>
+                    </div>
+                </div>
+                
+                <p class="text-xl font-bold mt-12 mb-0" style="color: var(--color-primary);">
+                    Just a powerful, easy‑to‑use learning system that helps you teach people well.
+                </p>
+            </div>
+        </section>
+
+        <!-- Why You Need It Section -->
+        <section id="why-superable" class="card py-8 mb-8" style="background-color: var(--color-bg-light); border: 1px solid #E2E8F0; border-radius: 1rem;">
+            <div class="container-wide">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-4" style="color: var(--color-primary); margin-top: 0;">Why You Need It</h2>
+                    <p class="text-lg text-neutral-mid max-w-3xl mx-auto">
+                        You’re already training people — employees, volunteers, clients, customers — but your knowledge is scattered across PDFs, emails, Zoom recordings, and <em>“that one person who knows everything.”</em>
+                    </p>
+                    <p class="text-lg font-bold mt-4" style="color: var(--color-accent);">
+                        Superable Learning brings all of it together in one place, so your organization can:
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="card p-6 shadow-sm" style="background: white;">
+                        <div class="feature-icon-box" aria-hidden="true">⏱️</div>
+                        <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Save Time</h3>
+                        <p class="text-neutral-mid text-sm mb-0">Streamline training with content that is consistent, organized, and easy to update in real time.</p>
+                    </div>
+                    
+                    <div class="card p-6 shadow-sm" style="background: white;">
+                        <div class="feature-icon-box" aria-hidden="true">✨</div>
+                        <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Look Professional</h3>
+                        <p class="text-neutral-mid text-sm mb-0">Impress your audience with a polished, branded learning experience your learners will trust.</p>
+                    </div>
+                    
+                    <div class="card p-6 shadow-sm" style="background: white;">
+                        <div class="feature-icon-box" aria-hidden="true">♿</div>
+                        <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Support Every Learner</h3>
+                        <p class="text-neutral-mid text-sm mb-0">Provide an inclusive platform with accessibility built-in from the ground up, supporting screen readers and keyboard navigation.</p>
+                    </div>
+                    
+                    <div class="card p-6 shadow-sm" style="background: white;">
+                        <div class="feature-icon-box" aria-hidden="true">📊</div>
+                        <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Deliver Better Results</h3>
+                        <p class="text-neutral-mid text-sm mb-0">Monitor learner progress with clear tracking, module completions, and simple analytics dashboards.</p>
+                    </div>
+                    
+                    <div class="card p-6 shadow-sm" style="background: white;">
+                        <div class="feature-icon-box" aria-hidden="true">🌱</div>
+                        <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Grow Confidently</h3>
+                        <p class="text-neutral-mid text-sm mb-0">Start small with simple modules, and expand your organizational training portal whenever you’re ready.</p>
+                    </div>
+                </div>
+
+                <div class="card p-6 text-center" style="background: linear-gradient(135deg, var(--color-primary), #2d5a41); color: white; border: none; border-radius: 1rem; margin-top: 2rem;">
+                    <p class="text-lg mb-4" style="line-height: 1.6; color: white;">
+                        You don’t need a training department. You don’t need a big LMS.<br>
+                        You just need a system that helps people learn — and helps your organization thrive.
+                    </p>
+                    <p class="text-xl font-bold mb-0" style="color: var(--color-accent); filter: brightness(1.4);">
+                        Superable Learning gives you that system. Accessible. Affordable. Designed for humans.
+                    </p>
+                </div>
+            </div>
+        </section>
 
         <!-- Interactive Workspace Finder / Tenant Switcher Section -->
         <section id="workspace-finder" class="workspace-finder-card">
@@ -162,8 +258,8 @@ if ($isPlatformSite) {
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon-box">♿</div>
-                    <h3>WCAG 2.2 AA Certified</h3>
+                    <div class="feature-icon-box" aria-hidden="true">♿</div>
+                    <h3>Accessibility-First, WCAG 2.2 AA Compliant</h3>
                     <p class="card-text">Audited and optimized for screen readers (NVDA, JAWS, VoiceOver), keyboard-only navigation, dyslexia-friendly Atkinson Hyperlegible fonts, and automated contrast guards.</p>
                 </div>
 
@@ -224,7 +320,7 @@ if ($isPlatformSite) {
         </section>
 
         <!-- Pricing Teaser Banner -->
-        <section class="card mb-8" style="background: linear-gradient(135deg, var(--color-primary), #1e4d35); color: white;">
+        <section class="card mb-8" style="background: linear-gradient(135deg, var(--color-primary), #1e4d35); color: white; border: none;">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                     <h2 class="h3-style text-white" style="margin-top: 0;">Flexible Pricing Strategy & Tenant Limits</h2>
@@ -233,7 +329,7 @@ if ($isPlatformSite) {
                     </p>
                 </div>
                 <div>
-                    <a href="pricing.php" class="btn btn-lg btn-accent" style="white-space: nowrap; background-color: var(--color-accent); color: white; border: none;">View Pricing & Plans &rarr;</a>
+                    <a href="pricing.php" class="btn btn-lg btn-accent" style="white-space: nowrap;">View Pricing & Plans &rarr;</a>
                 </div>
             </div>
         </section>
@@ -245,17 +341,17 @@ if ($isPlatformSite) {
                 <div class="card">
                     <h3>Course Packaging Guide</h3>
                     <p class="text-sm text-neutral-mid">Learn how to package HTML5, SCORM, and BuildXCL modules for instant deployment.</p>
-                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary);">View Guide &rarr;</a>
+                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">View Guide &rarr;</a>
                 </div>
                 <div class="card">
                     <h3>LC-JSON Component Spec</h3>
                     <p class="text-sm text-neutral-mid">Explore JSON schemas for interactive quizzes, flashcards, videos, and accessible media.</p>
-                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary);">View Spec &rarr;</a>
+                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">View Spec &rarr;</a>
                 </div>
                 <div class="card">
                     <h3>Tenant Setup & API</h3>
                     <p class="text-sm text-neutral-mid">Understand how to provision tenants, configure custom domains, and override CSS tokens.</p>
-                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary);">View Documentation &rarr;</a>
+                    <a href="help.php" class="btn btn-outline-light text-sm" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">View Documentation &rarr;</a>
                 </div>
             </div>
         </section>
@@ -483,7 +579,7 @@ $tenantMetadata = getTenantMetadata();
 
                 <div>
                     <h1 class="brand-title"><?= htmlspecialchars($heroTitle) ?></h1>
-                    <p class="text-sm" style="margin:0; color: #CBD5E0;"><?= htmlspecialchars($heroSub) ?></p>
+                    <p class="text-sm" style="margin:0; color: #FFFFFF;"><?= htmlspecialchars($heroSub) ?></p>
                 </div>
             </div>
             <div class="nav-links">

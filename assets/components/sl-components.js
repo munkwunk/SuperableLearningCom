@@ -8,7 +8,7 @@
  * Global Announcement Utility
  * Provides a centralized way to send messages to a live region.
  */
-window.jwAnnounce = function(message, priority = 'polite') {
+window.slAnnounce = function(message, priority = 'polite') {
     let liveRegion = document.getElementById('jw-live-region');
     if (!liveRegion) {
         liveRegion = document.createElement('div');
@@ -27,6 +27,7 @@ window.jwAnnounce = function(message, priority = 'polite') {
         liveRegion.textContent = message;
     }, 100);
 };
+window.jwAnnounce = window.slAnnounce;
 
 /**
  * JW Accordion Component
@@ -45,7 +46,7 @@ class JWAccordion extends HTMLElement {
             const headerId = `jw-accordion-header-${index}`;
             const panelId = `jw-accordion-panel-${index}`;
             
-            const title = item.getAttribute('title') || 'Accordion Item';
+            const title = item.getAttribute('title') || item.getAttribute('heading') || 'Accordion Item';
             const expanded = item.hasAttribute('expanded');
             const level = this.getAttribute('level') || '3';
             const noRegion = this.hasAttribute('no-region');
@@ -212,8 +213,8 @@ class JWFlipCard extends HTMLElement {
     connectedCallback() {
         if (this.hasAttribute('rendered')) return;
         
-        let frontContent = this.querySelector('jw-front')?.innerHTML || this.getAttribute('front') || '';
-        let backContent = this.querySelector('jw-back')?.innerHTML || this.getAttribute('back') || '';
+        let frontContent = this.querySelector('sl-front, jw-front')?.innerHTML || this.getAttribute('front') || '';
+        let backContent = this.querySelector('sl-back, jw-back')?.innerHTML || this.getAttribute('back') || '';
         
         if (!frontContent && !backContent && this.innerHTML.trim()) {
             frontContent = this.innerHTML;
@@ -1723,8 +1724,8 @@ registerComponent('sl-multi-column', 'jw-multi-column', JWMultiColumn);
 class JWQuiz extends HTMLElement {
     connectedCallback() {
         if (this.hasAttribute('rendered')) return;
-        this.init();
         this.setAttribute('rendered', '');
+        setTimeout(() => this.init(), 50);
     }
 
     async init() {
@@ -1830,7 +1831,63 @@ class JWQuiz extends HTMLElement {
     }
 
     renderQuestionItem(q, index) {
-        const type = q.type || 'multipleChoice';
+        // Normalize type names
+        let type = q.type || 'multipleChoice';
+        if (type === 'multiple-choice') type = 'multipleChoice';
+        if (type === 'true-false' || type === 'trueFalse') type = 'trueFalseQuestion';
+        if (type === 'gap-fill' || type === 'simple-gap-fill') type = 'simpleGapFill';
+        if (type === 'word-bank' || type === 'word-bank-cloze') type = 'wordBankCloze';
+        if (type === 'short-answer') type = 'shortAnswer';
+        
+        q.type = type;
+
+        // If q.id is present but not q.globalId, copy it
+        if (q.id && !q.globalId) {
+            q.globalId = q.id;
+        }
+        
+        if (q.correct !== undefined && q.correctAnswer === undefined) {
+            q.correctAnswer = q.correct;
+        }
+
+        // Normalize options objects array to strings array
+        if (Array.isArray(q.options) && q.options.length > 0 && typeof q.options[0] === 'object') {
+            const originalOptions = q.options; // array of { id, text }
+            q.options = originalOptions.map(opt => opt.text || '');
+            
+            // Rebuild optionsAndPoints map
+            q.optionsAndPoints = q.optionsAndPoints || {};
+            
+            // Find correct answer(s)
+            let correctIds = [];
+            if (q.correct !== undefined) {
+                correctIds = Array.isArray(q.correct) ? q.correct : [q.correct];
+            } else if (q.correctAnswer !== undefined) {
+                correctIds = Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer];
+            }
+            
+            originalOptions.forEach((opt, idx) => {
+                if (correctIds.includes(opt.id) || correctIds.includes(opt.text)) {
+                    q.optionsAndPoints[opt.text] = parseFloat(q.points) || 1.0;
+                } else {
+                    q.optionsAndPoints[opt.text] = 0.0;
+                }
+            });
+
+            // Rebuild choiceFeedback mapping if feedback exists
+            if (q.feedback) {
+                if (!q.feedback.choiceFeedback) {
+                    q.feedback.choiceFeedback = {};
+                }
+                originalOptions.forEach(opt => {
+                    const feedbackMsg = q.feedback[opt.id] || (opt.id === q.correct ? q.feedback.correct : q.feedback.incorrect) || '';
+                    if (feedbackMsg) {
+                        q.feedback.choiceFeedback[opt.text] = feedbackMsg;
+                    }
+                });
+            }
+        }
+
         const globalId = q.globalId || (`q-${index}`);
         const title = q.title || `Question ${index}`;
         const prompt = q.prompt || '';
@@ -2240,6 +2297,24 @@ class JWQuiz extends HTMLElement {
                     }
                 });
             }
+            
+            const eventDetail = {
+                raw: currentTotal,
+                max: totalPoints,
+                scaled: pct / 100,
+                success: pct >= 70,
+                completion: true
+            };
+            this.dispatchEvent(new CustomEvent('sl-quiz-completed', {
+                detail: eventDetail,
+                bubbles: true,
+                composed: true
+            }));
+            this.dispatchEvent(new CustomEvent('jw-quiz-completed', {
+                detail: eventDetail,
+                bubbles: true,
+                composed: true
+            }));
         }
     }
 

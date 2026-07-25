@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debrief</title>
+</head>
+<body>
+<section class="pour-module" aria-labelledby="conclusion-heading">
+
+    <h1 id="conclusion-heading">Debrief: What Just Happened</h1>
+
+    <p class="lede">
+        Everything on the previous page was intentional. Here's what was actually going on,
+        and which WCAG principle each failure maps to.
+    </p>
+
+    <sl-accordion>
+        <sl-accordion-item title="1. The card would never drop (Operable)">
+            <p>
+                The on-screen instructions promised Space to lift, arrow keys to move, Space again
+                to drop, and Escape to cancel. Only the Space-to-lift toggle was actually wired up
+                in the JavaScript — arrow key movement and Escape were never implemented. This is
+                an extremely common real-world pattern: a custom drag-and-drop widget built for
+                mouse users, with keyboard support bolted on just far enough to look present in a
+                code review, but not far enough to actually complete the task.
+            </p>
+            <p><strong>The fix:</strong> implement full keyboard equivalents for every mouse interaction the widget supports, and test the interaction to completion with a keyboard before shipping — not just "does something happen when I press a key."</p>
+        </sl-accordion-item>
+
+        <sl-accordion-item title="2. Columns vanished at 200% zoom (Perceivable)">
+            <p>
+                The drop zones sat inside a container with a fixed pixel width and
+                <code>overflow: hidden</code>. At normal zoom there was room to spare, so nothing
+                looked wrong. At 200% zoom the visual viewport shrank below that fixed width, and
+                because the container hid overflow instead of allowing scroll, the
+                "Understandable" and "Robust" columns were pushed out of view with no way to
+                reach them.
+            </p>
+            <p><strong>The fix:</strong> use relative/fluid widths (or CSS Grid/Flexbox that's allowed to wrap) instead of fixed pixel widths for layout containers, satisfying WCAG 1.4.10 Reflow.</p>
+        </sl-accordion-item>
+
+        <sl-accordion-item title="3. The &quot;keyboard alternative&quot; link didn't exist to a keyboard (Operable)">
+            <p>
+                That bright, button-styled "Click here for a keyboard alternative" box was a plain
+                <code>&lt;div&gt;</code> — no <code>&lt;button&gt;</code>, no <code>tabindex</code>,
+                no keyboard event handling. A mouse user sees an obvious call-to-action. A
+                keyboard-only user's focus indicator skips right past it, and there's no way to
+                even discover it's there.
+            </p>
+            <p><strong>The fix:</strong> use real interactive elements (<code>&lt;button&gt;</code>, <code>&lt;a href&gt;</code>) for anything clickable, never a styled <code>&lt;div&gt;</code> with a click handler.</p>
+        </sl-accordion-item>
+
+        <sl-accordion-item title="4. Feedback you could see, but not sense (Understandable / Perceivable)">
+            <p>
+                Submitting the activity graded each zone by swapping in a green or red
+                border/background — no icon, no text label, nothing but color to distinguish
+                "correct" from "incorrect." On top of that, the feedback panel appeared without
+                ever moving keyboard focus into it, so a screen reader user would get no
+                indication anything had happened at all after clicking Submit.
+            </p>
+            <p><strong>The fix:</strong> pair color with a text label or icon (WCAG 1.4.1), and move focus into any dialog that appears, announcing it and returning focus to the trigger on close.</p>
+        </sl-accordion-item>
+    </sl-accordion>
+
+    <h2>The takeaway</h2>
+    <p>
+        None of these four bugs would show up in a quick visual scan, and all four are things
+        real teams ship regularly. The good news: each one is testable in under a minute with
+        nothing but a keyboard and your browser's built-in zoom — no assistive tech or
+        specialized skills required. That's the habit worth building.
+    </p>
+
+</section>
+</body>
+</html>

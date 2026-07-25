@@ -97,7 +97,7 @@ class CourseImporter {
             if (in_array($ext, self::$forbiddenExtensions)) {
                 $zip->close();
                 if (in_array($ext, ['mp4', 'webm', 'ogg', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'm4v', '3gp'])) {
-                    return ['success' => false, 'message' => "Video Upload Error: Direct video upload (.{$ext}) is disabled in entry [{$entryName}]. Please embed videos via YouTube or Vimeo."];
+                    return ['success' => false, 'message' => "Video Upload Error: Direct video upload (.{$ext}) is disabled in entry [{$entryName}]. Please embed videos via authorized platforms (YouTube, Vimeo, Panopto, Loom, Zoom, Wistia)."];
                 }
                 return ['success' => false, 'message' => "Security Error: Prohibited file type '.{$ext}' found in zip entry [{$entryName}]. Executable scripts are strictly forbidden."];
             }
@@ -230,6 +230,11 @@ class CourseImporter {
                 $fileData = self::sanitizeSvgContent($fileData);
             }
 
+            // Auto-Fix HTML Accessibility (inject missing html/lang/title)
+            if ($ext === 'html' || $ext === 'htm') {
+                $fileData = self::autoFixHtmlAccessibility($fileData, $relativePath, $courseTitle, $manifestData);
+            }
+
             file_put_contents($targetFilePath, $fileData);
 
             // Automated HTML Accessibility & Video Audit
@@ -335,6 +340,66 @@ class CourseImporter {
     }
 
     /**
+     * Automatically wraps or updates HTML module fragments to ensure
+     * valid <html>, lang="en", and <title> tags exist for accessibility.
+     */
+    private static function autoFixHtmlAccessibility($htmlContent, $relativePath, $courseTitle, $manifestData) {
+        $moduleTitle = null;
+        if (isset($manifestData['modules'])) {
+            $moduleTitle = self::findModuleTitleInManifest($manifestData['modules'], $relativePath);
+        }
+        
+        $titleStr = $moduleTitle ? htmlspecialchars($moduleTitle) : basename($relativePath, '.' . pathinfo($relativePath, PATHINFO_EXTENSION));
+        $titleStr = ucwords(str_replace(['-', '_'], ' ', $titleStr));
+        
+        $hasHtml = (bool)preg_match('/<html\b/i', $htmlContent);
+        
+        if (!$hasHtml) {
+            // It's an HTML fragment/stub. Wrap it fully.
+            $htmlContent = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>{$titleStr}</title>\n</head>\n<body>\n" . trim($htmlContent) . "\n</body>\n</html>";
+        } else {
+            // It has <html> but might be missing lang attribute
+            if (!preg_match('/<html\b[^>]*\blang=/i', $htmlContent)) {
+                $htmlContent = preg_replace('/<html\b/i', '<html lang="en"', $htmlContent, 1);
+            }
+            
+            // It might be missing <title>
+            if (!preg_match('/<title\b/i', $htmlContent)) {
+                $titleTag = "<title>{$titleStr}</title>";
+                if (preg_match('/<\/head>/i', $htmlContent)) {
+                    $htmlContent = preg_replace('/<\/head>/i', "    {$titleTag}\n</head>", $htmlContent, 1);
+                } elseif (preg_match('/<head\b[^>]*>/i', $htmlContent)) {
+                    $htmlContent = preg_replace('/<head\b[^>]*>/i', "$0\n    {$titleTag}", $htmlContent, 1);
+                } else {
+                    $htmlContent = preg_replace('/<html\b[^>]*>/i', "$0\n<head>\n    {$titleTag}\n</head>", $htmlContent, 1);
+                }
+            }
+        }
+        
+        return $htmlContent;
+    }
+
+    /**
+     * Helper to recursively scan manifest modules (flat list or nested groups) to find a module's title.
+     */
+    private static function findModuleTitleInManifest($modules, $srcPath) {
+        if (!is_array($modules)) {
+            return null;
+        }
+        foreach ($modules as $m) {
+            if (isset($m['group']) && is_array($m['items'])) {
+                $title = self::findModuleTitleInManifest($m['items'], $srcPath);
+                if ($title !== null) {
+                    return $title;
+                }
+            } elseif (isset($m['src']) && str_replace('\\', '/', $m['src']) === str_replace('\\', '/', $srcPath)) {
+                return $m['title'] ?? null;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Performs automated accessibility & YouTube/Vimeo embed audits on HTML module files.
      */
     private static function auditHtmlAccessibilityAndVideos($htmlContent, $filename) {
@@ -354,15 +419,15 @@ class CourseImporter {
             $issues[] = "[Accessibility Notice] {$filename}: Contains {$count} `<img>` tag(s) missing an `alt` attribute.";
         }
 
-        // 2. Video Restrictions Check (YouTube & Vimeo Only)
+        // 2. Video Restrictions Check (Authorized Embed Platforms Only)
         if (preg_match('/<video\b[^>]*>/i', $htmlContent)) {
-            $issues[] = "[Video Policy Alert] {$filename}: Direct `<video>` elements found. Direct video files are disabled; please use YouTube or Vimeo embeds.";
+            $issues[] = "[Video Policy Alert] {$filename}: Direct `<video>` elements found. Direct video files are disabled; please use authorized video embeds (YouTube, Vimeo, Panopto, Loom, Zoom, Wistia).";
         }
 
         if (preg_match_all('/<iframe\b[^>]*\bsrc=["\']([^"\']+)["\']/i', $htmlContent, $iframeMatches)) {
             foreach ($iframeMatches[1] as $src) {
-                if (!preg_match('/^https?:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)/i', $src)) {
-                    $issues[] = "[Video Policy Alert] {$filename}: Embedded iframe `{$src}` is not authorized. Only YouTube and Vimeo embeds are permitted.";
+                if (!preg_match('/^https?:\/\/([a-z0-9-]+\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|panopto\.com|panopto\.eu|loom\.com|zoom\.us|wistia\.com|wistia\.net)/i', $src)) {
+                    $issues[] = "[Video Policy Alert] {$filename}: Embedded iframe `{$src}` is not authorized. Only YouTube, Vimeo, Panopto, Loom, Zoom, and Wistia embeds are permitted.";
                 }
             }
         }
@@ -443,47 +508,9 @@ class CourseImporter {
         $seenIds = [];
         $advisories = [];
 
-        foreach ($data['modules'] as $index => $m) {
-            $num = $index + 1;
-            
-            // Check ID
-            if (empty($m['id']) || !is_string($m['id'])) {
-                return ['valid' => false, 'message' => "Schema Error: Module #{$num} is missing a valid 'id' string."];
-            }
-            if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $m['id'])) {
-                return ['valid' => false, 'message' => "Schema Error: Module #{$num} 'id' ('{$m['id']}') is invalid. Only alphanumeric characters, hyphens, and underscores are permitted."];
-            }
-            if (in_array($m['id'], $seenIds)) {
-                return ['valid' => false, 'message' => "Schema Error: Duplicate module 'id' ('{$m['id']}') found in course_structure.json."];
-            }
-            $seenIds[] = $m['id'];
-
-            // Check Title
-            if (empty($m['title']) || !is_string($m['title'])) {
-                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') is missing a valid 'title' string."];
-            }
-
-            // Check Source File
-            if (empty($m['src']) || !is_string($m['src'])) {
-                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') is missing a valid 'src' path."];
-            }
-
-            $src = $m['src'];
-            // Normalize slashes for zip lookup
-            $zipSrcPath = str_replace('\\', '/', $src);
-            $ext = strtolower(pathinfo($zipSrcPath, PATHINFO_EXTENSION));
-            if (!in_array($ext, ['html', 'htm'])) {
-                return ['valid' => false, 'message' => "Schema Error: Module #{$num} ('{$m['id']}') 'src' ('{$src}') must point to an HTML file (.html or .htm)."];
-            }
-
-            // Check File Existence in ZIP
-            $fullZipPath = $rootPrefix . $zipSrcPath;
-            if ($zip->locateName($fullZipPath) === false) {
-                return [
-                    'valid' => false,
-                    'message' => "Package Validation Error: The module source file '{$src}' referenced in course_structure.json does not exist in the ZIP package."
-                ];
-            }
+        $modulesValidation = self::validateModulesList($data['modules'], $zip, $rootPrefix, $seenIds, $advisories);
+        if (!$modulesValidation['valid']) {
+            return $modulesValidation;
         }
 
         // Validate optional asset file existence
@@ -502,6 +529,70 @@ class CourseImporter {
         }
 
         return ['valid' => true, 'advisories' => $advisories];
+    }
+
+    /**
+     * Recursively validates the modules list, supporting both flat modules and grouped modules.
+     */
+    private static function validateModulesList($items, $zip, $rootPrefix, &$seenIds, &$advisories, $parentPath = '') {
+        if (!is_array($items)) {
+            return ['valid' => false, 'message' => 'Schema Error: "modules" or group "items" must be an array.'];
+        }
+
+        foreach ($items as $index => $m) {
+            $num = $index + 1;
+            $currentPath = $parentPath === '' ? "Module #{$num}" : "{$parentPath} -> Sub-item #{$num}";
+
+            if (isset($m['group'])) {
+                if (empty($m['group']) || !is_string($m['group'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} has a group, but the group title is missing or not a string."];
+                }
+                if (!isset($m['items']) || !is_array($m['items'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} (Group '{$m['group']}') is missing its 'items' array."];
+                }
+                $subRes = self::validateModulesList($m['items'], $zip, $rootPrefix, $seenIds, $advisories, "{$currentPath} (Group '{$m['group']}')");
+                if (!$subRes['valid']) {
+                    return $subRes;
+                }
+            } else {
+                // Leaf module validation
+                if (empty($m['id']) || !is_string($m['id'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} is missing a valid 'id' string."];
+                }
+                if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $m['id'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} 'id' ('{$m['id']}') is invalid. Only alphanumeric characters, hyphens, and underscores are permitted."];
+                }
+                if (in_array($m['id'], $seenIds)) {
+                    return ['valid' => false, 'message' => "Schema Error: Duplicate module 'id' ('{$m['id']}') found in course_structure.json."];
+                }
+                $seenIds[] = $m['id'];
+
+                if (empty($m['title']) || !is_string($m['title'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} ('{$m['id']}') is missing a valid 'title' string."];
+                }
+
+                if (empty($m['src']) || !is_string($m['src'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} ('{$m['id']}') is missing a valid 'src' path."];
+                }
+
+                $src = $m['src'];
+                $zipSrcPath = str_replace('\\', '/', $src);
+                $ext = strtolower(pathinfo($zipSrcPath, PATHINFO_EXTENSION));
+                if (!in_array($ext, ['html', 'htm'])) {
+                    return ['valid' => false, 'message' => "Schema Error: {$currentPath} ('{$m['id']}') 'src' ('{$src}') must point to an HTML file (.html or .htm)."];
+                }
+
+                $fullZipPath = $rootPrefix . $zipSrcPath;
+                if ($zip->locateName($fullZipPath) === false) {
+                    return [
+                        'valid' => false,
+                        'message' => "Package Validation Error: The module source file '{$src}' referenced in course_structure.json does not exist in the ZIP package."
+                    ];
+                }
+            }
+        }
+
+        return ['valid' => true];
     }
 
     /**

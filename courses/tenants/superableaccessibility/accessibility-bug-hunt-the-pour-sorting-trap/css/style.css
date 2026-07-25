@@ -1,0 +1,270 @@
+/* ============================================================
+   The POUR Sorting Trap — course styles
+   NOTE FOR FACILITATORS: sections marked "BUG" below are the
+   intentional accessibility failures this demo is built around.
+   Everything else is written to be genuinely accessible.
+   ============================================================ */
+
+.pour-module {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.5;
+
+    /* BUG (zoom/reflow): this establishes the clipping boundary for the
+       fixed-width board below. A real page's content column is normally
+       fluid, so at 100% zoom there's plenty of room. As the visual
+       viewport shrinks under browser zoom, the fixed-width board no
+       longer fits — and because this container hides overflow instead
+       of allowing scroll, the clipped columns become unreachable. */
+    overflow-x: hidden;
+}
+
+.pour-module h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.pour-module h2 {
+    font-size: 1.4rem;
+    margin-top: 2rem;
+}
+
+.pour-module h3 {
+    font-size: 1.1rem;
+}
+
+.lede {
+    font-size: 1.05rem;
+}
+
+/* Principle reference cards */
+.principle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 16px 0 24px;
+}
+
+.principle-card {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.principle-card p {
+    margin: 8px 0 0;
+    font-size: 0.95rem;
+}
+
+/* Keyboard instructions block */
+.instructions {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 24px 0;
+}
+
+.instructions kbd {
+    background: #1f2937;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.85em;
+    font-family: monospace;
+}
+
+/* ---------------------------------------------------------------
+   BUG (Understandable / Operable — "false hope" link)
+   Styled to look exactly like a clickable button: bright color,
+   shadow, pointer cursor, generous padding. But it's a bare <div>
+   with no button role, no tabindex, and no keyboard access. A
+   keyboard-only user tabbing through the page will skip right
+   over it and never know it exists.
+   --------------------------------------------------------------- */
+.fake-alt-link {
+    display: inline-block;
+    background: #fbbf24;
+    color: #1a1a1a;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    margin: 16px 0;
+    user-select: none;
+}
+
+.fake-alt-link:hover {
+    background: #f59e0b;
+}
+
+/* ---------------------------------------------------------------
+   BUG (Perceivable / Reflow — zoom trap)
+   Fixed pixel width + overflow: hidden. Fine at 100% browser zoom
+   on a typical desktop window. At 200% zoom, the shrunken visual
+   viewport can no longer fit this fixed-width row, and the
+   "Understandable" / "Robust" columns are clipped out of view with
+   no scrollbar to recover them.
+   --------------------------------------------------------------- */
+.pour-board-wrapper {
+    width: 900px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.pour-board {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+}
+
+.pour-zone {
+    flex: 0 0 210px;
+    background: #f9fafb;
+    border: 2px dashed #9ca3af;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.pour-zone h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.zone-drop-area {
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 6px;
+}
+
+/* BUG (Understandable — color alone conveys meaning). No icon, no
+   text label distinguishes these two states from each other —
+   just a border/background color swap. */
+.zone-drop-area.zone-correct {
+    background: #dcfce7;
+    border: 2px solid #16a34a;
+}
+
+.zone-drop-area.zone-incorrect {
+    background: #fee2e2;
+    border: 2px solid #dc2626;
+}
+
+/* Card tray + cards */
+.card-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0 24px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.pour-card {
+    background: #ffffff;
+    border: 2px solid #2563eb;
+    color: #1e3a8a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: grab;
+    min-height: 44px;
+}
+
+.pour-card:active {
+    cursor: grabbing;
+}
+
+/* Genuinely accessible focus styling for the elements that ARE
+   real interactive controls (cards, submit, close). Visible focus
+   indicators are a separate concern from keyboard *operability*,
+   which is where this demo's real bugs live. */
+.pour-card:focus-visible,
+.pour-submit-btn:focus-visible,
+.feedback-close-btn:focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
+
+/* Space-lifted state (the ONE piece of keyboard interaction that
+   actually works in this demo) */
+.pour-card.lifted {
+    background: #dbeafe;
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.3);
+}
+
+.pour-submit-btn {
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.pour-submit-btn:hover {
+    background: #15803d;
+}
+
+/* ---------------------------------------------------------------
+   BUG (focus management): the modal is positioned as an overlay
+   but is never given focus and traps nothing. A screen reader or
+   keyboard user may never realize it opened at all.
+   --------------------------------------------------------------- */
+.feedback-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.feedback-modal-inner {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.feedback-close-btn {
+    margin-top: 16px;
+    background: #1f2937;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

@@ -1,0 +1,37 @@
+{
+    "properties": {
+        "title": "Accessibility Bug Hunt: The POUR Sorting Trap",
+        "description": "A live, hands-on demo module for testing keyboard-only navigation, 200% browser zoom reflow, and non-focusable 'div soup' controls. Built for webinar audiences of any skill level to try themselves.",
+        "thumbnail": "images/pour-thumb.svg",
+        "access": {
+            "type": "public",
+            "teaser_link": ""
+        },
+        "assets": {
+            "css": [
+                "css/style.css"
+            ],
+            "js": [
+                "js/main.js"
+            ]
+        },
+        "status": "published"
+    },
+    "modules": [
+        {
+            "id": "welcome",
+            "title": "Welcome",
+            "src": "modules/welcome.html"
+        },
+        {
+            "id": "pour-sorting-trap",
+            "title": "The POUR Sorting Trap",
+            "src": "modules/pour-sorting-trap.html"
+        },
+        {
+            "id": "conclusion",
+            "title": "Debrief",
+            "src": "modules/conclusion.html"
+        }
+    ]
+}

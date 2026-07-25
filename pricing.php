@@ -148,7 +148,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
         <div class="container text-center">
             <div class="mb-3">
                 <span class="badge-wcag">
-                    <span class="badge-wcag-dot"></span> WCAG 2.2 AA Certified Engine
+                    <span class="badge-wcag-dot"></span> Accessibility-First, WCAG 2.2 AA Compliant
                 </span>
             </div>
             <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">Predictable Plans for Every Scale</h1>

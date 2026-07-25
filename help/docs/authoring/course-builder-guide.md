@@ -83,22 +83,22 @@ To eliminate AI prompt token truncation when using free web-based LLMs (Gemini, 
 
 ## 4. WAI-ARIA APG Flip Card Pattern & Accessibility Specs
 
-JW Flip Cards (`<jw-flip-card>`) follow strict WAI-ARIA Authoring Practices Guide standards:
+SL Flip Cards (`<sl-flip-card>`) follow strict WAI-ARIA Authoring Practices Guide standards:
 
 ### HTML Syntax Options
 ```html
 <!-- Attribute Form -->
-<jw-flip-card 
+<sl-flip-card 
   title="WCAG Contrast" 
   front="What is the minimum contrast ratio for normal text in WCAG 2.2 AA?" 
   back="4.5:1 for normal text, and 3:1 for large text (18pt+ or 14pt+ bold).">
-</jw-flip-card>
+</sl-flip-card>
 
 <!-- Child Tag Form -->
-<jw-flip-card title="ARIA Roles">
-  <jw-front><p>What does role="region" do?</p></jw-front>
-  <jw-back><p>Identifies a landmark section for assistive technologies.</p></jw-back>
-</jw-flip-card>
+<sl-flip-card title="ARIA Roles">
+  <sl-front><p>What does role="region" do?</p></sl-front>
+  <sl-back><p>Identifies a landmark section for assistive technologies.</p></sl-back>
+</sl-flip-card>
 ```
 
 ### Accessibility Architecture Specs
@@ -113,7 +113,7 @@ JW Flip Cards (`<jw-flip-card>`) follow strict WAI-ARIA Authoring Practices Guid
 ## 5. Technical Discoveries & Iframe Sandbox Rules
 
 ### 1. Blob URL Asset Resolution
-Inside Blob iframe sandboxes (`blob:http://...`), relative paths (`assets/components/jw-components.js`) fail to resolve against the origin. Always compute **absolute URLs** (`new URL('assets/components/jw-components.js', baseUrl).href`).
+Inside Blob iframe sandboxes (`blob:http://...`), relative paths (`assets/components/sl-components.js`) fail to resolve against the origin. Always compute **absolute URLs** (`new URL('assets/components/sl-components.js', baseUrl).href`).
 
 ### 2. HTML5 `innerHTML` Script Execution
 Per HTML5 specifications, scripts inserted into a container via `container.innerHTML = html_string` are dormant by default. To execute scripts dynamically during SPA module swaps or iframe renders:

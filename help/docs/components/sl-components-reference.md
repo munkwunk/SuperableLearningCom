@@ -1,14 +1,14 @@
-# Superable Learning LMS — JW Web Components Reference Guide
+# Superable Learning LMS — SL Web Components Reference Guide
 
-> **Technical & Component Specification**: Framework-free, 100% WCAG 2.2 AA compliant web components for interactive e-learning modules. Automatically loaded in all course modules via `assets/components/jw-components.js`.
+> **Technical & Component Specification**: Framework-free, 100% WCAG 2.2 AA compliant web components for interactive e-learning modules. Automatically loaded in all course modules via `assets/components/sl-components.js`.
 
 ---
 
 ## 1. Overview & Accessibility Mandate
 
-All JW Components are native Web Components (`customElements.define`) engineered with:
+All SL Components are native Web Components (`customElements.define`) engineered with:
 * **Keyboard Accessibility**: Full support for <kbd>Tab</kbd>, <kbd>Arrow Keys</kbd>, <kbd>Enter</kbd>, <kbd>Space</kbd>, and <kbd>Escape</kbd>.
-* **Screen Reader Live Announcements**: Built-in ARIA live region support (`window.jwAnnounce()`).
+* **Screen Reader Live Announcements**: Built-in ARIA live region support (`window.slAnnounce()`, backward-compatible with `window.jwAnnounce()`).
 * **Visible Focus Indicators**: High contrast `:focus-visible` rings.
 * **Automatic xAPI Event Dispatch**: Emits xAPI statement payloads on interactions automatically.
 
@@ -16,146 +16,153 @@ All JW Components are native Web Components (`customElements.define`) engineered
 
 ## 2. Component Catalog & HTML Specifications
 
-### 2.1 Accordion Component (`<jw-accordion>`)
+### 2.1 Accordion Component (`<sl-accordion>`)
 Creates accessible collapsible panels matching WAI-ARIA Accordion design patterns.
 
 ```html
-<jw-accordion level="3">
-  <jw-accordion-item title="Prerequisites & Requirements" expanded>
+<sl-accordion level="3">
+  <sl-accordion-item title="Prerequisites & Requirements" expanded>
     <p>No prior coding experience is required. All tools are web-based.</p>
-  </jw-accordion-item>
-  <jw-accordion-item title="Learning Objectives">
+  </sl-accordion-item>
+  <sl-accordion-item title="Learning Objectives">
     <p>Understand WCAG 2.2 AA standards and build accessible web forms.</p>
-  </jw-accordion-item>
-</jw-accordion>
+  </sl-accordion-item>
+</sl-accordion>
 ```
 * **Attributes**:
   * `level` (optional, default `"3"`): Heading level (`<h1>`–`<h6>`) generated for accordion triggers for screen reader document outline compliance.
-  * `expanded` (on `<jw-accordion-item>`): Sets item initially open.
+  * `expanded` (on `<sl-accordion-item>`): Sets item initially open.
 
 ---
 
-### 2.2 Tabs Component (`<jw-tabs>`)
+### 2.2 Tabs Component (`<sl-tabs>`)
 Creates accessible tabbed panels matching WAI-ARIA Tabs design patterns.
 
 ```html
-<jw-tabs aria-label="Course Learning Options">
-  <jw-tab label="Overview">
+<sl-tabs aria-label="Course Learning Options">
+  <sl-tab label="Overview">
     <h2>Overview</h2>
     <p>Explore the fundamental principles of accessibility.</p>
-  </jw-tab>
-  <jw-tab label="Key Features">
+  </sl-tab>
+  <sl-tab label="Key Features">
     <h2>Key Features</h2>
     <p>Screen reader support, keyboard focus trapping, and ARIA roles.</p>
-  </jw-tab>
-  <jw-tab label="Resources">
+  </sl-tab>
+  <sl-tab label="Resources">
     <h2>Resources</h2>
     <p>Download cheatsheets and documentation guides.</p>
-  </jw-tab>
-</jw-tabs>
+  </sl-tab>
+</sl-tabs>
 ```
 
 ---
 
-### 2.3 Flip Card Component (`<jw-flip-card>`)
+### 2.3 Flip Card Component (`<sl-flip-card>`)
 Creates interactive flashcards with accessible front/back reveal actions for self-assessment.
 
 ```html
-<jw-flip-card 
+<!-- Attribute Form -->
+<sl-flip-card 
   front="What does ARIA stand for?" 
   back="Accessible Rich Internet Applications. It provides semantics for assistive technology.">
-</jw-flip-card>
+</sl-flip-card>
+
+<!-- Child Tag Form -->
+<sl-flip-card title="ARIA Roles">
+  <sl-front><p>What does role="region" do?</p></sl-front>
+  <sl-back><p>Identifies a landmark section for assistive technologies.</p></sl-back>
+</sl-flip-card>
 ```
 
 ---
 
-### 2.4 Click-to-Reveal Component (`<jw-click-reveal>`)
+### 2.4 Click-to-Reveal Component (`<sl-click-reveal>`)
 Creates expandable solution reveal boxes with automatic xAPI event delegation.
 
 ```html
-<jw-click-reveal 
+<sl-click-reveal 
   button-text="Reveal Sample Answer" 
   hint="Try answering before revealing the solution.">
   <p><strong>Sample Answer:</strong> WCAG 2.2 AA requires a minimum color contrast ratio of 4.5:1 for normal text.</p>
-</jw-click-reveal>
+</sl-click-reveal>
 ```
 
 ---
 
-### 2.5 Accessible Modal Dialog (`<jw-modal>`)
+### 2.5 Accessible Modal Dialog (`<sl-modal>`)
 Triggers a WCAG 2.2 AA compliant modal dialog with focus trapping, <kbd>Escape</kbd> key closing, and automatic focus restoration.
 
 ```html
-<jw-modal 
+<sl-modal 
   trigger-text="View Accessibility Case Study" 
   title="Case Study: Screen Reader Audit Results">
   <p>In our 2026 audit, replacing custom span buttons with native <code>&lt;button&gt;</code> elements improved screen reader completion rates by 42%.</p>
-</jw-modal>
+</sl-modal>
 ```
 
 ---
 
-### 2.6 Interactive Branching Scenario (`<jw-scenario>`)
+### 2.6 Interactive Branching Scenario (`<sl-scenario>`)
 Presents scenario-based decision trees for experiential learning.
 
 ```html
-<jw-scenario title="Customer Accessibility Request">
+<sl-scenario title="Customer Accessibility Request">
   <p>A user requests closed captions for an embedded video. What should you do first?</p>
   <button type="button" class="scenario-choice" data-next="option-a">A. Provide automated captions immediately without manual review.</button>
   <button type="button" class="scenario-choice" data-next="option-b">B. Review captions for 99%+ accuracy and synchronized timing.</button>
-</jw-scenario>
+</sl-scenario>
 ```
 
 ---
 
-### 2.7 Interactive Timeline (`<jw-timeline>`)
+### 2.7 Interactive Timeline (`<sl-timeline>`)
 Renders chronological events with keyboard navigation.
 
 ```html
-<jw-timeline title="History of WCAG Standards">
+<sl-timeline title="History of WCAG Standards">
   <div data-year="1999" data-title="WCAG 1.0">First web accessibility guidelines published by W3C.</div>
   <div data-year="2008" data-title="WCAG 2.0">Introduced POUR principles (Perceivable, Operable, Understandable, Robust).</div>
   <div data-year="2018" data-title="WCAG 2.1">Added mobile accessibility and low-vision criteria.</div>
   <div data-year="2023" data-title="WCAG 2.2">Added target size and focus appearance enhancements.</div>
-</jw-timeline>
+</sl-timeline>
 ```
 
 ---
 
-### 2.8 Interactive Multi-Step Wizard (`<jw-wizard>`)
+### 2.8 Interactive Multi-Step Wizard (`<sl-wizard>`)
 Presents step-by-step instructions or multi-stage tasks.
 
 ```html
-<jw-wizard title="Course Setup Wizard">
+<sl-wizard title="Course Setup Wizard">
   <div data-step="Step 1: Planning">Define your learning objectives and course structure.</div>
-  <div data-step="Step 2: Content Creation">Use JW Components to build interactive HTML fragments.</div>
+  <div data-step="Step 2: Content Creation">Use SL Components to build interactive HTML fragments.</div>
   <div data-step="Step 3: Packaging">Use /packager.php to generate your 1-click LMS ZIP package.</div>
-</jw-wizard>
+</sl-wizard>
 ```
 
 ---
 
-### 2.9 Accessible Progress Bar (`<jw-progress-bar>`)
+### 2.9 Accessible Progress Bar (`<sl-progress-bar>`)
 Renders accessible `role="progressbar"` status indicators.
 
 ```html
-<jw-progress-bar value="75" max="100" label="Module Progress"></jw-progress-bar>
+<sl-progress-bar value="75" max="100" label="Module Progress"></sl-progress-bar>
 ```
 
 ---
 
-### 2.10 Multi-Column Grid (`<jw-multi-column>`)
+### 2.10 Multi-Column Grid (`<sl-multi-column>`)
 Ensures accessible reading order across multi-column layouts.
 
 ```html
-<jw-multi-column>
-  <jw-column title="Phase 1: Preparation">
+<sl-multi-column>
+  <sl-column title="Phase 1: Preparation">
     <p>Outline lesson concepts and assets.</p>
-  </jw-column>
-  <jw-column title="Phase 2: Execution">
+  </sl-column>
+  <sl-column title="Phase 2: Execution">
     <p>Generate HTML fragments block-by-block.</p>
-  </jw-column>
-</jw-multi-column>
+  </sl-column>
+</sl-multi-column>
 ```
 
 ---
@@ -185,15 +192,15 @@ Rendered automatically by `LCJsonConverter` for LC-JSON 1.0 question types (`mul
 
 ---
 
-### 2.12 Client-Side LC-JSON Quiz Engine Component (`<jw-quiz>`)
+### 2.12 Client-Side LC-JSON Quiz Engine Component (`<sl-quiz>`)
 Dynamically fetches, renders, scores, and emits xAPI analytics for LC-JSON 1.0 `QuestionSet` and `Course` documents. Supports external JSON files (`src`), inline JSON payload attributes (`data-json`), or embedded `<script type="application/json">` blocks.
 
 ```html
 <!-- External File Source -->
-<jw-quiz src="quizzes/accessibility-assessment.lc.json"></jw-quiz>
+<sl-quiz src="quizzes/accessibility-assessment.lc.json"></sl-quiz>
 
 <!-- Inline JSON Payload Script Tag -->
-<jw-quiz>
+<sl-quiz>
   <script type="application/json">
     {
       "$schema": "https://lc-json.org/1.0/schemas/questionset.schema.json",
@@ -210,63 +217,77 @@ Dynamically fetches, renders, scores, and emits xAPI analytics for LC-JSON 1.0 `
       ]
     }
   </script>
-</jw-quiz>
+</sl-quiz>
 ```
+* **Attributes**:
+  * `src` (optional): URL path to an external LC-JSON specification file.
+* **Custom Events**:
+  * `sl-quiz-completed` (and legacy `jw-quiz-completed`): Dispatched when the quiz is successfully submitted and graded.
+    * `detail` payload structure:
+      ```json
+      {
+        "raw": 4.0,       // Raw points scored
+        "max": 5.0,       // Maximum possible points
+        "scaled": 0.8,    // Scaled score between 0.0 and 1.0
+        "success": true,  // true if scaled score >= 0.7 (70% passing threshold)
+        "completion": true
+      }
+      ```
 
 ---
 
-### 2.13 Hotspot Image Component (`<jw-hotspot-container>`)
+### 2.13 Hotspot Image Component (`<sl-hotspot-container>`)
 Creates an interactive image hotspot layout. Users can select marked hotspots to trigger popups with detailed textual explanations. Fully accessible via keyboard navigation, screen reader outline focus, and dynamic `aria-expanded` toggle states.
 
 ```html
-<jw-hotspot-container src="images/eye-anatomy.png" alt="Anatomy diagram of the human eye">
-  <jw-hotspot-marker x="20%" y="30%" label="Cornea">
+<sl-hotspot-container src="images/eye-anatomy.png" alt="Anatomy diagram of the human eye">
+  <sl-hotspot-marker x="20%" y="30%" label="Cornea">
     <p>The cornea is the transparent front part of the eye that covers the iris and pupil.</p>
-  </jw-hotspot-marker>
-  <jw-hotspot-marker x="45%" y="55%" label="Retina">
+  </sl-hotspot-marker>
+  <sl-hotspot-marker x="45%" y="55%" label="Retina">
     <p>The retina is the light-sensitive layer of tissue at the back of the eyeball.</p>
-  </jw-hotspot-marker>
-</jw-hotspot-container>
+  </sl-hotspot-marker>
+</sl-hotspot-container>
 ```
 * **Attributes**:
   * `src` (required): URL path to the base image.
   * `alt` (required): Accessibility description of the overall image context.
-  * `x`, `y` (on `<jw-hotspot-marker>`): Absolute coordinates (e.g. `20%`, `55%`) where the interactive marker is positioned over the image.
-  * `label` (on `<jw-hotspot-marker>`): Accessible label used as the marker's button label and detailed popup title.
+  * `x`, `y` (on `<sl-hotspot-marker>`): Absolute coordinates (e.g. `20%`, `55%`) where the interactive marker is positioned over the image.
+  * `label` (on `<sl-hotspot-marker>`): Accessible label used as the marker's button label and detailed popup title.
 
 ---
 
-### 2.14 Matching Game / Drag-and-Drop Alt Component (`<jw-matching-game>`)
+### 2.14 Matching Game / Drag-and-Drop Alt Component (`<sl-matching-game>`)
 A keyboard-accessible alternative to drag-and-drop match widgets. Uses dropdown select lists and politeness alerts to match terms with their correct definitions.
 
 ```html
-<jw-matching-game label="CSS Selectors Matching challenge">
-  <jw-match-pair source="h1" target="Selects all level 1 headings."></jw-match-pair>
-  <jw-match-pair source=".highlight" target="Selects elements with a class named highlight."></jw-match-pair>
-  <jw-match-pair source="#main" target="Selects the element with the ID main."></jw-match-pair>
-</jw-matching-game>
+<sl-matching-game label="CSS Selectors Matching challenge">
+  <sl-match-pair source="h1" target="Selects all level 1 headings."></sl-match-pair>
+  <sl-match-pair source=".highlight" target="Selects elements with a class named highlight."></sl-match-pair>
+  <sl-match-pair source="#main" target="Selects the element with the ID main."></sl-match-pair>
+</sl-matching-game>
 ```
 * **Attributes**:
   * `label` (optional): Accessible description of the matching list's objective.
-  * `source` (on `<jw-match-pair>`): The term or concept to match.
-  * `target` (on `<jw-match-pair>`): The corresponding definition or target value.
+  * `source` (on `<sl-match-pair>`): The term or concept to match.
+  * `target` (on `<sl-match-pair>`): The corresponding definition or target value.
 
 ---
 
-### 2.15 Accessible Content Carousel (`<jw-carousel>`)
+### 2.15 Accessible Content Carousel (`<sl-carousel>`)
 Renders sliding presentation slide panels with linear keyboard reading order, slide focus announcements, and pagination buttons.
 
 ```html
-<jw-carousel aria-label="Course Highlights">
-  <jw-slide>
+<sl-carousel aria-label="Course Highlights">
+  <sl-slide>
     <h3>Slide 1: Dynamic Data</h3>
     <p>Learn how server-side variables adapt branding settings.</p>
-  </jw-slide>
-  <jw-slide>
+  </sl-slide>
+  <sl-slide>
     <h3>Slide 2: Focus Management</h3>
     <p>Understand how outline focus loops prevent tab escaping.</p>
-  </jw-slide>
-</jw-carousel>
+  </sl-slide>
+</sl-carousel>
 ```
 * **Attributes**:
   * `aria-label` (required): Accessible description of the carousel slides context.

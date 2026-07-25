@@ -997,7 +997,7 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
                     `
                 },
                 'modules': {
-                    title: 'Module Standards & JW Interactive Components',
+                    title: 'Module Standards & SL Interactive Components',
                     html: `
                         <h4 class="text-base font-bold text-teal-800 mb-2">HTML Module Fragment Rules</h4>
                         <ul class="list-disc pl-5 mb-4 space-y-1">
@@ -1005,25 +1005,25 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
                             <li><strong>Single Heading 1:</strong> Every module fragment MUST start with exactly one <code>&lt;h1&gt;</code> heading matching the module title for screen reader navigation.</li>
                         </ul>
 
-                        <h4 class="text-base font-bold text-teal-800 mb-2">Full JW Interactive Web Component Suite</h4>
+                        <h4 class="text-base font-bold text-teal-800 mb-2">Full SL Interactive Web Component Suite</h4>
                         <p class="mb-3">The LMS player includes 12+ pre-styled, WCAG 2.2 AA compliant interactive components:</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-xs font-mono bg-gray-50 p-3 border rounded">
-                            <div>• <code>&lt;jw-accordion&gt;</code></div>
-                            <div>• <code>&lt;jw-tabs&gt;</code></div>
-                            <div>• <code>&lt;jw-flip-card&gt;</code></div>
-                            <div>• <code>&lt;jw-click-reveal&gt;</code></div>
-                            <div>• <code>&lt;jw-modal&gt;</code></div>
-                            <div>• <code>&lt;jw-scenario&gt;</code></div>
-                            <div>• <code>&lt;jw-timeline&gt;</code></div>
-                            <div>• <code>&lt;jw-wizard&gt;</code></div>
-                            <div>• <code>&lt;jw-hotspot-container&gt;</code></div>
-                            <div>• <code>&lt;jw-matching-game&gt;</code></div>
-                            <div>• <code>&lt;jw-carousel&gt;</code></div>
-                            <div>• <code>&lt;jw-quiz&gt;</code></div>
-                            <div>• <code>&lt;jw-progress-bar&gt;</code></div>
-                            <div>• <code>&lt;jw-multi-column&gt;</code></div>
+                            <div>• <code>&lt;sl-accordion&gt;</code></div>
+                            <div>• <code>&lt;sl-tabs&gt;</code></div>
+                            <div>• <code>&lt;sl-flip-card&gt;</code></div>
+                            <div>• <code>&lt;sl-click-reveal&gt;</code></div>
+                            <div>• <code>&lt;sl-modal&gt;</code></div>
+                            <div>• <code>&lt;sl-scenario&gt;</code></div>
+                            <div>• <code>&lt;sl-timeline&gt;</code></div>
+                            <div>• <code>&lt;sl-wizard&gt;</code></div>
+                            <div>• <code>&lt;sl-hotspot-container&gt;</code></div>
+                            <div>• <code>&lt;sl-matching-game&gt;</code></div>
+                            <div>• <code>&lt;sl-carousel&gt;</code></div>
+                            <div>• <code>&lt;sl-quiz&gt;</code></div>
+                            <div>• <code>&lt;sl-progress-bar&gt;</code></div>
+                            <div>• <code>&lt;sl-multi-column&gt;</code></div>
                         </div>
-                        <p class="mb-4 text-xs"><a href="help.php?doc=jw-components" target="_blank" class="text-teal-700 font-bold underline">📖 View Complete JW Components API & Syntax Reference Guide →</a></p>
+                        <p class="mb-4 text-xs"><a href="help.php?doc=sl-components" target="_blank" class="text-teal-700 font-bold underline">📖 View Complete SL Components API & Syntax Reference Guide →</a></p>
 
                         <h4 class="text-base font-bold text-teal-800 mb-2">Declarative xAPI Analytics Tracking</h4>
                         <p class="mb-2">Add <code>data-xapi</code> attributes to any clickable element for automatic analytics tracking without writing custom JavaScript:</p>
@@ -1483,7 +1483,7 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
                 return;
             }
 
-            const { jwComponentsUrl, styleCssUrl } = getAbsoluteAssetUrls();
+            const { slComponentsUrl, styleCssUrl } = getAbsoluteAssetUrls();
 
             // Encode course payload safely using Base64 to prevent unescaped newline JS syntax errors in template literal
             const jsonStr = JSON.stringify(data);
@@ -1496,7 +1496,7 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
     <title>${escapeHtml(data.title || 'Course Player Preview')} - Live Sandbox</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="${styleCssUrl}">
-    <script src="${jwComponentsUrl}"><\/script>
+    <script src="${slComponentsUrl}"><\/script>
     <style>
         body { font-family: 'Atkinson Hyperlegible', sans-serif; background: #f8fafc; margin: 0; padding: 0; }
         .player-wrapper { display: flex; min-height: 100vh; }

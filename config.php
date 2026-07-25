@@ -314,13 +314,16 @@ function getTenantMetadata($tenantKey = null) {
         $content = file_get_contents($jsonPath);
         $data = json_decode($content, true);
         if (is_array($data)) {
+            if ($tenantKey === 'local-dev') {
+                $data['name'] = 'Superable Learning';
+            }
             return $data;
         }
     }
 
     $defaultMeta = [
         'tenant_key' => $tenantKey,
-        'name'       => ucfirst(str_replace(['-', '_'], ' ', $tenantKey)),
+        'name'       => ($tenantKey === 'local-dev') ? 'Superable Learning' : ucfirst(str_replace(['-', '_'], ' ', $tenantKey)),
         'domain'     => ($tenantKey === 'local-dev') ? PRIMARY_DOMAIN : $tenantKey . '.' . PRIMARY_DOMAIN,
         'plan'       => 'standard',
         'created'    => date('Y-m-d H:i:s'),
@@ -616,8 +619,9 @@ function renderTenantFooter($tenantKey = null) {
         
     $websiteUrl = !empty($meta['website_url']) ? $meta['website_url'] : null;
     $supportContact = !empty($meta['support_contact']) ? $meta['support_contact'] : null;
-    $termsUrl = !empty($meta['terms_url']) ? $meta['terms_url'] : null;
-    $privacyUrl = !empty($meta['privacy_url']) ? $meta['privacy_url'] : null;
+    $termsUrl = !empty($meta['terms_url']) ? $meta['terms_url'] : tenant_url('terms.php');
+    $privacyUrl = !empty($meta['privacy_url']) ? $meta['privacy_url'] : tenant_url('privacy.php');
+    $accessibilityUrl = tenant_url('accessibility.php');
 
     $year = date('Y');
     $platformUrl = 'https://superablelearning.com';
@@ -640,12 +644,9 @@ function renderTenantFooter($tenantKey = null) {
                     <li><a href="<?= $supportHref ?>" class="footer-link">Contact Support</a></li>
                 <?php endif; ?>
                 <li><a href="<?= tenant_url('help.php') ?>" class="footer-link">Help & Docs</a></li>
-                <?php if ($termsUrl): ?>
-                    <li><a href="<?= htmlspecialchars($termsUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer-link">Terms of Service</a></li>
-                <?php endif; ?>
-                <?php if ($privacyUrl): ?>
-                    <li><a href="<?= htmlspecialchars($privacyUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer-link">Privacy Policy</a></li>
-                <?php endif; ?>
+                <li><a href="<?= htmlspecialchars($termsUrl) ?>" <?= (strpos($termsUrl, 'http') === 0) ? 'target="_blank" rel="noopener noreferrer"' : '' ?> class="footer-link">Terms of Service</a></li>
+                <li><a href="<?= htmlspecialchars($privacyUrl) ?>" <?= (strpos($privacyUrl, 'http') === 0) ? 'target="_blank" rel="noopener noreferrer"' : '' ?> class="footer-link">Privacy Policy</a></li>
+                <li><a href="<?= htmlspecialchars($accessibilityUrl) ?>" class="footer-link">Accessibility Statement</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <?php if (!empty($_SESSION['is_admin'])): ?>
                         <li><a href="<?= tenant_url('admin.php') ?>" class="footer-link">Admin Panel</a></li>
