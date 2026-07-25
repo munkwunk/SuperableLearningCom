@@ -28,10 +28,8 @@ if (session_status() === PHP_SESSION_NONE) {
     
     if ($is_https) {
         ini_set('session.cookie_secure', 1);
-        ini_set('session.cookie_samesite', 'None');
-    } else {
-        ini_set('session.cookie_samesite', 'Lax');
     }
+    ini_set('session.cookie_samesite', 'Lax');
     session_start();
 }
 
