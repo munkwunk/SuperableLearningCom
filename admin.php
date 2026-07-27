@@ -823,18 +823,19 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
                                         $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? PRIMARY_DOMAIN;
                                         $absolutePermalink = $protocol . $host . $cleanUrl;
                                     ?>
-                                    <div class="mb-4 p-3 rounded-lg" style="background: var(--color-bg-light); border: 1px solid var(--color-border); font-family: sans-serif;">
-                                        <div class="flex-between align-center" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; width: 100%;">
-                                            <div style="flex: 1; min-width: 0; text-align: left;">
-                                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--color-neutral-mid); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Course Permalink</span>
-                                                <a href="<?= htmlspecialchars($cleanUrl) ?>" target="_blank" class="text-sm font-semibold" style="color: var(--color-primary); word-break: break-all; text-decoration: none;" aria-label="Open course permalink in new tab">
-                                                    <?= htmlspecialchars($absolutePermalink) ?>
-                                                </a>
-                                            </div>
-                                            <button type="button" class="btn btn-sm copy-permalink-btn" data-url="<?= htmlspecialchars($absolutePermalink) ?>" style="flex-shrink: 0; background: white; border: 1px solid var(--color-border); padding: 0.35rem 0.75rem; border-radius: 0.25rem; cursor: pointer; transition: all 0.2s;" aria-label="Copy permalink to clipboard">
+                                    <div class="mb-4 p-3 rounded-lg" style="background: var(--color-bg-light); border: 1px solid var(--color-border); font-family: sans-serif; text-align: left;">
+                                        <label for="permalink_<?= htmlspecialchars($c['id']) ?>" style="font-size: 0.75rem; font-weight: bold; color: var(--color-neutral-mid); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Course Permalink</label>
+                                        <div style="display: flex; gap: 0.5rem; width: 100%;">
+                                            <input type="text" id="permalink_<?= htmlspecialchars($c['id']) ?>" readonly class="form-control" value="<?= htmlspecialchars($absolutePermalink) ?>" style="flex: 1; min-width: 0; background: white;" onclick="this.select();" aria-label="Course Permalink URL">
+                                            <a href="<?= htmlspecialchars($cleanUrl) ?>" target="_blank" class="btn btn-sm" style="background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; padding: 0.35rem 0.75rem; text-decoration: none;" aria-label="Open course player in new tab">
+                                                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm copy-permalink-btn" data-url="<?= htmlspecialchars($absolutePermalink) ?>" data-status-id="copy-status-<?= htmlspecialchars($c['id']) ?>" style="flex-shrink: 0; background: white; border: 1px solid var(--color-border); padding: 0.35rem 0.75rem; border-radius: 0.25rem; cursor: pointer; transition: all 0.2s;" aria-label="Copy permalink to clipboard">
                                                 <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy Link
                                             </button>
                                         </div>
+                                        <!-- ARIA Live Region for WCAG 4.1.3 Status Announcement -->
+                                        <div id="copy-status-<?= htmlspecialchars($c['id']) ?>" role="status" aria-live="polite" class="sr-only"></div>
                                     </div>
 
                                     <button type="submit" name="action" value="update_course_manifest" class="btn btn-sm">Save Course Settings</button>
@@ -1707,8 +1708,16 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
         document.querySelectorAll('.copy-permalink-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const url = btn.getAttribute('data-url');
+                const statusId = btn.getAttribute('data-status-id');
+                const statusRegion = document.getElementById(statusId);
+                
                 try {
                     await navigator.clipboard.writeText(url);
+                    
+                    // WCAG 4.1.3 Screen Reader Announcement
+                    if (statusRegion) {
+                        statusRegion.textContent = 'Permalink copied to clipboard.';
+                    }
                     
                     // Micro-interaction UI feedback
                     const originalText = btn.innerHTML;
@@ -1718,6 +1727,9 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
                     setTimeout(() => {
                         btn.innerHTML = originalText;
                         btn.disabled = false;
+                        if (statusRegion) {
+                            statusRegion.textContent = ''; // Clear status so it can be re-announced on subsequent clicks
+                        }
                     }, 2000);
                 } catch (err) {
                     console.error('Failed to copy text: ', err);
