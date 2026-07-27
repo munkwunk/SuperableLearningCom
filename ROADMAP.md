@@ -61,6 +61,7 @@ These features require changes to the database schemas, new operational flows, o
 *   **Component-Level Previews**: Create a modal preview wrapper in the packager/builder to test single UI web components (e.g., contrast check individual buttons or text inputs).
 *   [x] **Light Analytics Dashboard**: Build a database-backed analytics view tracking completion rates, average time spent per module, and quiz pass/fail statistics.
 *   **xAPI/LRS Integration**: Build an LRS connection wizard to transmit standardized xAPI statements to external Learning Record Stores.
+*   **Dual-Screen Presenter Console & Teleprompter Sync (Local)**: Leverage the browser's client-side `BroadcastChannel` API to synchronize a fullscreen slide window (shared on Zoom/Teams) with a scrollable teleprompter/notes window on the same machine. Scrolling the notes past trigger markers automatically advances the audience's slides with zero server overhead. See the [Technical Specification](help/docs/specs/presenter-mode-teleprompter-sync.md).
 
 ### Branding (Cross‑Tier)
 *   [x] **Safe Custom CSS Injection**: Implement a PHP-based CSS parser to validate custom stylesheet uploads for Premium tenants, blocking potential security exploits (e.g., CSS injection) and ensuring focus ring states are not hidden.
@@ -70,6 +71,10 @@ These features require changes to the database schemas, new operational flows, o
 *   **Review Report Delivery UI**: Create an interactive portal section or a PDF report generator allowing human accessibility auditors to securely deliver audits to the client workspace.
 *   **Billing Workflow**: Integrate add-on purchase checkouts and invoice generations for individual courses or recurring auditing subscriptions.
 
+### MultAbilities & Dignity-First Learning
+*   **Low-Output Branching Scenarios**: Implement branching decision-tree components in `jw-components.js` and the LC-JSON parser/converter.
+*   **No-Shame Resume Engine**: Build state machine patterns in `player.php` and `api.php` that welcome returning users after long pauses without warning screens, days-since-active meters, or gamified penalties (e.g., streaks).
+
 ---
 
 ## 🚀 Phase 3: LMOS Services & Enterprise Orchestration (Long-Term / Strategic)
@@ -77,23 +82,29 @@ Strategic features and optional tooling designed to establish the platform as a 
 
 ### Accessibility Kernel & Microservices
 *   **Node.js Rendering Service**: Deploy Puppeteer/Playwright microservice to capture course screenshots, extract accessibility trees, and run WCAG audits.
-*   **Python AI Service**: Introduce machine learning service for automated image analysis, alt-text generation, and reading complexity indexing.
+*   **BYOK AI Integration Module**: Integrate a secure backend proxy to connect to external LLM APIs (e.g., Gemini or OpenAI) using client-supplied API keys for automated image analysis, alt-text generation, and reading complexity indexing.
 *   **Event/Queue System Integration**: Deploy Redis or RabbitMQ queues to handle asynchronous auditing and ingestion tasks without blocking web workers.
 
 ### Cognitive Load Engine
 *   **Interaction Data Processor**: Consume telemetry metrics (dwell time, navigation paths, pause intervals) to score student fatigue and cognitive burden.
 *   **Adaptive Player Interface**: Enable dynamic content chunking and interface pacing based on cognitive heuristics.
+*   **Collaborative Co-Authoring Queue**: Build backend tables and admin interfaces (`admin.php` / `api.php`) to queue, edit, format, and approve messy student contributions.
 
 ### Migration & Interoperability
 *   **LMS Migration Pipeline**: Support importing zip files from Canvas, Blackboard, and Moodle, converting course structures to LC-JSON on ingestion.
-*   **Multi-Disability Accommodation Profile**: Introduce the "Accommodation Passport" enabling users to set system-wide preferences (Fatigue mode, Screen-reader focus mode, Motor accessibility mode).
+*   **Multi-Disability Accommodation Profile**: Introduce the "Accommodation Passport" enabling users to set system-wide preferences (Fatigue mode, Screen-reader focus mode, Motor accessibility mode, and Fatigue/Cognitive-Load CSS overrides that simplify the UI layout and reduce visual weight).
+
+### MultAbilities & Dignity-First Learning
+*   **Confidence-Based Self-Assessments**: Self-checks where students gauge their understanding, offering immediate, low-pressure path adjustments.
+*   **Categorization Checkers**: Accessible keyboard-driven sorting grids asking "Is this an example of X?".
+*   **Tenant-Level Scholarship Workflows**: Support automated "Request Scholarship" fee-waiver pipelines at course checkout with single-click admin approval queues in `admin.php` for tenants utilizing integrated payment gateways.
 
 ### Sandbox (Free)
 *   **Onboarding & Interactive Walkthrough**: Implement a step-by-step tour for new creators showcasing players, LC-JSON packages, and accessibility validation tools.
 *   **Read-Only Premium Feature Demo**: Create a sandbox simulation allowing users to view (but not modify or save) Premium features like heatmaps or advanced validation.
+*   **BYOK AI-Assisted Authoring**: Connect LLM prompts to the Modular Course Builder/Editor using client-supplied API keys (stored in secure client configurations) to automatically generate accessibility-first course components.
 
 ### Pro ($10/mo)
-*   **AI-Assisted LC-JSON Authoring**: Connect LLM prompts to the Modular Course Builder to automatically generate accessibility-first course components based on user input.
 *   **Smart Import Fixer**: Auto-remedy common format discrepancies (e.g., missing alt text placeholders, syntax issues) during course package imports.
 
 ### Premium ($20/mo)
@@ -101,6 +112,7 @@ Strategic features and optional tooling designed to establish the platform as a 
 *   **NVDA/JAWS Simulation Mode**: Build a CSS/JS overlay simulating screen reader focus order and text speech bubbles directly in the preview player.
 *   **Accessibility Regression Testing**: Implement an automated test runner checking uploaded updates against previous accessibility baselines.
 *   **Integration Marketplace**: Add an integrations panel to map custom third-party LMS providers and standard SCORM engines.
+*   **Voice-Activated Advancing & Cross-Device Remote Control**: Integrate the browser's local Web Speech API to listen to the presenter's microphone and auto-advance slides upon matching keywords in the notes. Utilize a WebSocket service (made possible by VPS migration) to allow a smartphone/tablet to act as a remote notes controller syncing with the main presentation screen. See the [Technical Specification](help/docs/specs/presenter-mode-teleprompter-sync.md).
 
 ### Branding (Cross‑Tier)
 *   **Brand Style Presets**: Build pre-curated, high-contrast typography and color schemes matching different aesthetic styles (corporate, academic, dark mode) that meet WCAG 2.2 standards out of the box.

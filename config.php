@@ -13,6 +13,16 @@ error_reporting(E_ALL);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
 
+// Clean query parameters to handle external launch wrappers appending parameters with "?" instead of "&"
+// This ensures that parameters like 'tenant' or 'course_id' are not contaminated.
+if (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], '?') !== false) {
+    $first_question_mark = strpos($_SERVER['QUERY_STRING'], '?');
+    $cleaned_query = substr_replace($_SERVER['QUERY_STRING'], '&', $first_question_mark, 1);
+    parse_str($cleaned_query, $extra_params);
+    $_GET = array_merge($_GET, $extra_params);
+    $_REQUEST = array_merge($_REQUEST, $extra_params);
+}
+
 // Define core constants & paths
 define('LMS_ROOT', __DIR__);
 define('PRIMARY_DOMAIN', 'superablelearning.com');
@@ -28,8 +38,10 @@ if (session_status() === PHP_SESSION_NONE) {
     
     if ($is_https) {
         ini_set('session.cookie_secure', 1);
+        ini_set('session.cookie_samesite', 'None');
+    } else {
+        ini_set('session.cookie_samesite', 'Lax');
     }
-    ini_set('session.cookie_samesite', 'Lax');
     session_start();
     
     // Prevent browser caching of dynamic PHP pages (fixes stale login/guest page views)
