@@ -650,7 +650,7 @@ $tenantMetadata = getTenantMetadata();
                         <div class="card-actions">
                         <?php if ($course['has_permission'] || $course['access']['type'] === 'public'): 
                             $activeTenantKey = resolveTenantKey();
-                            $course_url = "player.php?course_id=" . urlencode($course['id']) . "&tenant=" . urlencode($activeTenantKey);
+                            $course_url = course_url($course['id'], $activeTenantKey);
                             $is_external = false;
                             if (!empty($course['url'])) {
                                 $course_url = $course['url'];

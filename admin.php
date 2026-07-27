@@ -814,6 +814,29 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
                                         <textarea name="description" id="desc_<?= htmlspecialchars($c['id']) ?>" class="form-textarea" rows="2"><?= htmlspecialchars($c['description']) ?></textarea>
                                     </div>
 
+                                    <?php
+                                        $activeTenantKey = resolveTenantKey();
+                                        $cleanUrl = course_url($c['id'], $activeTenantKey);
+                                        
+                                        // Build absolute link for copy functionality
+                                        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://';
+                                        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? PRIMARY_DOMAIN;
+                                        $absolutePermalink = $protocol . $host . $cleanUrl;
+                                    ?>
+                                    <div class="mb-4 p-3 rounded-lg" style="background: var(--color-bg-light); border: 1px solid var(--color-border); font-family: sans-serif;">
+                                        <div class="flex-between align-center" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; width: 100%;">
+                                            <div style="flex: 1; min-width: 0; text-align: left;">
+                                                <span style="font-size: 0.75rem; font-weight: bold; color: var(--color-neutral-mid); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Course Permalink</span>
+                                                <a href="<?= htmlspecialchars($cleanUrl) ?>" target="_blank" class="text-sm font-semibold" style="color: var(--color-primary); word-break: break-all; text-decoration: none;" aria-label="Open course permalink in new tab">
+                                                    <?= htmlspecialchars($absolutePermalink) ?>
+                                                </a>
+                                            </div>
+                                            <button type="button" class="btn btn-sm copy-permalink-btn" data-url="<?= htmlspecialchars($absolutePermalink) ?>" style="flex-shrink: 0; background: white; border: 1px solid var(--color-border); padding: 0.35rem 0.75rem; border-radius: 0.25rem; cursor: pointer; transition: all 0.2s;" aria-label="Copy permalink to clipboard">
+                                                <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy Link
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <button type="submit" name="action" value="update_course_manifest" class="btn btn-sm">Save Course Settings</button>
                                 </form>
                             </div>
@@ -1679,6 +1702,28 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
             
             priceDisplay.textContent = '$' + total.toFixed(2);
         }
+
+        // Clipboard Copy Helper for Course Permalinks
+        document.querySelectorAll('.copy-permalink-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const url = btn.getAttribute('data-url');
+                try {
+                    await navigator.clipboard.writeText(url);
+                    
+                    // Micro-interaction UI feedback
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--color-success-text);"></i> Copied!';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            });
+        });
     </script>
 </body>
 </html>

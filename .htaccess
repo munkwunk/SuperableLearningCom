@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# 1. Skip rewrite if the request matches an existing file or directory on disk.
+# This prevents breaking static assets (CSS, JS, images) and the actual module HTML files
+# located under courses/tenants/<tenant>/<course_id>/modules/...
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 2. Rewrite /<tenant>/courses/<course_id> to /player.php?tenant=<tenant>&course_id=<course_id>
+# This pattern matches when the tenant key comes first, followed by /courses/ and the course_id
+# We exclude existing root files and subdirectories from matching the tenant parameter.
+RewriteCond %{REQUEST_URI} !^/(courses|assets|cgi-bin|help|packager|admin\.php|api\.php|config\.php|index\.php|login\.php|logout\.php|pricing\.php|privacy\.php|register\.php|terms\.php) [NC]
+RewriteRule ^([a-zA-Z0-9_-]+)/courses/([a-zA-Z0-9_-]+)/?$ player.php?tenant=$1&course_id=$2 [L,QSA]
+
+# 3. Rewrite /courses/<course_id> to /player.php?course_id=<course_id>
+# This pattern matches requests to the primary domain without an explicit tenant path
+RewriteRule ^courses/([a-zA-Z0-9_-]+)/?$ player.php?course_id=$1 [L,QSA]
+</IfModule>

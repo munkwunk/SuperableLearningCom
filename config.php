@@ -186,6 +186,32 @@ function tenant_url($path) {
 }
 
 /**
+ * Helper to construct clean permalinks for courses.
+ * Format: /<tenant>/courses/<course_id> or /courses/<course_id> (prefixed with base path)
+ *
+ * @param string $course_id
+ * @param string|null $tenantKey
+ * @return string
+ */
+function course_url($course_id, $tenantKey = null) {
+    $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
+    $base = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\') . '/';
+    if ($tenantKey && $tenantKey !== 'local-dev') {
+        return $base . urlencode($tenantKey) . "/courses/" . urlencode($course_id);
+    }
+    return $base . "courses/" . urlencode($course_id);
+}
+
+/**
+ * Returns the dynamic base path for HTML <base href> tags.
+ * e.g., "/" or "/superable-learning/"
+ */
+function get_base_href() {
+    $dir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+    return ($dir === '/' || $dir === '\\') ? '/' : rtrim($dir, '/\\') . '/';
+}
+
+/**
  * Returns total storage space used by a tenant in bytes.
  *
  * @param string|null $tenantKey
