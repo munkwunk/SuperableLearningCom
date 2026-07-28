@@ -69,6 +69,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             break;
 
+        case 'change_tenant_plan':
+            $targetKey = sanitizeTenantKey($_POST['tenant_key'] ?? '');
+            $newPlan   = trim($_POST['plan'] ?? 'sandbox');
+
+            if (in_array($newPlan, ['sandbox', 'pro', 'premium'])) {
+                $dbDir = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'tenants';
+                $jsonPath = $dbDir . DIRECTORY_SEPARATOR . $targetKey . '.json';
+
+                if (file_exists($jsonPath)) {
+                    $meta = json_decode(file_get_contents($jsonPath), true);
+                    $meta['plan'] = $newPlan;
+                    file_put_contents($jsonPath, json_encode($meta, JSON_PRETTY_PRINT));
+                    $message = "Tenant '{$targetKey}' plan updated to " . strtoupper($newPlan) . ".";
+                    $message_type = 'success';
+                } else {
+                    $message = "Error: Tenant metadata file not found.";
+                    $message_type = 'critical';
+                }
+            } else {
+                $message = "Error: Invalid plan selection.";
+                $message_type = 'critical';
+            }
+            break;
+
         case 'save_custom_domain':
             $customDomain = strtolower(trim($_POST['custom_domain'] ?? ''));
             $targetKey    = sanitizeTenantKey($_POST['tenant_key'] ?? '');
@@ -209,7 +233,22 @@ $customDomainMap = getCustomDomainMap();
                             <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                             <td><code><?= htmlspecialchars($t['tenant_key']) ?></code></td>
                             <td><?= htmlspecialchars($t['domain']) ?></td>
-                            <td><?= htmlspecialchars(ucfirst(getTenantPlan($t['tenant_key']))) ?></td>
+                            <td>
+                                <form method="POST" style="display: flex; gap: 0.25rem; align-items: center; margin: 0; min-width: 140px;">
+                                    <input type="hidden" name="action" value="change_tenant_plan">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                    <input type="hidden" name="tenant_key" value="<?= htmlspecialchars($t['tenant_key']) ?>">
+                                    <select name="plan" aria-label="Change plan for <?= htmlspecialchars($t['name']) ?>" style="padding: 0.25rem; font-size: 0.85rem; margin: 0; border: 1px solid var(--color-neutral-mid); border-radius: 0.25rem; background-color: var(--color-bg-light); color: var(--color-text-dark); cursor: pointer; width: auto; height: auto;">
+                                        <?php 
+                                        $currentPlan = getTenantPlan($t['tenant_key']); 
+                                        ?>
+                                        <option value="sandbox" <?= $currentPlan === 'sandbox' ? 'selected' : '' ?>>Sandbox</option>
+                                        <option value="pro" <?= $currentPlan === 'pro' ? 'selected' : '' ?>>Pro</option>
+                                        <option value="premium" <?= $currentPlan === 'premium' ? 'selected' : '' ?>>Premium</option>
+                                    </select>
+                                    <button type="submit" class="cta-button" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin: 0; background: #2b6cb0; min-height: auto; height: auto; border: none; border-radius: 0.25rem; color: white; cursor: pointer; line-height: 1.2;">Set</button>
+                                </form>
+                            </td>
                             <td><?= $t['storage_mb'] ?> MB / <?= getTenantStorageQuota($t['tenant_key']) ?> MB</td>
                             <td>
                                 <span class="badge badge-<?= $t['status'] === 'active' ? 'active' : 'suspended' ?>">

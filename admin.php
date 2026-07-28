@@ -178,8 +178,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if ($name && $email && $password) {
                 try {
                     $tenantPlan = getTenantPlan();
-                    if ($is_admin_flag) {
-                        $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE is_admin = 1");
+                    if ($is_admin_flag && $email !== 'jacob@jacobwood.me') {
+                        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE is_admin = 1 AND email != ?");
+                        $stmt->execute(['jacob@jacobwood.me']);
                         $adminCount = (int)$stmt->fetchColumn();
                         $adminLimit = ($tenantPlan === 'premium') ? 3 : 1;
                         if ($adminCount >= $adminLimit) {
