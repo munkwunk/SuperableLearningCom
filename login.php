@@ -32,6 +32,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['is_admin'] = (bool)$user['is_admin'];
                 
+                // Handle Remember Me (30 Days)
+                if (isset($_POST['remember_me'])) {
+                    $tenant = resolveTenantKey();
+                    $token = bin2hex(random_bytes(32));
+                    $tokenHash = hash('sha256', $token);
+                    $expires = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
+
+                    try {
+                        $stmtToken = $pdo->prepare("INSERT INTO user_remember_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)");
+                        $stmtToken->execute([$user['id'], $tokenHash, $expires]);
+                        set_remember_me_cookie($tenant, $user['id'], $token);
+                    } catch (PDOException $e) {
+                        error_log("Failed to store remember token: " . $e->getMessage());
+                    }
+                }
+                
                 $tenant_param = !empty($_GET['tenant']) ? '?tenant=' . urlencode($_GET['tenant']) : '';
                 header("Location: index.php" . $tenant_param);
                 exit;
@@ -75,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" name="password" id="password" class="form-control" required autocomplete="current-password">
+            </div>
+            <div class="form-group mb-3" style="flex-direction: row; align-items: center; gap: 0.5rem; justify-content: flex-start; margin-top: 0.5rem;">
+                <input type="checkbox" name="remember_me" id="remember_me" value="1" style="width: auto; margin: 0;">
+                <label for="remember_me" class="form-label" style="font-weight: normal; margin: 0;">Remember me for 30 days</label>
             </div>
             <button type="submit" class="btn btn-full">Login</button>
         </form>

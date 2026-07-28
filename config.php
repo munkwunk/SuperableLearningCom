@@ -815,6 +815,9 @@ function get_db_connection($tenantKey = null) {
         
         ensure_tables_exist($pdo);
         
+        // Auto-login from Remember Me Cookie
+        check_remember_me_cookie($pdo);
+        
         return $pdo;
     } catch (PDOException $e) {
         error_log("Database Connection Failed for tenant [{$tenantKey}]: " . $e->getMessage());
@@ -873,6 +876,15 @@ function ensure_tables_exist($pdo) {
             event_type TEXT NOT NULL,
             event_value TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS user_remember_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT UNIQUE NOT NULL,
+            expires_at DATETIME NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )");
 
         $stmt = $pdo->query("SELECT COUNT(*) FROM users");
@@ -1076,4 +1088,119 @@ function pre_process_manifest_modules(&$items, $course_dir) {
             }
         }
     }
+}
+
+/**
+ * Checks for a remember-me cookie and logs the user in if a valid token exists.
+ * 
+ * @param PDO $pdo
+ */
+function check_remember_me_cookie($pdo) {
+    // If already logged in, do nothing
+    if (isset($_SESSION['user_id'])) {
+        return;
+    }
+
+    $tenantKey = resolveTenantKey();
+    $cookieName = 'remember_me_' . $tenantKey;
+
+    if (empty($_COOKIE[$cookieName])) {
+        return;
+    }
+
+    $cookieValue = $_COOKIE[$cookieName];
+    $parts = explode(':', $cookieValue, 2);
+    if (count($parts) !== 2) {
+        clear_remember_me_cookie($tenantKey);
+        return;
+    }
+
+    list($userId, $token) = $parts;
+    $userId = (int)$userId;
+    $tokenHash = hash('sha256', $token);
+
+    try {
+        // Query the active tenant DB for token and user
+        $stmt = $pdo->prepare("
+            SELECT t.id as token_id, u.id as user_id, u.email, u.full_name, u.is_admin 
+            FROM user_remember_tokens t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.user_id = ? AND t.token_hash = ? AND t.expires_at > datetime('now')
+        ");
+        $stmt->execute([$userId, $tokenHash]);
+        $user = $stmt->fetch();
+
+        if ($user) {
+            // Re-establish session
+            if (session_status() === PHP_SESSION_NONE) {
+                @session_start();
+            }
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['is_admin'] = (bool)$user['is_admin'];
+
+            // Rotate the token (delete old, create new)
+            $stmtDel = $pdo->prepare("DELETE FROM user_remember_tokens WHERE id = ?");
+            $stmtDel->execute([$user['token_id']]);
+
+            $newToken = bin2hex(random_bytes(32));
+            $newTokenHash = hash('sha256', $newToken);
+            $expires = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
+
+            $stmtIns = $pdo->prepare("INSERT INTO user_remember_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)");
+            $stmtIns->execute([$user['user_id'], $newTokenHash, $expires]);
+
+            set_remember_me_cookie($tenantKey, $user['user_id'], $newToken);
+        } else {
+            // Invalid or expired token
+            clear_remember_me_cookie($tenantKey);
+            $stmtClean = $pdo->prepare("DELETE FROM user_remember_tokens WHERE expires_at <= datetime('now')");
+            $stmtClean->execute();
+        }
+    } catch (PDOException $e) {
+        error_log("Remember me auto-login failed: " . $e->getMessage());
+    }
+}
+
+/**
+ * Helper to set a secure remember-me cookie.
+ */
+function set_remember_me_cookie($tenantKey, $userId, $token) {
+    $cookieName = 'remember_me_' . $tenantKey;
+    $cookieValue = $userId . ':' . $token;
+    
+    $is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    
+    $options = [
+        'expires' => time() + (30 * 24 * 60 * 60), // 30 days
+        'path' => '/',
+        'domain' => '',
+        'secure' => $is_https,
+        'httponly' => true,
+        'samesite' => $is_https ? 'None' : 'Lax'
+    ];
+    
+    setcookie($cookieName, $cookieValue, $options);
+}
+
+/**
+ * Helper to clear the remember-me cookie.
+ */
+function clear_remember_me_cookie($tenantKey) {
+    $cookieName = 'remember_me_' . $tenantKey;
+    
+    $is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+    $options = [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $is_https,
+        'httponly' => true,
+        'samesite' => $is_https ? 'None' : 'Lax'
+    ];
+    
+    setcookie($cookieName, '', $options);
 }
