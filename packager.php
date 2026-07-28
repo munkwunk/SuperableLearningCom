@@ -376,8 +376,8 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
                 </p>
             </div>
             <div class="flex gap-4 items-center">
-                <a href="<?= $urlPrefix ?>help.php" class="text-white font-bold text-sm">← Help Center</a>
-                <a href="<?= $urlPrefix ?>admin.php" class="text-white font-bold text-sm" style="padding: 0.4rem 0.8rem; border: 2px solid white; border-radius: 0.25rem;">Admin Panel</a>
+                <a href="<?= $urlPrefix . tenant_url('help.php') ?>" class="text-white font-bold text-sm">← Help Center</a>
+                <a href="<?= $urlPrefix . tenant_url('admin.php') ?>" class="text-white font-bold text-sm" style="padding: 0.4rem 0.8rem; border: 2px solid white; border-radius: 0.25rem;">Admin Panel</a>
             </div>
         </div>
     </header>
@@ -1023,7 +1023,7 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
                             <div>• <code>&lt;sl-progress-bar&gt;</code></div>
                             <div>• <code>&lt;sl-multi-column&gt;</code></div>
                         </div>
-                        <p class="mb-4 text-xs"><a href="help.php?doc=sl-components" target="_blank" class="text-teal-700 font-bold underline">📖 View Complete SL Components API & Syntax Reference Guide →</a></p>
+                        <p class="mb-4 text-xs"><a href="<?= $urlPrefix . tenant_url('help.php?doc=sl-components') ?>" target="_blank" class="text-teal-700 font-bold underline">📖 View Complete SL Components API & Syntax Reference Guide →</a></p>
 
                         <h4 class="text-base font-bold text-teal-800 mb-2">Declarative xAPI Analytics Tracking</h4>
                         <p class="mb-2">Add <code>data-xapi</code> attributes to any clickable element for automatic analytics tracking without writing custom JavaScript:</p>
