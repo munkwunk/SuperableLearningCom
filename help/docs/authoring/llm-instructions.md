@@ -106,7 +106,9 @@ Choose the layout structure that matches the course complexity:
 * STRICTLY PROHIBITED: Executable server scripts (.php, .phtml, .sh, .exe, .cgi). Uploads containing these trigger automatic rejection.
 
 3. Video Restriction Policy:
-* Embed all videos using authorized platforms (YouTube, Vimeo, Panopto, Loom, Zoom, or Wistia) <iframe> embeds to conserve server bandwidth. Exclude direct video uploads (.mp4, .webm, .mov).
+* Embed all videos using authorized platforms (YouTube, Vimeo, Mux, Panopto, Loom, Zoom, or Wistia) via `<mux-player>` elements or authorized `<iframe>` embeds to conserve server bandwidth. Exclude direct video uploads (.mp4, .webm, .mov).
+* For Mux videos, use the custom `<mux-player>` element:
+  `<mux-player playback-id="YOUR_PLAYBACK_ID" metadata-video-title="Video Title Here"></mux-player>`
 * Include a descriptive title attribute for screen readers on every <iframe>:
 <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
         title="Video Demonstration of ARIA Tabs" 

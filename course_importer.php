@@ -97,7 +97,7 @@ class CourseImporter {
             if (in_array($ext, self::$forbiddenExtensions)) {
                 $zip->close();
                 if (in_array($ext, ['mp4', 'webm', 'ogg', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'm4v', '3gp'])) {
-                    return ['success' => false, 'message' => "Video Upload Error: Direct video upload (.{$ext}) is disabled in entry [{$entryName}]. Please embed videos via authorized platforms (YouTube, Vimeo, Panopto, Loom, Zoom, Wistia)."];
+                    return ['success' => false, 'message' => "Video Upload Error: Direct video upload (.{$ext}) is disabled in entry [{$entryName}]. Please embed videos via authorized platforms (YouTube, Vimeo, Mux, Panopto, Loom, Zoom, Wistia)."];
                 }
                 return ['success' => false, 'message' => "Security Error: Prohibited file type '.{$ext}' found in zip entry [{$entryName}]. Executable scripts are strictly forbidden."];
             }
@@ -421,13 +421,13 @@ class CourseImporter {
 
         // 2. Video Restrictions Check (Authorized Embed Platforms Only)
         if (preg_match('/<video\b[^>]*>/i', $htmlContent)) {
-            $issues[] = "[Video Policy Alert] {$filename}: Direct `<video>` elements found. Direct video files are disabled; please use authorized video embeds (YouTube, Vimeo, Panopto, Loom, Zoom, Wistia).";
+            $issues[] = "[Video Policy Alert] {$filename}: Direct `<video>` elements found. Direct video files are disabled; please use authorized video embeds (YouTube, Vimeo, Mux, Panopto, Loom, Zoom, Wistia).";
         }
 
         if (preg_match_all('/<iframe\b[^>]*\bsrc=["\']([^"\']+)["\']/i', $htmlContent, $iframeMatches)) {
             foreach ($iframeMatches[1] as $src) {
-                if (!preg_match('/^https?:\/\/([a-z0-9-]+\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|panopto\.com|panopto\.eu|loom\.com|zoom\.us|wistia\.com|wistia\.net)/i', $src)) {
-                    $issues[] = "[Video Policy Alert] {$filename}: Embedded iframe `{$src}` is not authorized. Only YouTube, Vimeo, Panopto, Loom, Zoom, and Wistia embeds are permitted.";
+                if (!preg_match('/^https?:\/\/([a-z0-9-]+\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|mux\.com|stream\.mux\.com|player\.mux\.com|panopto\.com|panopto\.eu|loom\.com|zoom\.us|wistia\.com|wistia\.net)/i', $src)) {
+                    $issues[] = "[Video Policy Alert] {$filename}: Embedded iframe `{$src}` is not authorized. Only YouTube, Vimeo, Mux, Panopto, Loom, Zoom, and Wistia embeds are permitted.";
                 }
             }
         }

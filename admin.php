@@ -723,7 +723,7 @@ $storagePercent = min(100, round(($storageUsedBytes / ($storageQuotaMb * 1024 * 
                         <ul class="text-sm pl-4 m-0" style="color: #1e3a8a;">
                             <li class="mb-2"><strong>Standard Formats:</strong> HTML packages, BuildXCL bundles, or LC-JSON schemas.</li>
                             <li class="mb-2"><strong>Security Sandbox:</strong> Prohibited file extensions (.php, .sh, .exe) are blocked automatically.</li>
-                            <li><strong>Media Links:</strong> Link to YouTube/Vimeo for video streams to conserve your storage quota.</li>
+                            <li><strong>Media Links:</strong> Link to YouTube/Vimeo/Mux for video streams to conserve your storage quota.</li>
                         </ul>
                     </div>
                 </div>

@@ -10,7 +10,7 @@ Before compressing your course files, ensure your package meets the following re
 
 - [ ] **Manifest Location**: `course_structure.json` is placed in the root directory of your course files.
 - [ ] **No Server Scripts**: The package contains NO `.php`, `.phtml`, `.sh`, `.exe`, `.cgi`, or `.htaccess` files (executable scripts cause automatic upload rejection).
-- [ ] **Video Restriction Policy**: The package contains NO direct video files (`.mp4`, `.webm`, `.mov`, `.avi`). All course videos must be embedded using authorized platforms (**YouTube**, **Vimeo**, **Panopto**, **Loom**, **Zoom**, or **Wistia**) `<iframe>` links.
+- [ ] **Video Restriction Policy**: The package contains NO direct video files (`.mp4`, `.webm`, `.mov`, `.avi`). All course videos must be embedded using authorized platforms (**YouTube**, **Vimeo**, **Mux**, **Panopto**, **Loom**, **Zoom**, or **Wistia**) using `<mux-player>` custom elements or `<iframe>` links.
 - [ ] **File Whitelist**: All files use approved extensions: `.json`, `.html`, `.css`, `.js`, `.png`, `.jpg`, `.jpeg`, `.svg`, `.webp`, `.gif`, `.mp3`, `.vtt`, `.woff2`.
 - [ ] **Storage Quota**: The total uncompressed course size is within your tenant's **500 MB** storage limit.
 
@@ -115,7 +115,7 @@ After uploading, a notice box will appear at the top of your Admin Dashboard:
   Displays non-blocking advisories regarding accessibility best practices or video embeds, such as:
   - `[Accessibility Notice] module1.html: Missing valid lang attribute on <html> tag.`
   - `[Accessibility Notice] module1.html: Contains 2 <img> tag(s) missing an alt attribute.`
-  - `[Video Policy Alert] module1.html: Embedded iframe is not authorized. Only YouTube, Vimeo, Panopto, Loom, Zoom, and Wistia embeds are permitted.`
+  - `[Video Policy Alert] module1.html: Embedded iframe is not authorized. Only YouTube, Vimeo, Mux, Panopto, Loom, Zoom, and Wistia embeds are permitted.`
 
 ---
 
@@ -147,6 +147,6 @@ Once imported, your course will appear in the **Tenant Course Library** table on
 | :--- | :--- | :--- |
 | `course_structure.json manifest was not found` | `course_structure.json` is missing or nested inside a subfolder in the ZIP. | Ensure `course_structure.json` is at the root level of the ZIP file. |
 | `Prohibited file type '.php'` | The ZIP contains executable server scripts. | Remove all `.php`, `.sh`, `.exe`, or script files from your package. |
-| `Direct video upload (.mp4) is disabled` | The ZIP contains raw video files. | Remove raw video files and embed videos using authorized platforms (YouTube, Vimeo, Panopto, Loom, Zoom, Wistia) via `<iframe>` tags. |
+| `Direct video upload (.mp4) is disabled` | The ZIP contains raw video files. | Remove raw video files and embed videos using authorized platforms (YouTube, Vimeo, Mux, Panopto, Loom, Zoom, Wistia) via `<mux-player>` custom elements or `<iframe>` tags. |
 | `Storage Quota Exceeded` | Your tenant has reached its **500 MB** storage limit. | Delete unused courses or compress large image assets to stay under 500 MB. |
 | `Path traversal attempt detected` | ZIP entry contains relative pathing (`../`). | Re-create the ZIP file using standard archive tools. |

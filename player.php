@@ -148,6 +148,8 @@ $assets = $manifest['properties']['assets'] ?? [];
     
     <!-- Always load Superable custom web components for rich interactivity support -->
     <script src="assets/components/sl-components.js?v=<?= time() ?>" defer></script>
+    <!-- Load Mux Player web components for Mux video integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" defer></script>
 
     <!-- xAPI Service (Always load, defaults to console.log if no LMS launch) -->
     <script src="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
@@ -761,6 +763,9 @@ $assets = $manifest['properties']['assets'] ?? [];
                         }
                     });
                     
+                    // Bind Universal Video Telemetry Trackers
+                    initializeVideoTracking();
+                    
                     // Bind interaction listeners
                     if (!isAlreadyCompleted && isLast) {
                         document.getElementById('btn-mark-complete').addEventListener('click', markCurrentComplete);
@@ -1042,6 +1047,353 @@ $assets = $manifest['properties']['assets'] ?? [];
                     }
                 }
             });
+
+            // Bind Universal Video Telemetry Trackers
+            let scriptLoadCallbacks = {};
+            function ensureScriptLoaded(url, callback) {
+                if (window[url + '_loaded']) {
+                    callback();
+                    return;
+                }
+                if (scriptLoadCallbacks[url]) {
+                    scriptLoadCallbacks[url].push(callback);
+                    return;
+                }
+                scriptLoadCallbacks[url] = [callback];
+                
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    window[url + '_loaded'] = true;
+                    scriptLoadCallbacks[url].forEach(cb => cb());
+                    delete scriptLoadCallbacks[url];
+                };
+                document.head.appendChild(script);
+            }
+
+            function handleVideoPlay(activityId, title, isResume) {
+                logLocalInteraction(currentModuleId, isResume ? 'resume_video' : 'play_video', { activity_id: activityId, title: title });
+                if (window.xapi) {
+                    window.xapi.sendStatement({
+                        "id": isResume ? "http://adlnet.gov/expapi/verbs/resumed" : "http://adlnet.gov/expapi/verbs/played",
+                        "display": { "en-US": isResume ? "resumed" : "played" }
+                    }, {
+                        "id": activityId,
+                        "definition": {
+                            "name": { "en-US": title },
+                            "description": { "en-US": `User ${isResume ? 'resumed' : 'started'} watching video: ${title}` },
+                            "type": "http://adlnet.gov/expapi/activities/media"
+                        }
+                    });
+                }
+            }
+
+            function handleVideoPause(activityId, title, time) {
+                logLocalInteraction(currentModuleId, 'pause_video', { activity_id: activityId, title: title, time: time });
+                if (window.xapi) {
+                    window.xapi.sendStatement({
+                        "id": "http://adlnet.gov/expapi/verbs/paused",
+                        "display": { "en-US": "paused" }
+                    }, {
+                        "id": activityId,
+                        "definition": {
+                            "name": { "en-US": title },
+                            "description": { "en-US": `User paused video: ${title}` },
+                            "type": "http://adlnet.gov/expapi/activities/media"
+                        }
+                    }, {
+                        "extensions": {
+                            "https://w3id.org/xapi/video/extensions/time": time
+                        }
+                    });
+                }
+            }
+
+            function handleVideoProgress(activityId, title, time, pct, milestones) {
+                [25, 50, 75].forEach(milestone => {
+                    if (pct >= milestone && !milestones[milestone]) {
+                        milestones[milestone] = true;
+                        logLocalInteraction(currentModuleId, `video_progress_${milestone}`, { activity_id: activityId, title: title, time: time });
+                        if (window.xapi) {
+                            window.xapi.sendStatement({
+                                "id": "http://adlnet.gov/expapi/verbs/progressed",
+                                "display": { "en-US": "progressed" }
+                            }, {
+                                "id": activityId,
+                                "definition": {
+                                    "name": { "en-US": title },
+                                    "description": { "en-US": `User reached ${milestone}% completion for video: ${title}` },
+                                    "type": "http://adlnet.gov/expapi/activities/media"
+                                }
+                            }, {
+                                "extensions": {
+                                    "https://w3id.org/xapi/video/extensions/progress": milestone,
+                                    "https://w3id.org/xapi/video/extensions/time": time
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            function handleVideoComplete(activityId, title) {
+                logLocalInteraction(currentModuleId, 'complete_video', { activity_id: activityId, title: title });
+                if (window.xapi) {
+                    window.xapi.sendStatement({
+                        "id": "http://adlnet.gov/expapi/verbs/completed",
+                        "display": { "en-US": "completed" }
+                    }, {
+                        "id": activityId,
+                        "definition": {
+                            "name": { "en-US": title },
+                            "description": { "en-US": `User completed video: ${title}` },
+                            "type": "http://adlnet.gov/expapi/activities/media"
+                        }
+                    }, {
+                        "completion": true
+                    });
+                }
+            }
+
+            function initializeVideoTracking() {
+                // 1. Mux Player Elements
+                contentContainer.querySelectorAll('mux-player').forEach(player => {
+                    if (player.dataset.telemetryBound) return;
+                    player.dataset.telemetryBound = 'true';
+                    
+                    const playbackId = player.getAttribute('playback-id') || 'unknown';
+                    const videoTitle = player.getAttribute('metadata-video-title') || player.getAttribute('title') || 'Mux Video';
+                    const activityId = window.xapi ? `${window.xapi.courseId}/videos/mux-${playbackId}` : `videos/mux-${playbackId}`;
+                    
+                    let trackedMilestones = { 25: false, 50: false, 75: false };
+                    let hasPlayed = false;
+                    
+                    player.addEventListener('play', () => {
+                        handleVideoPlay(activityId, videoTitle, hasPlayed);
+                        hasPlayed = true;
+                    });
+                    
+                    player.addEventListener('pause', () => {
+                        if (player.currentTime < player.duration - 0.5) {
+                            handleVideoPause(activityId, videoTitle, player.currentTime);
+                        }
+                    });
+                    
+                    player.addEventListener('timeupdate', () => {
+                        if (!player.duration) return;
+                        const pct = Math.floor((player.currentTime / player.duration) * 100);
+                        handleVideoProgress(activityId, videoTitle, player.currentTime, pct, trackedMilestones);
+                    });
+                    
+                    player.addEventListener('ended', () => {
+                        handleVideoComplete(activityId, videoTitle);
+                    });
+                });
+
+                // 2. YouTube Iframes
+                const ytIframes = Array.from(contentContainer.querySelectorAll('iframe')).filter(iframe => {
+                    const src = iframe.src || '';
+                    return src.includes('youtube.com/') || src.includes('youtube-nocookie.com/') || src.includes('youtu.be/');
+                });
+
+                if (ytIframes.length > 0) {
+                    ensureScriptLoaded('https://www.youtube.com/iframe_api', () => {
+                        function initYT() {
+                            if (typeof YT === 'undefined' || !YT.Player) {
+                                setTimeout(initYT, 100);
+                                return;
+                            }
+                            ytIframes.forEach(iframe => {
+                                if (iframe.dataset.telemetryBound) return;
+                                iframe.dataset.telemetryBound = 'true';
+
+                                // Ensure enablejsapi=1 is in the src
+                                try {
+                                    let srcUrl = new URL(iframe.src);
+                                    if (srcUrl.searchParams.get('enablejsapi') !== '1') {
+                                        srcUrl.searchParams.set('enablejsapi', '1');
+                                        iframe.src = srcUrl.toString();
+                                    }
+                                } catch (err) {
+                                    // Fallback for relative or malformed URLs
+                                    if (iframe.src.indexOf('?') === -1) {
+                                        iframe.src += '?enablejsapi=1';
+                                    } else if (iframe.src.indexOf('enablejsapi=1') === -1) {
+                                        iframe.src += '&enablejsapi=1';
+                                    }
+                                }
+
+                                const videoTitle = iframe.title || iframe.getAttribute('title') || 'YouTube Video';
+                                
+                                let videoId = 'unknown';
+                                try {
+                                    const srcUrl = new URL(iframe.src);
+                                    const pathParts = srcUrl.pathname.split('/');
+                                    if (pathParts.includes('embed')) {
+                                        videoId = pathParts[pathParts.indexOf('embed') + 1] || 'unknown';
+                                    }
+                                } catch (err) {}
+
+                                const activityId = window.xapi ? `${window.xapi.courseId}/videos/youtube-${videoId}` : `videos/youtube-${videoId}`;
+                                
+                                let trackedMilestones = { 25: false, 50: false, 75: false };
+                                let hasPlayed = false;
+                                let progressInterval = null;
+
+                                const ytPlayer = new YT.Player(iframe, {
+                                    events: {
+                                        onStateChange: (event) => {
+                                            if (event.data === YT.PlayerState.PLAYING) {
+                                                handleVideoPlay(activityId, videoTitle, hasPlayed);
+                                                hasPlayed = true;
+
+                                                if (!progressInterval) {
+                                                    progressInterval = setInterval(() => {
+                                                        try {
+                                                            const curTime = ytPlayer.getCurrentTime();
+                                                            const duration = ytPlayer.getDuration();
+                                                            if (duration > 0) {
+                                                                    const pct = Math.floor((curTime / duration) * 100);
+                                                                    handleVideoProgress(activityId, videoTitle, curTime, pct, trackedMilestones);
+                                                            }
+                                                        } catch (err) {}
+                                                    }, 1000);
+                                                }
+                                            } else if (event.data === YT.PlayerState.PAUSED) {
+                                                clearInterval(progressInterval);
+                                                progressInterval = null;
+                                                try {
+                                                    const curTime = ytPlayer.getCurrentTime();
+                                                    const duration = ytPlayer.getDuration();
+                                                    if (curTime < duration - 1) {
+                                                        handleVideoPause(activityId, videoTitle, curTime);
+                                                    }
+                                                } catch (err) {}
+                                            } else if (event.data === YT.PlayerState.ENDED) {
+                                                clearInterval(progressInterval);
+                                                progressInterval = null;
+                                                handleVideoComplete(activityId, videoTitle);
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                        initYT();
+                    });
+                }
+
+                // 3. Vimeo Iframes
+                const vimeoIframes = Array.from(contentContainer.querySelectorAll('iframe')).filter(iframe => {
+                    const src = iframe.src || '';
+                    return src.includes('vimeo.com/');
+                });
+
+                if (vimeoIframes.length > 0) {
+                    ensureScriptLoaded('https://player.vimeo.com/api/player.js', () => {
+                        vimeoIframes.forEach(iframe => {
+                            if (iframe.dataset.telemetryBound) return;
+                            iframe.dataset.telemetryBound = 'true';
+
+                            const videoTitle = iframe.title || iframe.getAttribute('title') || 'Vimeo Video';
+                            
+                            let videoId = 'unknown';
+                            try {
+                                const pathParts = new URL(iframe.src).pathname.split('/');
+                                if (pathParts.includes('video')) {
+                                    videoId = pathParts[pathParts.indexOf('video') + 1] || 'unknown';
+                                } else {
+                                    videoId = pathParts[pathParts.length - 1] || 'unknown';
+                                }
+                            } catch (err) {}
+
+                            const activityId = window.xapi ? `${window.xapi.courseId}/videos/vimeo-${videoId}` : `videos/vimeo-${videoId}`;
+                            
+                            let trackedMilestones = { 25: false, 50: false, 75: false };
+                            let hasPlayed = false;
+
+                            const vimeoPlayer = new Vimeo.Player(iframe);
+                            
+                            vimeoPlayer.on('play', () => {
+                                handleVideoPlay(activityId, videoTitle, hasPlayed);
+                                hasPlayed = true;
+                            });
+
+                            vimeoPlayer.on('pause', (data) => {
+                                if (data.seconds < data.duration - 1) {
+                                    handleVideoPause(activityId, videoTitle, data.seconds);
+                                }
+                            });
+
+                            vimeoPlayer.on('timeupdate', (data) => {
+                                const pct = Math.floor(data.percent * 100);
+                                handleVideoProgress(activityId, videoTitle, data.seconds, pct, trackedMilestones);
+                            });
+
+                            vimeoPlayer.on('ended', () => {
+                                handleVideoComplete(activityId, videoTitle);
+                            });
+                        });
+                    });
+                }
+
+                // 4. Wistia Iframes
+                const wistiaIframes = Array.from(contentContainer.querySelectorAll('iframe')).filter(iframe => {
+                    const src = iframe.src || '';
+                    return src.includes('wistia.com') || src.includes('wistia.net');
+                });
+
+                if (wistiaIframes.length > 0) {
+                    ensureScriptLoaded('https://fast.wistia.net/assets/external/E-v1.js', () => {
+                        wistiaIframes.forEach(iframe => {
+                            if (iframe.dataset.telemetryBound) return;
+                            iframe.dataset.telemetryBound = 'true';
+
+                            let hashedId = 'unknown';
+                            const match = iframe.src.match(/\/iframe\/([a-zA-Z0-9]+)/);
+                            if (match && match[1]) {
+                                hashedId = match[1];
+                            }
+
+                            const videoTitle = iframe.title || iframe.getAttribute('title') || 'Wistia Video';
+                            const activityId = window.xapi ? `${window.xapi.courseId}/videos/wistia-${hashedId}` : `videos/wistia-${hashedId}`;
+                            
+                            let trackedMilestones = { 25: false, 50: false, 75: false };
+                            let hasPlayed = false;
+
+                            window._wq = window._wq || [];
+                            window._wq.push({
+                                id: hashedId,
+                                onReady: function(wistiaPlayer) {
+                                    wistiaPlayer.bind('play', function() {
+                                        handleVideoPlay(activityId, videoTitle, hasPlayed);
+                                        hasPlayed = true;
+                                    });
+
+                                    wistiaPlayer.bind('pause', function() {
+                                        const curTime = wistiaPlayer.time();
+                                        const duration = wistiaPlayer.duration();
+                                        if (curTime < duration - 1) {
+                                            handleVideoPause(activityId, videoTitle, curTime);
+                                        }
+                                    });
+
+                                    wistiaPlayer.bind('secondchange', function(sec) {
+                                        const duration = wistiaPlayer.duration();
+                                        if (!duration) return;
+                                        const pct = Math.floor((sec / duration) * 100);
+                                        handleVideoProgress(activityId, videoTitle, sec, pct, trackedMilestones);
+                                    });
+
+                                    wistiaPlayer.bind('end', function() {
+                                        handleVideoComplete(activityId, videoTitle);
+                                    });
+                                }
+                            });
+                        });
+                    });
+                }
+            }
 
             // Log final dwell time when user leaves/closes page
             window.addEventListener('pagehide', () => {

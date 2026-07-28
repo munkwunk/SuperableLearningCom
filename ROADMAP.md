@@ -61,6 +61,7 @@ These features require changes to the database schemas, new operational flows, o
 *   **Component-Level Previews**: Create a modal preview wrapper in the packager/builder to test single UI web components (e.g., contrast check individual buttons or text inputs).
 *   [x] **Light Analytics Dashboard**: Build a database-backed analytics view tracking completion rates, average time spent per module, and quiz pass/fail statistics.
 *   **xAPI/LRS Integration**: Build an LRS connection wizard to transmit standardized xAPI statements to external Learning Record Stores.
+*   [x] **Universal Player Tracking & xAPI Video Analytics**: Update the player engine (`player.php`) and HTML importer validator (`course_importer.php`) to whitelist and support `<mux-player>` elements and YouTube/Vimeo iframe embeds, automatically binding to their respective APIs (Mux events, YouTube IFrame Player API, and Vimeo SDK) to emit detailed xAPI video statements (plays, pauses, progress percentages, completion) to the active LRS and telemetry log.
 *   **Dual-Screen Presenter Console & Teleprompter Sync (Local)**: Leverage the browser's client-side `BroadcastChannel` API to synchronize a fullscreen slide window (shared on Zoom/Teams) with a scrollable teleprompter/notes window on the same machine. Scrolling the notes past trigger markers automatically advances the audience's slides with zero server overhead. See the [Technical Specification](help/docs/specs/presenter-mode-teleprompter-sync.md).
 
 ### Branding (Cross‑Tier)
@@ -112,6 +113,7 @@ Strategic features and optional tooling designed to establish the platform as a 
 *   **NVDA/JAWS Simulation Mode**: Build a CSS/JS overlay simulating screen reader focus order and text speech bubbles directly in the preview player.
 *   **Accessibility Regression Testing**: Implement an automated test runner checking uploaded updates against previous accessibility baselines.
 *   **Integration Marketplace**: Add an integrations panel to map custom third-party LMS providers and standard SCORM engines.
+*   **BYOK Mux.com Direct-to-Cloud Video Uploads**: Build an administrative console mapping tenant-owned Mux API credentials (stored securely in `tenants/{tenantKey}.json`). Integrate client-side direct-to-Mux upload flows within the Web Course Packager (`packager.php`) to upload video files directly from the browser to Mux, completely bypassing LMS server storage limits and local bandwidth constraints.
 *   **Voice-Activated Advancing & Cross-Device Remote Control**: Integrate the browser's local Web Speech API to listen to the presenter's microphone and auto-advance slides upon matching keywords in the notes. Utilize a WebSocket service (made possible by VPS migration) to allow a smartphone/tablet to act as a remote notes controller syncing with the main presentation screen. See the [Technical Specification](help/docs/specs/presenter-mode-teleprompter-sync.md).
 
 ### Branding (Cross‑Tier)
