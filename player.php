@@ -544,8 +544,8 @@ $assets = $manifest['properties']['assets'] ?? [];
                         inaccessibleVersion.hidden = true;
                         accessibleVersion.hidden = false;
                         e.target.hidden = true; // Hide the button once revealed
-                        
-                        const moduleTitle = moduleBtnsArray[currentModuleIndex] ? moduleBtnsArray[currentModuleIndex].textContent.replace('(Completed)', '').trim() : '';
+                        const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
+                        const moduleTitle = activeBtns[currentModuleIndex] ? activeBtns[currentModuleIndex].textContent.replace('(Completed)', '').trim() : '';
 
                         // Local Telemetry Log (Only log if user-initiated)
                         if (e.isTrusted) {
@@ -626,10 +626,11 @@ $assets = $manifest['properties']['assets'] ?? [];
                 }
                 moduleStartTime = Date.now();
                 
-                // Determine our new index
-                currentModuleIndex = moduleBtnsArray.indexOf(button);
+                // Determine our new index from the active buttons in the DOM (handles elements rebuilt by accordion components)
+                const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
+                currentModuleIndex = activeBtns.findIndex(btn => btn.getAttribute('data-module-id') === button.getAttribute('data-module-id'));
                 const isFirst = currentModuleIndex === 0;
-                const isLast = currentModuleIndex === moduleBtnsArray.length - 1;
+                const isLast = currentModuleIndex === activeBtns.length - 1;
                 
                 if (!src) return;
 
@@ -637,8 +638,9 @@ $assets = $manifest['properties']['assets'] ?? [];
                 contentContainer.setAttribute('aria-busy', 'true');
                 contentContainer.classList.add('content-loading');
                 
-                moduleBtnsArray.forEach(btn => btn.setAttribute('aria-current', 'false'));
-                button.setAttribute('aria-current', 'true');
+                activeBtns.forEach(btn => btn.setAttribute('aria-current', 'false'));
+                const domBtn = activeBtns[currentModuleIndex] || button;
+                domBtn.setAttribute('aria-current', 'true');
                 currentModuleId = moduleId;
                 
                 // Auto-expand parent accordion if exists
@@ -678,7 +680,7 @@ $assets = $manifest['properties']['assets'] ?? [];
                     let nextTitle = "";
 
                     if (!isFirst) {
-                        prevTitle = moduleBtnsArray[currentModuleIndex - 1].textContent.replace('(Completed)', '').trim();
+                        prevTitle = activeBtns[currentModuleIndex - 1].textContent.replace('(Completed)', '').trim();
                         prevLabel = `&larr; <span class="sr-only">Previous: </span>${prevTitle}`;
                     }
 
@@ -686,7 +688,7 @@ $assets = $manifest['properties']['assets'] ?? [];
                     let primaryActionHTML = '';
                     
                     if (!isLast) {
-                        nextTitle = moduleBtnsArray[currentModuleIndex + 1].textContent.replace('(Completed)', '').trim();
+                        nextTitle = activeBtns[currentModuleIndex + 1].textContent.replace('(Completed)', '').trim();
                         nextLabel = `<span class="sr-only">Next: </span>${nextTitle} &rarr;`;
                         primaryActionHTML = `
                             <button id="btn-next-module" class="nav-btn" aria-label="Go to Next Module: ${nextTitle}">
@@ -719,7 +721,7 @@ $assets = $manifest['properties']['assets'] ?? [];
                             </div>
                             
                             <div class="nav-indicator" style="flex: 1; text-align: center; font-weight: 600; color: var(--color-neutral-mid);">
-                                Module ${currentModuleIndex + 1} of ${moduleBtnsArray.length}
+                                Module ${currentModuleIndex + 1} of ${activeBtns.length}
                             </div>
 
                             <div class="nav-next" style="flex: 1; display: flex; justify-content: flex-end; align-items: center;">
@@ -884,7 +886,8 @@ $assets = $manifest['properties']['assets'] ?? [];
                         successHeading.style.outline = 'none';
                         
                         // Update Sidebar
-                        const navBtn = moduleBtnsArray[currentModuleIndex];
+                        const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
+                        const navBtn = activeBtns[currentModuleIndex];
                         if (navBtn && !navBtn.classList.contains('completed')) {
                             navBtn.classList.add('completed');
                             const cleanText = navBtn.textContent.replace('(Completed)', '').trim();
@@ -910,14 +913,16 @@ $assets = $manifest['properties']['assets'] ?? [];
             
             // 4. Navigation Handlers
             function navigatePrevious() {
+                const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
                 if (currentModuleIndex > 0) {
-                    loadModuleContent(moduleBtnsArray[currentModuleIndex - 1]);
+                    loadModuleContent(activeBtns[currentModuleIndex - 1]);
                 }
             }
             
             async function navigateNext() {
-                if (currentModuleIndex < moduleBtnsArray.length - 1) {
-                    const currentBtn = moduleBtnsArray[currentModuleIndex];
+                const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
+                if (currentModuleIndex < activeBtns.length - 1) {
+                    const currentBtn = activeBtns[currentModuleIndex];
                     
                     // Progress save phase
                     if (currentBtn && !currentBtn.classList.contains('completed')) {
@@ -987,7 +992,7 @@ $assets = $manifest['properties']['assets'] ?? [];
                     }
 
                     // Loading next module phase (this naturally shifts focus to the newly loaded h1)
-                    loadModuleContent(moduleBtnsArray[currentModuleIndex + 1]);
+                    loadModuleContent(activeBtns[currentModuleIndex + 1]);
                 }
             }
 
@@ -1011,12 +1016,13 @@ $assets = $manifest['properties']['assets'] ?? [];
                 }
 
                 // Restore last read active module (Present choice card to user)
+                const activeBtns = Array.from(document.querySelectorAll('.module-btn'));
                 let targetModule = null;
                 if (data && data.last_active_module_id) {
                     targetModule = document.querySelector(`.module-btn[data-module-id="${data.last_active_module_id}"]`);
                 }
 
-                if (targetModule && targetModule !== moduleBtnsArray[0]) {
+                if (targetModule && targetModule !== activeBtns[0]) {
                     const moduleTitle = targetModule.textContent.replace('(Completed)', '').trim();
                     contentContainer.innerHTML = `
                         <div class="resume-prompt-card" role="status" style="background-color: #f8fafc; border: 2px solid var(--color-primary); border-radius: 0.5rem; padding: 2rem; max-width: 600px; margin: 4rem auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: left;">
@@ -1038,8 +1044,8 @@ $assets = $manifest['properties']['assets'] ?? [];
                     });
 
                     document.getElementById('btn-resume-no').addEventListener('click', () => {
-                        if (moduleBtnsArray[0]) {
-                            loadModuleContent(moduleBtnsArray[0]);
+                        if (activeBtns[0]) {
+                            loadModuleContent(activeBtns[0]);
                         }
                     });
 
@@ -1048,7 +1054,7 @@ $assets = $manifest['properties']['assets'] ?? [];
                         yesBtn.focus();
                     }
                 } else {
-                    const firstModule = document.querySelector('.module-btn[aria-current="true"]') || moduleBtnsArray[0];
+                    const firstModule = document.querySelector('.module-btn[aria-current="true"]') || activeBtns[0];
                     if (firstModule) {
                         loadModuleContent(firstModule);
                     }
