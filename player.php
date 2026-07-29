@@ -49,13 +49,13 @@ if (strpos($course_id, '?') !== false) {
 $activeTenant = resolveTenantKey();
 $course_dir = resolveCourseDir($course_id, $activeTenant);
 
-// Resolve the correct web path prefix for this course based on its physical location on disk
+// Resolve the correct web path prefix for this course based on its physical location on disk.
+// Using a regex match on a slash-normalized path makes this highly robust against symlinks and platform-specific slashes.
 $course_web_path = 'courses';
 if ($course_dir) {
-    $relative_dir = str_replace(LMS_ROOT . DIRECTORY_SEPARATOR, '', $course_dir);
-    $parts = explode(DIRECTORY_SEPARATOR, $relative_dir);
-    if (count($parts) >= 4 && $parts[0] === 'courses' && $parts[1] === 'tenants') {
-        $course_web_path = 'courses/tenants/' . $parts[2];
+    $normalized_path = str_replace('\\', '/', $course_dir);
+    if (preg_match('/\/courses\/tenants\/([a-zA-Z0-9_-]+)/', $normalized_path, $matches)) {
+        $course_web_path = 'courses/tenants/' . $matches[1];
     }
 }
 
