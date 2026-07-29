@@ -406,12 +406,6 @@ $assets = $manifest['properties']['assets'] ?? [];
                         btn.textContent = formattedTitle;
                         sidebarModCount++;
 
-                        btn.addEventListener('click', () => {
-                            if (btn.getAttribute('aria-current') !== 'true') {
-                                loadModuleContent(btn);
-                            }
-                        });
-
                         li.appendChild(btn);
                     }
                     list.appendChild(li);
@@ -427,6 +421,17 @@ $assets = $manifest['properties']['assets'] ?? [];
 
             // Keep a real array of buttons to easily find index by context
             const moduleBtnsArray = Array.from(document.querySelectorAll('.module-btn'));
+            
+            // Event delegation for sidebar navigation buttons (avoids event listeners being lost during custom element upgrades)
+            navContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('.module-btn');
+                if (btn) {
+                    if (btn.getAttribute('aria-current') !== 'true') {
+                        loadModuleContent(btn);
+                    }
+                }
+            });
+
             const contentContainer = document.getElementById('course-content');
             let currentModuleId = null;
             let currentModuleIndex = 0;
@@ -647,8 +652,11 @@ $assets = $manifest['properties']['assets'] ?? [];
                     const url = `${LMS_CONTEXT.coursesWebPath}/${LMS_CONTEXT.courseId}/${src}`;
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    let html = await response.text();
                     
-                    const html = await response.text();
+                    // Normalize course asset paths dynamically to support multi-tenant folder structures and mirroring
+                    const courseAssetPattern = new RegExp(`courses/(tenants/[a-zA-Z0-9_-]+/)?${LMS_CONTEXT.courseId}/`, 'g');
+                    html = html.replace(courseAssetPattern, `${LMS_CONTEXT.coursesWebPath}/${LMS_CONTEXT.courseId}/`);
                     
                     // xAPI Module Experience Tracking
                     if (window.xapi) {
