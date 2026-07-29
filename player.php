@@ -45,19 +45,8 @@ if (strpos($course_id, '?') !== false) {
     $_GET = array_merge($_GET, $extra_params);
 }
 
-// 3. Security Check & Course Validation
 $activeTenant = resolveTenantKey();
 $course_dir = resolveCourseDir($course_id, $activeTenant);
-
-// Resolve the correct web path prefix for this course based on its physical location on disk.
-// Using a regex match on a slash-normalized path makes this highly robust against symlinks and platform-specific slashes.
-$course_web_path = 'courses';
-if ($course_dir) {
-    $normalized_path = str_replace('\\', '/', $course_dir);
-    if (preg_match('/\/courses\/tenants\/([a-zA-Z0-9_-]+)/', $normalized_path, $matches)) {
-        $course_web_path = 'courses/tenants/' . $matches[1];
-    }
-}
 
 if (empty($course_id) || !$course_dir) {
     // Basic friendly error matching UI specs
@@ -153,7 +142,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     
     <!-- Dynamic Course Assets -->
     <?php if (isset($assets['css'])): foreach ($assets['css'] as $css): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($course_web_path) ?>/<?= htmlspecialchars($course_id) ?>/<?= htmlspecialchars($css) ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/<?= htmlspecialchars($css) ?>">
     <?php endforeach; endif; ?>
     
     <!-- Always load Superable custom web components for rich interactivity support -->
@@ -162,7 +151,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" defer></script>
 
     <!-- xAPI Service (Always load, defaults to console.log if no LMS launch) -->
-    <script src="<?= htmlspecialchars($course_web_path) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
+    <script src="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
     
     <style>
         .player-layout {
@@ -325,7 +314,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     <script>
         const LMS_CONTEXT = { 
             courseId: <?= json_encode($course_id) ?>, 
-            coursesWebPath: <?= json_encode($course_web_path) ?>,
+            coursesWebPath: <?= json_encode(getTenantCoursesWebPath($activeTenant)) ?>,
             tenantKey: <?= json_encode($activeTenant) ?>,
             userId: <?= json_encode($user_id) ?>,
             userName: <?= json_encode($user_name) ?>,
