@@ -35,9 +35,19 @@ window.jwAnnounce = window.slAnnounce;
  */
 class JWAccordion extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -105,9 +115,19 @@ class JWAccordion extends HTMLElement {
  */
 class JWTabs extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -210,76 +230,79 @@ class JWTabs extends HTMLElement {
  * An accessible flip card that uses a button to toggle state.
  */
 class JWFlipCard extends HTMLElement {
-    connectedCallback() {
+     connectedCallback() {
         if (this.hasAttribute('rendered')) return;
-        
-        let frontContent = this.querySelector('sl-front, jw-front')?.innerHTML || this.getAttribute('front') || '';
-        let backContent = this.querySelector('sl-back, jw-back')?.innerHTML || this.getAttribute('back') || '';
-        
-        if (!frontContent && !backContent && this.innerHTML.trim()) {
-            frontContent = this.innerHTML;
-            backContent = 'Card Back Content';
-        }
+        setTimeout(() => {
+            if (this.hasAttribute('rendered')) return;
+            
+            let frontContent = this.querySelector('sl-front, jw-front')?.innerHTML || this.getAttribute('front') || '';
+            let backContent = this.querySelector('sl-back, jw-back')?.innerHTML || this.getAttribute('back') || '';
+            
+            if (!frontContent && !backContent && this.innerHTML.trim()) {
+                frontContent = this.innerHTML;
+                backContent = 'Card Back Content';
+            }
 
-        const customTitle = this.getAttribute('title');
-        const regionLabel = customTitle ? `Interactive Flipcard: ${customTitle}` : 'Interactive Flipcard';
+            const customTitle = this.getAttribute('title');
+            const regionLabel = customTitle ? `Interactive Flipcard: ${customTitle}` : 'Interactive Flipcard';
 
-        this.innerHTML = `
-            <div class="jw-flip-card" role="region" aria-label="${regionLabel}" style="border: 1.5px solid #cbd5e1; border-radius: 0.5rem; padding: 1.25rem; background: #ffffff; margin: 1.25rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-                <div class="jw-flip-card-inner">
-                    <!-- Front Face -->
-                    <div class="jw-flip-card-front" role="group" aria-label="Front of Card" tabindex="-1">
-                        <div class="jw-flip-card-header" aria-hidden="true" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <span class="jw-flip-card-badge" style="background: #e6fffa; color: #234e52; font-weight: bold; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid #b2f5ea;">Front of Card</span>
+            this.innerHTML = `
+                <div class="jw-flip-card" role="region" aria-label="${regionLabel}" style="border: 1.5px solid #cbd5e1; border-radius: 0.5rem; padding: 1.25rem; background: #ffffff; margin: 1.25rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                    <div class="jw-flip-card-inner">
+                        <!-- Front Face -->
+                        <div class="jw-flip-card-front" role="group" aria-label="Front of Card" tabindex="-1">
+                            <div class="jw-flip-card-header" aria-hidden="true" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span class="jw-flip-card-badge" style="background: #e6fffa; color: #234e52; font-weight: bold; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid #b2f5ea;">Front of Card</span>
+                            </div>
+                            <div class="jw-flip-card-content mb-3">${frontContent}</div>
+                            <button type="button" class="jw-flip-card-trigger cta-button" aria-expanded="false" style="background: #319795; color: white; padding: 0.45rem 0.9rem; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 0.25rem; cursor: pointer;" aria-label="Flip card to show back">
+                                Flip to Back
+                            </button>
                         </div>
-                        <div class="jw-flip-card-content mb-3">${frontContent}</div>
-                        <button type="button" class="jw-flip-card-trigger cta-button" aria-expanded="false" style="background: #319795; color: white; padding: 0.45rem 0.9rem; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 0.25rem; cursor: pointer;" aria-label="Flip card to show back">
-                            Flip to Back
-                        </button>
-                    </div>
-                    
-                    <!-- Back Face -->
-                    <div class="jw-flip-card-back" role="group" aria-label="Back of Card" hidden tabindex="-1">
-                        <div class="jw-flip-card-header" aria-hidden="true" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <span class="jw-flip-card-badge" style="background: #edf2f7; color: #2d3748; font-weight: bold; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid #cbd5e1;">Back of Card</span>
+                        
+                        <!-- Back Face -->
+                        <div class="jw-flip-card-back" role="group" aria-label="Back of Card" hidden tabindex="-1">
+                            <div class="jw-flip-card-header" aria-hidden="true" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span class="jw-flip-card-badge" style="background: #edf2f7; color: #2d3748; font-weight: bold; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; border: 1px solid #cbd5e1;">Back of Card</span>
+                            </div>
+                            <div class="jw-flip-card-content mb-3">${backContent}</div>
+                            <button type="button" class="jw-flip-card-trigger cta-button" aria-expanded="true" style="background: #4a5568; color: white; padding: 0.45rem 0.9rem; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 0.25rem; cursor: pointer;" aria-label="Flip card to show front">
+                                Flip to Front
+                            </button>
                         </div>
-                        <div class="jw-flip-card-content mb-3">${backContent}</div>
-                        <button type="button" class="jw-flip-card-trigger cta-button" aria-expanded="true" style="background: #4a5568; color: white; padding: 0.45rem 0.9rem; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 0.25rem; cursor: pointer;" aria-label="Flip card to show front">
-                            Flip to Front
-                        </button>
                     </div>
                 </div>
-            </div>
-        `;
-        this.setAttribute('rendered', '');
+            `;
+            this.setAttribute('rendered', '');
 
-        const triggers = this.querySelectorAll('.jw-flip-card-trigger');
-        const front = this.querySelector('.jw-flip-card-front');
-        const back = this.querySelector('.jw-flip-card-back');
+            const triggers = this.querySelectorAll('.jw-flip-card-trigger');
+            const front = this.querySelector('.jw-flip-card-front');
+            const back = this.querySelector('.jw-flip-card-back');
 
-        triggers.forEach(trigger => {
-            trigger.addEventListener('click', () => {
-                const isBackCurrentlyVisible = !back.hidden;
-                
-                // Toggle visibility
-                back.hidden = isBackCurrentlyVisible;
-                front.hidden = !isBackCurrentlyVisible;
-                
-                const targetSide = isBackCurrentlyVisible ? front : back;
-                targetSide.focus();
+            triggers.forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    const isBackCurrentlyVisible = !back.hidden;
+                    
+                    // Toggle visibility
+                    back.hidden = isBackCurrentlyVisible;
+                    front.hidden = !isBackCurrentlyVisible;
+                    
+                    const targetSide = isBackCurrentlyVisible ? front : back;
+                    targetSide.focus();
 
-                if (window.jwAnnounce) {
-                    window.jwAnnounce(isBackCurrentlyVisible ? "Card flipped to front" : "Card flipped to back", "assertive");
-                }
+                    if (window.jwAnnounce) {
+                        window.jwAnnounce(isBackCurrentlyVisible ? "Card flipped to front" : "Card flipped to back", "assertive");
+                    }
 
-                // Dispatch event for tracking
-                this.dispatchEvent(new CustomEvent('jw-flip-card-toggle', {
-                    detail: { title: customTitle, visibleSide: isBackCurrentlyVisible ? 'front' : 'back' },
-                    bubbles: true,
-                    composed: true
-                }));
+                    // Dispatch event for tracking
+                    this.dispatchEvent(new CustomEvent('jw-flip-card-toggle', {
+                        detail: { title: customTitle, visibleSide: isBackCurrentlyVisible ? 'front' : 'back' },
+                        bubbles: true,
+                        composed: true
+                    }));
+                });
             });
-        });
+        }, 0);
     }
 }
 
@@ -290,9 +313,19 @@ class JWFlipCard extends HTMLElement {
  */
 class JWDragDropAlt extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -396,9 +429,19 @@ class JWDragDropAlt extends HTMLElement {
  */
 class JWClickReveal extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -456,9 +499,19 @@ class JWClickReveal extends HTMLElement {
  */
 class JWHotspotContainer extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -552,9 +605,19 @@ class JWHotspotContainer extends HTMLElement {
  */
 class JWTimeline extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -646,9 +709,19 @@ class JWTimeline extends HTMLElement {
  */
 class JWMatchingGame extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -804,9 +877,19 @@ class JWMatchingGame extends HTMLElement {
  */
 class JWScenario extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -886,9 +969,19 @@ class JWScenario extends HTMLElement {
  */
 class JWWizard extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1012,9 +1105,19 @@ class JWWizard extends HTMLElement {
  */
 class JWNotifications extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1083,9 +1186,19 @@ class JWNotifications extends HTMLElement {
  */
 class JWInteractiveTable extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1175,9 +1288,19 @@ class JWInteractiveTable extends HTMLElement {
  */
 class JWCarousel extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1250,9 +1373,19 @@ class JWCarousel extends HTMLElement {
  */
 class JWModal extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1322,9 +1455,19 @@ class JWModal extends HTMLElement {
  */
 class JWFormValidation extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1443,9 +1586,19 @@ class JWFormValidation extends HTMLElement {
  */
 class JWTooltip extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1536,9 +1689,19 @@ class JWTooltip extends HTMLElement {
  */
 class JWButtonDemo extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1616,9 +1779,19 @@ class JWProgressBar extends HTMLElement {
  */
 class JWMultiColumn extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {
@@ -1644,9 +1817,19 @@ class JWMultiColumn extends HTMLElement {
  */
 class JWLinkDemo extends HTMLElement {
     connectedCallback() {
+
         if (this.hasAttribute('rendered')) return;
-        this.render();
-        this.setAttribute('rendered', '');
+
+        setTimeout(() => {
+
+            if (this.hasAttribute('rendered')) return;
+
+            this.render();
+
+            this.setAttribute('rendered', '');
+
+        }, 0);
+
     }
 
     render() {

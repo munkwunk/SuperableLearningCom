@@ -49,6 +49,16 @@ if (strpos($course_id, '?') !== false) {
 $activeTenant = resolveTenantKey();
 $course_dir = resolveCourseDir($course_id, $activeTenant);
 
+// Resolve the correct web path prefix for this course based on its physical location on disk
+$course_web_path = 'courses';
+if ($course_dir) {
+    $relative_dir = str_replace(LMS_ROOT . DIRECTORY_SEPARATOR, '', $course_dir);
+    $parts = explode(DIRECTORY_SEPARATOR, $relative_dir);
+    if (count($parts) >= 4 && $parts[0] === 'courses' && $parts[1] === 'tenants') {
+        $course_web_path = 'courses/tenants/' . $parts[2];
+    }
+}
+
 if (empty($course_id) || !$course_dir) {
     // Basic friendly error matching UI specs
     $error_html = '
@@ -143,7 +153,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     
     <!-- Dynamic Course Assets -->
     <?php if (isset($assets['css'])): foreach ($assets['css'] as $css): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/<?= htmlspecialchars($css) ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars($course_web_path) ?>/<?= htmlspecialchars($course_id) ?>/<?= htmlspecialchars($css) ?>">
     <?php endforeach; endif; ?>
     
     <!-- Always load Superable custom web components for rich interactivity support -->
@@ -152,7 +162,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" defer></script>
 
     <!-- xAPI Service (Always load, defaults to console.log if no LMS launch) -->
-    <script src="<?= htmlspecialchars(getTenantCoursesWebPath()) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
+    <script src="<?= htmlspecialchars($course_web_path) ?>/<?= htmlspecialchars($course_id) ?>/js/xapi-service.js?v=<?= time() ?>"></script>
     
     <style>
         .player-layout {
@@ -315,7 +325,7 @@ $assets = $manifest['properties']['assets'] ?? [];
     <script>
         const LMS_CONTEXT = { 
             courseId: <?= json_encode($course_id) ?>, 
-            coursesWebPath: <?= json_encode(getTenantCoursesWebPath($activeTenant)) ?>,
+            coursesWebPath: <?= json_encode($course_web_path) ?>,
             tenantKey: <?= json_encode($activeTenant) ?>,
             userId: <?= json_encode($user_id) ?>,
             userName: <?= json_encode($user_name) ?>,
