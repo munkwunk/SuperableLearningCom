@@ -3,11 +3,14 @@
  * Superable Learning - Tenant Provisioning & Migration Helper
  * 
  * CLI Usage:
- *   php setup_tenant.php <tenant_key> [client_name] [domain] [plan] [admin_email] [admin_password]
- * 
+ *   php setup_tenant.php <tenant_key> [client_name] [domain] [plan] [admin_email] <admin_password>
+ *
+ * The admin password is required and must be at least 12 characters. Use a unique,
+ * randomly generated value per tenant — there is deliberately no default.
+ *
  * Examples:
- *   php setup_tenant.php local-dev "Local Dev" superablelearning.com standard admin@superablelearning.com password123
- *   php setup_tenant.php tenant-001 "Tenant 001" tenant1.superablelearning.com premium admin@tenant1.com password123
+ *   php setup_tenant.php local-dev "Local Dev" superablelearning.com standard admin@superablelearning.com "$(openssl rand -base64 18)"
+ *   php setup_tenant.php tenant-001 "Tenant 001" tenant1.superablelearning.com premium admin@tenant1.com "$(openssl rand -base64 18)"
  */
 
 require_once __DIR__ . '/config.php';
@@ -17,8 +20,18 @@ require_once __DIR__ . '/config.php';
  *
  * @return array Result array with success status and message
  */
-function provision_tenant_account($tenantKey, $clientName = null, $domain = null, $plan = 'standard', $adminEmail = null, $adminPassword = 'password123') {
+function provision_tenant_account($tenantKey, $clientName = null, $domain = null, $plan = 'standard', $adminEmail = null, $adminPassword = null) {
     $tenantKey = sanitizeTenantKey($tenantKey);
+
+    // No shared default credential. Every tenant must be provisioned with an explicit,
+    // unique administrator password.
+    if (!is_string($adminPassword) || strlen($adminPassword) < 12) {
+        return [
+            'success' => false,
+            'message' => 'Provisioning refused: an administrator password of at least 12 characters is required.'
+        ];
+    }
+
     $clientName = $clientName ? trim($clientName) : ucfirst(str_replace(['-', '_'], ' ', $tenantKey));
     $adminEmail = $adminEmail ? trim($adminEmail) : 'admin@' . ($domain ?: $tenantKey . '.' . PRIMARY_DOMAIN);
 
@@ -72,7 +85,13 @@ if (php_sapi_name() === 'cli' && isset($_SERVER['PHP_SELF']) && basename($_SERVE
     $domain     = $argv[3] ?? null;
     $plan       = $argv[4] ?? 'standard';
     $adminEmail = $argv[5] ?? null;
-    $adminPass  = $argv[6] ?? 'password123';
+    $adminPass  = $argv[6] ?? null;
+
+    if (!$adminPass) {
+        echo "Usage: php setup_tenant.php <tenant_key> [client_name] [domain] [plan] [admin_email] <admin_password>" . PHP_EOL;
+        echo "[!] An administrator password of at least 12 characters is required." . PHP_EOL;
+        exit(1);
+    }
 
     echo "==========================================" . PHP_EOL;
     echo "  Superable Learning Tenant Provisioning  " . PHP_EOL;

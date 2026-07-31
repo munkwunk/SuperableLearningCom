@@ -1068,6 +1068,13 @@ button:disabled, input:disabled, select:disabled {
     min-height: 44px;
     cursor: pointer;
     box-sizing: border-box;
+    /* Default appearance for any .btn used without a color modifier
+       (.btn-primary, .btn-outline-light, etc). Without this, a bare .btn
+       inherits `a { color: var(--color-primary) }`, which is invisible on a
+       primary-colored header. Modifier classes below set their own
+       background-color/color and override this. */
+    background-color: var(--color-primary);
+    color: white !important;
 }
 
 .btn:hover {
@@ -1084,6 +1091,10 @@ button:disabled, input:disabled, select:disabled {
     padding: 0.8rem 2.2rem;
     font-size: 1.125rem;
     min-height: 48px;
+}
+
+.btn-full {
+    width: 100%;
 }
 
 .btn-primary {

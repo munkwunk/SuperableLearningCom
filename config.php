@@ -11,7 +11,19 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/error.log');
+
+// Error log must live OUTSIDE the public web root. A log inside the document root is
+// fetchable over HTTP and leaks stack traces, absolute paths, and user identifiers.
+$slLogDir = is_dir('/home/accessib')
+    ? '/home/accessib/logs'
+    : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'logs';
+if (!is_dir($slLogDir)) {
+    @mkdir($slLogDir, 0750, true);
+}
+ini_set('error_log', is_dir($slLogDir)
+    ? $slLogDir . DIRECTORY_SEPARATOR . 'superablelearning-error.log'
+    : sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'superablelearning-error.log');
+unset($slLogDir);
 
 // Clean query parameters to handle external launch wrappers appending parameters with "?" instead of "&"
 // This ensures that parameters like 'tenant' or 'course_id' are not contaminated.
@@ -59,12 +71,167 @@ if (empty($_SESSION['csrf_token'])) {
 
 /**
  * Verifies CSRF Token on sensitive POST requests.
+ *
+ * NOTE: session.cookie_samesite is deliberately 'None' over HTTPS so the course player
+ * can run inside the Build Capable XCL cross-origin iframe wrapper. That means the
+ * SameSite cookie attribute provides NO cross-site request protection here, and this
+ * token is the only defence on state-changing requests. Every POST/write endpoint must
+ * call this.
  */
 function verify_csrf_token() {
     $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (empty($token) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         http_response_code(403);
         die("Security Error: Invalid or expired CSRF security token. Please refresh the page and try again.");
+    }
+}
+
+/**
+ * Verifies a CSRF token supplied in a JSON request body (used by api.php).
+ * Returns true on success; does not terminate, so callers can emit a JSON error.
+ *
+ * @param string|null $token
+ * @return bool
+ */
+function check_csrf_token($token) {
+    if (empty($token)) {
+        $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    }
+    return !empty($token)
+        && !empty($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+/**
+ * Session keys that carry an authenticated identity and must never cross a tenant boundary.
+ */
+const SL_IDENTITY_KEYS = ['user_id', 'full_name', 'is_admin', 'email', 'is_dev', 'dev_override_plan'];
+
+/**
+ * Records an authenticated identity against a specific tenant.
+ *
+ * Tenant databases are fully isolated, so a user id only has meaning inside the tenant it
+ * authenticated against. Identities are stored per tenant rather than as flat session
+ * keys, which lets one browser session hold logins to several tenants at once (for
+ * example a platform admin inspecting a client portal) without any of them leaking into
+ * another tenant's context.
+ *
+ * Call immediately after a successful authentication.
+ *
+ * @param string $tenantKey
+ * @param array $identity Map of SL_IDENTITY_KEYS values
+ */
+function bind_session_to_tenant($tenantKey, array $identity) {
+    $tenantKey = sanitizeTenantKey($tenantKey);
+
+    $stored = [];
+    foreach (SL_IDENTITY_KEYS as $key) {
+        if (array_key_exists($key, $identity)) {
+            $stored[$key] = $identity[$key];
+        }
+    }
+
+    if (!isset($_SESSION['tenant_identities']) || !is_array($_SESSION['tenant_identities'])) {
+        $_SESSION['tenant_identities'] = [];
+    }
+    $_SESSION['tenant_identities'][$tenantKey] = $stored;
+
+    // Hydrate the flat keys the rest of the application reads.
+    foreach (SL_IDENTITY_KEYS as $key) {
+        unset($_SESSION[$key]);
+    }
+    foreach ($stored as $key => $value) {
+        $_SESSION[$key] = $value;
+    }
+    $_SESSION['auth_tenant_key'] = $tenantKey;
+}
+
+/**
+ * Removes the stored identity for one tenant (used by logout).
+ *
+ * @param string $tenantKey
+ */
+function clear_tenant_identity($tenantKey) {
+    $tenantKey = sanitizeTenantKey($tenantKey);
+    if (isset($_SESSION['tenant_identities'][$tenantKey])) {
+        unset($_SESSION['tenant_identities'][$tenantKey]);
+    }
+    foreach (SL_IDENTITY_KEYS as $key) {
+        unset($_SESSION[$key]);
+    }
+    unset($_SESSION['auth_tenant_key']);
+}
+
+/**
+ * Rehydrates the flat session identity keys from the identity belonging to the tenant
+ * this request actually resolved to.
+ *
+ * Without this, `?tenant=<other>` carried a user's id and is_admin flag into another
+ * client's database, allowing cross-tenant administration and data access. Any session
+ * with no stored identity for the active tenant is treated as a guest there.
+ *
+ * Sessions created before per-tenant identities existed have no tenant_identities map;
+ * their flat keys are untrusted and are cleared.
+ */
+function enforce_tenant_session_binding() {
+    $activeTenant = resolveTenantKey();
+    $identities = $_SESSION['tenant_identities'] ?? null;
+
+    if (!is_array($identities) || empty($identities[$activeTenant])) {
+        if (!empty($_SESSION['user_id'])) {
+            error_log(sprintf(
+                'Tenant session binding rejected: no identity stored for tenant [%s] (user id [%s])',
+                $activeTenant,
+                $_SESSION['user_id']
+            ));
+        }
+        foreach (SL_IDENTITY_KEYS as $key) {
+            unset($_SESSION[$key]);
+        }
+        unset($_SESSION['auth_tenant_key']);
+        return;
+    }
+
+    foreach (SL_IDENTITY_KEYS as $key) {
+        unset($_SESSION[$key]);
+    }
+    foreach ($identities[$activeTenant] as $key => $value) {
+        if (in_array($key, SL_IDENTITY_KEYS, true)) {
+            $_SESSION[$key] = $value;
+        }
+    }
+    $_SESSION['auth_tenant_key'] = $activeTenant;
+}
+
+/**
+ * Returns true when the current session is an administrator of the platform tenant
+ * (local-dev), which is what gates platform_admin.php.
+ *
+ * The session's is_admin flag alone is NOT sufficient — it is set by logging into any
+ * tenant, including one an attacker provisioned themselves.
+ *
+ * @return bool
+ */
+function is_platform_admin() {
+    // Read the platform identity directly from the per-tenant map so this works no matter
+    // which tenant the current request resolved to.
+    $platformIdentity = $_SESSION['tenant_identities']['local-dev'] ?? null;
+    if (!is_array($platformIdentity) || empty($platformIdentity['user_id'])) {
+        return false;
+    }
+
+    // Re-verify the admin flag against the platform database rather than trusting the
+    // session. The session flag alone is set by logging into ANY tenant, including one an
+    // attacker provisioned for themselves.
+    try {
+        $platformDb = get_db_connection('local-dev');
+        $stmt = $platformDb->prepare("SELECT is_admin FROM users WHERE id = ?");
+        $stmt->execute([$platformIdentity['user_id']]);
+        $row = $stmt->fetch();
+        return $row && !empty($row['is_admin']);
+    } catch (PDOException $e) {
+        error_log("Platform admin verification failed: " . $e->getMessage());
+        return false;
     }
 }
 
@@ -153,14 +320,20 @@ function resolveTenantKey() {
         }
     }
 
-    // 5. Active Session Tenant Key (preserves tenant during local query param navigation)
-    if ($host !== 'localhost' && $host !== PRIMARY_DOMAIN) {
+    // 5. Active Session Tenant Key (preserves tenant during query-parameter navigation)
+    //
+    // This must never apply on a platform host. Previously the check was
+    // `$host !== 'localhost' && $host !== PRIMARY_DOMAIN`, a whitelist of exactly two
+    // names — so on www.superablelearning.com, 127.0.0.1, or any hosts-file alias, the
+    // last tenant visited became sticky and the platform landing page was permanently
+    // replaced by that tenant's dashboard for the rest of the session.
+    if (!isPlatformHost($host)) {
         if (!empty($_SESSION['active_tenant_key'])) {
             return $_SESSION['active_tenant_key'];
         }
     } else {
-        // If on primary domain and no explicit tenant parameter is provided in query,
-        // clear any session overrides to allow loading the main index.php platform landing page.
+        // On a platform host with no explicit ?tenant=, clear any session override so the
+        // main platform landing page loads.
         if (session_status() === PHP_SESSION_ACTIVE && !isset($_GET['tenant'])) {
             unset($_SESSION['active_tenant_key']);
         }
@@ -168,6 +341,32 @@ function resolveTenantKey() {
 
     // 6. Default Fallback Key for Main Platform Site
     return 'local-dev';
+}
+
+/**
+ * Returns true when a hostname addresses the platform itself rather than a client tenant.
+ *
+ * Covers the primary domain, its www form, and the loopback / development names used
+ * when running the built-in PHP server.
+ *
+ * @param string $host Hostname with any port already stripped
+ * @return bool
+ */
+function isPlatformHost($host) {
+    $host = strtolower(trim($host));
+
+    $platformHosts = [
+        PRIMARY_DOMAIN,
+        'www.' . PRIMARY_DOMAIN,
+        'localhost',
+        'www.localhost',
+        '127.0.0.1',
+        '::1',
+        '[::1]',
+        '0.0.0.0',
+    ];
+
+    return in_array($host, $platformHosts, true);
 }
 
 /**
@@ -347,7 +546,7 @@ function getTenantCoursesWebPath($tenantKey = null) {
  * @param string|null $tenantKey
  * @return array
  */
-function getTenantMetadata($tenantKey = null) {
+function getTenantMetadata($tenantKey = null, $createIfMissing = false) {
     $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
 
     $tenantsDir = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'tenants';
@@ -373,11 +572,28 @@ function getTenantMetadata($tenantKey = null) {
         'status'     => 'active'
     ];
 
-    if (is_dir($tenantsDir) || @mkdir($tenantsDir, 0755, true)) {
+    // Only persist when a caller is explicitly provisioning. Writing on every read meant
+    // any ?tenant=<anything> in a URL silently created a tenant metadata file on disk.
+    if ($createIfMissing && (is_dir($tenantsDir) || @mkdir($tenantsDir, 0755, true))) {
         @file_put_contents($jsonPath, json_encode($defaultMeta, JSON_PRETTY_PRINT));
     }
 
     return $defaultMeta;
+}
+
+/**
+ * Returns true when a tenant has actually been provisioned (metadata file on disk).
+ *
+ * @param string|null $tenantKey
+ * @return bool
+ */
+function tenantExists($tenantKey = null) {
+    $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
+    if ($tenantKey === 'local-dev') {
+        return true;
+    }
+    $jsonPath = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . $tenantKey . '.json';
+    return file_exists($jsonPath);
 }
 
 /**
@@ -394,6 +610,14 @@ function getAvailableTenants() {
             if (substr($file, -5) === '.json') {
                 $key = substr($file, 0, -5);
                 if ($key === 'local-dev') continue;
+
+                // Skip malformed filenames such as a bare ".json". An empty key falls
+                // through getTenantMetadata() to resolveTenantKey(), which made the file
+                // appear in the portal list as a phantom duplicate of the current tenant.
+                if ($key === '' || $key !== sanitizeTenantKey($key)) {
+                    continue;
+                }
+
                 $meta = getTenantMetadata($key);
                 if (($meta['status'] ?? 'active') === 'active') {
                     $tenants[] = $meta;
@@ -514,6 +738,68 @@ function expandHexColor($hex) {
 }
 
 /**
+ * Returns a normalised #rrggbb string, or null if the input is not a valid hex colour.
+ *
+ * Tenant branding values are written into a <style> block. htmlspecialchars() prevents an
+ * HTML breakout but does nothing against CSS injection — a value such as
+ * "red; } .skip-link { display:none } .x{" would previously pass through intact and could
+ * disable the platform's own accessibility guards. Branding colours are whitelisted to
+ * hex notation instead of escaped.
+ *
+ * @param mixed $value
+ * @return string|null
+ */
+function sanitizeHexColor($value) {
+    if (!is_string($value)) {
+        return null;
+    }
+    $candidate = trim($value);
+    if (!preg_match('/^#?([a-f0-9]{3}|[a-f0-9]{6})$/i', $candidate)) {
+        return null;
+    }
+    return strtolower(expandHexColor($candidate));
+}
+
+/**
+ * Returns a URL only if it uses a scheme safe to place in an href, otherwise null.
+ *
+ * Accepts absolute http(s) URLs and site-relative paths. Rejects javascript:, data:,
+ * vbscript:, and protocol-relative URLs. Use for any URL that originates from tenant
+ * metadata or an uploaded course manifest.
+ *
+ * @param mixed $value
+ * @param bool $allowRelative
+ * @return string|null
+ */
+function sanitizeUrl($value, $allowRelative = true) {
+    if (!is_string($value)) {
+        return null;
+    }
+    $candidate = trim($value);
+    if ($candidate === '') {
+        return null;
+    }
+
+    // Strip control characters and whitespace that can be used to smuggle a scheme
+    // past a naive prefix check (e.g. "java\tscript:alert(1)").
+    $normalised = strtolower(preg_replace('/[\x00-\x20]/', '', $candidate));
+
+    if (preg_match('#^(javascript|data|vbscript|file|about|blob):#', $normalised)) {
+        return null;
+    }
+    if (strpos($normalised, '//') === 0) {
+        return null; // protocol-relative
+    }
+    if (preg_match('#^https?://#', $normalised)) {
+        return $candidate;
+    }
+    if ($allowRelative && !preg_match('#^[a-z][a-z0-9+.\-]*:#', $normalised)) {
+        return $candidate;
+    }
+    return null;
+}
+
+/**
  * Darkens a hex color by a given percentage to achieve compliant WCAG contrast.
  */
 function darkenHexColor($hex, $percent = 0.15) {
@@ -578,7 +864,20 @@ function renderTenantBrandingCss($tenantKey = null) {
 
     if (!empty($meta['branding']) && is_array($meta['branding'])) {
         $b = $meta['branding'];
-        
+
+        // Whitelist every branding value to hex notation before it reaches the <style> block.
+        foreach (['primary', 'primary_hover', 'secondary', 'accent', 'bg_light', 'text_dark'] as $brandKey) {
+            if (isset($b[$brandKey])) {
+                $safeColor = sanitizeHexColor($b[$brandKey]);
+                if ($safeColor === null) {
+                    error_log("Rejected invalid tenant branding colour for '{$brandKey}' on tenant [" . ($meta['tenant_key'] ?? 'unknown') . "]");
+                    unset($b[$brandKey]);
+                } else {
+                    $b[$brandKey] = $safeColor;
+                }
+            }
+        }
+
         // Primary color contrast check against white (#FFFFFF)
         if (!empty($b['primary'])) {
             $primaryHex = $b['primary'];
@@ -660,10 +959,11 @@ function renderTenantFooter($tenantKey = null) {
         ? $meta['copyright_notice'] 
         : (!empty($meta['name']) ? $meta['name'] : 'Superable Learning');
         
-    $websiteUrl = !empty($meta['website_url']) ? $meta['website_url'] : null;
+    // Tenant-supplied URLs are whitelisted to http(s) / relative before rendering.
+    $websiteUrl = !empty($meta['website_url']) ? sanitizeUrl($meta['website_url'], false) : null;
     $supportContact = !empty($meta['support_contact']) ? $meta['support_contact'] : null;
-    $termsUrl = !empty($meta['terms_url']) ? $meta['terms_url'] : tenant_url('terms.php');
-    $privacyUrl = !empty($meta['privacy_url']) ? $meta['privacy_url'] : tenant_url('privacy.php');
+    $termsUrl = !empty($meta['terms_url']) ? (sanitizeUrl($meta['terms_url']) ?? tenant_url('terms.php')) : tenant_url('terms.php');
+    $privacyUrl = !empty($meta['privacy_url']) ? (sanitizeUrl($meta['privacy_url']) ?? tenant_url('privacy.php')) : tenant_url('privacy.php');
     $accessibilityUrl = tenant_url('accessibility.php');
 
     $year = date('Y');
@@ -678,13 +978,21 @@ function renderTenantFooter($tenantKey = null) {
                 <?php if ($websiteUrl): ?>
                     <li><a href="<?= htmlspecialchars($websiteUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer-link">Organization Main Site ↗</a></li>
                 <?php endif; ?>
-                <?php if ($supportContact): ?>
-                    <?php 
-                    $supportHref = (strpos($supportContact, '@') !== false && strpos($supportContact, 'http') === false) 
-                        ? 'mailto:' . htmlspecialchars($supportContact) 
-                        : htmlspecialchars($supportContact);
-                    ?>
-                    <li><a href="<?= $supportHref ?>" class="footer-link">Contact Support</a></li>
+                <?php
+                // Only emit the support link for schemes we trust. Tenant metadata is
+                // admin-supplied, and htmlspecialchars() does not neutralise a
+                // "javascript:" or "data:" URL.
+                $supportHref = null;
+                if ($supportContact) {
+                    if (strpos($supportContact, '@') !== false && stripos($supportContact, 'http') !== 0) {
+                        $supportHref = 'mailto:' . $supportContact;
+                    } elseif (preg_match('#^https?://#i', $supportContact)) {
+                        $supportHref = $supportContact;
+                    }
+                }
+                ?>
+                <?php if ($supportHref): ?>
+                    <li><a href="<?= htmlspecialchars($supportHref) ?>" class="footer-link">Contact Support</a></li>
                 <?php endif; ?>
                 <li><a href="<?= tenant_url('help.php') ?>" class="footer-link">Help & Docs</a></li>
                 <li><a href="<?= htmlspecialchars($termsUrl) ?>" <?= (strpos($termsUrl, 'http') === 0) ? 'target="_blank" rel="noopener noreferrer"' : '' ?> class="footer-link">Terms of Service</a></li>
@@ -815,8 +1123,8 @@ function get_db_connection($tenantKey = null) {
         
         ensure_tables_exist($pdo);
         
-        // Auto-login from Remember Me Cookie
-        check_remember_me_cookie($pdo);
+        // Auto-login from Remember Me Cookie (scoped to this connection's tenant)
+        check_remember_me_cookie($pdo, $tenantKey);
         
         return $pdo;
     } catch (PDOException $e) {
@@ -887,15 +1195,158 @@ function ensure_tables_exist($pdo) {
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )");
 
-        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
-        if ($stmt->fetchColumn() == 0) {
-            $stmt = $pdo->prepare("INSERT INTO users (id, email, password_hash, full_name, is_admin) VALUES (1, 'jacob@jacobwood.me', ?, 'Jacob Wood', 1)");
-            $stmt->execute([password_hash('password123', PASSWORD_DEFAULT)]);
-        }
+        $pdo->exec("CREATE TABLE IF NOT EXISTS auth_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            identifier TEXT NOT NULL,
+            ip_address TEXT,
+            attempted_at INTEGER NOT NULL
+        )");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_auth_attempts_lookup ON auth_attempts (identifier, attempted_at)");
+
+        // NOTE: No default administrator is seeded here.
+        //
+        // A tenant database is created on demand for any tenant key that appears in the
+        // request, so seeding a known admin credential (previously id=1 with the password
+        // 'password123') meant anyone could provision a tenant and immediately log into it
+        // as an administrator. Provision real tenants through platform_admin.php, or the
+        // CLI utilities setup_tenant.php / reset_admin.php.
 
     } catch (PDOException $e) {
         error_log("Schema Initialization Error: " . $e->getMessage());
     }
+}
+
+/**
+ * Hostnames permitted to launch a restricted course through an external xAPI/LRS wrapper.
+ *
+ * Build Capable XCL wraps the player in its own frame and launches courses with standard
+ * xAPI launch parameters. Previously the player granted access whenever an `endpoint` and
+ * `auth` parameter were merely PRESENT — their values were never inspected — so appending
+ * "&endpoint=x&auth=y" to any course URL unlocked it for anyone.
+ *
+ * A launch is now accepted only when the endpoint resolves to one of these hosts (or a
+ * subdomain of one). Extend via the tenant metadata key `xapi_launch_hosts`.
+ */
+const SL_DEFAULT_XAPI_LAUNCH_HOSTS = [
+    'buildxcl.com',
+];
+
+/**
+ * Validates an external xAPI launch against the allowlist.
+ *
+ * @param array $query Usually $_GET
+ * @param string|null $tenantKey
+ * @return bool True when this is a trusted external launch
+ */
+function isTrustedXapiLaunch(array $query, $tenantKey = null) {
+    $endpoint = $query['endpoint'] ?? $query['xAPILaunchService'] ?? null;
+    $credential = $query['auth'] ?? $query['xAPILaunchKey'] ?? null;
+
+    // Both an endpoint and a credential must be present and non-empty.
+    if (empty($endpoint) || empty($credential) || !is_string($endpoint)) {
+        return false;
+    }
+
+    $host = parse_url(trim($endpoint), PHP_URL_HOST);
+    if (!$host) {
+        return false;
+    }
+    $host = strtolower($host);
+
+    $allowed = SL_DEFAULT_XAPI_LAUNCH_HOSTS;
+    $meta = getTenantMetadata($tenantKey);
+    if (!empty($meta['xapi_launch_hosts']) && is_array($meta['xapi_launch_hosts'])) {
+        foreach ($meta['xapi_launch_hosts'] as $extraHost) {
+            if (is_string($extraHost) && $extraHost !== '') {
+                $allowed[] = strtolower(trim($extraHost));
+            }
+        }
+    }
+
+    foreach ($allowed as $allowedHost) {
+        if ($host === $allowedHost || substr($host, -strlen('.' . $allowedHost)) === '.' . $allowedHost) {
+            return true;
+        }
+    }
+
+    error_log("Rejected external xAPI launch from unrecognised endpoint host [{$host}]. "
+            . "If this is a legitimate launch platform, add it to SL_DEFAULT_XAPI_LAUNCH_HOSTS "
+            . "in config.php or to the tenant's xapi_launch_hosts metadata array.");
+    return false;
+}
+
+/**
+ * Records a failed authentication attempt for throttling purposes.
+ *
+ * @param PDO $pdo Tenant database connection
+ * @param string $identifier Email address or other subject of the attempt
+ */
+function record_auth_failure($pdo, $identifier) {
+    try {
+        $stmt = $pdo->prepare("INSERT INTO auth_attempts (identifier, ip_address, attempted_at) VALUES (?, ?, ?)");
+        $stmt->execute([
+            strtolower(trim($identifier)),
+            $_SERVER['REMOTE_ADDR'] ?? null,
+            time()
+        ]);
+    } catch (PDOException $e) {
+        error_log("Failed to record auth attempt: " . $e->getMessage());
+    }
+}
+
+/**
+ * Clears recorded failures for an identifier after a successful authentication.
+ */
+function clear_auth_failures($pdo, $identifier) {
+    try {
+        $stmt = $pdo->prepare("DELETE FROM auth_attempts WHERE identifier = ?");
+        $stmt->execute([strtolower(trim($identifier))]);
+    } catch (PDOException $e) {
+        error_log("Failed to clear auth attempts: " . $e->getMessage());
+    }
+}
+
+/**
+ * Returns the number of seconds a subject must wait before retrying, or 0 if not throttled.
+ *
+ * Counts failures against both the supplied identifier and the client IP inside the
+ * window, so neither password spraying across accounts nor brute forcing one account
+ * slips through.
+ *
+ * @param PDO $pdo Tenant database connection
+ * @param string $identifier Email address being attempted
+ * @param int $maxAttempts Failures permitted inside the window
+ * @param int $windowSeconds Length of the sliding window
+ * @return int Seconds remaining in the lockout, or 0
+ */
+function auth_throttle_retry_after($pdo, $identifier, $maxAttempts = 8, $windowSeconds = 900) {
+    try {
+        $cutoff = time() - $windowSeconds;
+
+        // Opportunistically prune expired rows so the table cannot grow without bound.
+        $prune = $pdo->prepare("DELETE FROM auth_attempts WHERE attempted_at < ?");
+        $prune->execute([$cutoff]);
+
+        $stmt = $pdo->prepare("
+            SELECT MAX(attempted_at) AS newest, COUNT(*) AS failures
+            FROM auth_attempts
+            WHERE attempted_at >= ? AND (identifier = ? OR ip_address = ?)
+        ");
+        $stmt->execute([
+            $cutoff,
+            strtolower(trim($identifier)),
+            $_SERVER['REMOTE_ADDR'] ?? '__no_ip__'
+        ]);
+        $row = $stmt->fetch();
+
+        if ($row && (int)$row['failures'] >= $maxAttempts) {
+            $retryAfter = ((int)$row['newest'] + $windowSeconds) - time();
+            return max(1, $retryAfter);
+        }
+    } catch (PDOException $e) {
+        error_log("Auth throttle check failed: " . $e->getMessage());
+    }
+    return 0;
 }
 
 /**
@@ -1095,13 +1546,22 @@ function pre_process_manifest_modules(&$items, $course_dir) {
  * 
  * @param PDO $pdo
  */
-function check_remember_me_cookie($pdo) {
+function check_remember_me_cookie($pdo, $connectionTenantKey = null) {
     // If already logged in, do nothing
     if (isset($_SESSION['user_id'])) {
         return;
     }
 
-    $tenantKey = resolveTenantKey();
+    $tenantKey = $connectionTenantKey ? sanitizeTenantKey($connectionTenantKey) : resolveTenantKey();
+
+    // Only auto-login for the tenant this request actually resolved to. Helper code opens
+    // connections to other tenants (is_platform_admin() opens local-dev, for example), and
+    // without this guard a remember-me cookie issued for tenant A would be validated
+    // against tenant B's users table — where the same numeric id belongs to someone else.
+    if ($tenantKey !== resolveTenantKey()) {
+        return;
+    }
+
     $cookieName = 'remember_me_' . $tenantKey;
 
     if (empty($_COOKIE[$cookieName])) {
@@ -1135,9 +1595,14 @@ function check_remember_me_cookie($pdo) {
             if (session_status() === PHP_SESSION_NONE) {
                 @session_start();
             }
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['is_admin'] = (bool)$user['is_admin'];
+            // Bind the restored identity to the tenant whose cookie authenticated it,
+            // so it cannot be carried into another tenant via ?tenant=.
+            bind_session_to_tenant($tenantKey, [
+                'user_id'   => $user['user_id'],
+                'full_name' => $user['full_name'],
+                'email'     => $user['email'],
+                'is_admin'  => (bool)$user['is_admin'],
+            ]);
 
             // Rotate the token (delete old, create new)
             $stmtDel = $pdo->prepare("DELETE FROM user_remember_tokens WHERE id = ?");
@@ -1145,7 +1610,9 @@ function check_remember_me_cookie($pdo) {
 
             $newToken = bin2hex(random_bytes(32));
             $newTokenHash = hash('sha256', $newToken);
-            $expires = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
+            // UTC, to match the datetime('now') comparison in the lookup query above.
+            // Using local time here expired tokens early (or late) on any non-UTC server.
+            $expires = gmdate('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
 
             $stmtIns = $pdo->prepare("INSERT INTO user_remember_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)");
             $stmtIns->execute([$user['user_id'], $newTokenHash, $expires]);
@@ -1201,6 +1668,15 @@ function clear_remember_me_cookie($tenantKey) {
         'httponly' => true,
         'samesite' => $is_https ? 'None' : 'Lax'
     ];
-    
+
     setcookie($cookieName, '', $options);
 }
+
+// ---------------------------------------------------------------------------
+// Tenant session binding enforcement
+//
+// Runs on every request that includes config.php, before any page logic reads
+// $_SESSION['user_id'] or $_SESSION['is_admin']. A session authenticated against one
+// tenant is demoted to guest when the request resolves to a different tenant.
+// ---------------------------------------------------------------------------
+enforce_tenant_session_binding();

@@ -17,8 +17,8 @@ $is_admin = $_SESSION['is_admin'] ?? false;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricing & Plans — Superable Learning LMS</title>
-    <meta name="description" content="Transparent, accessible pricing plans for Superable Learning LMS. Sandbox, Pro, and Premium tiers with optional accessibility review packages.">
+    <title>Pricing & Plans — Superable Learning</title>
+    <meta name="description" content="Transparent, accessible pricing for Superable Learning's creator and facilitator tools. Sandbox, Pro, and Premium tiers, plus accessibility review add-ons.">
     <link rel="stylesheet" href="style.css">
     <?= renderTenantBrandingCss('local-dev') ?>
     <style>
@@ -153,7 +153,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
             </div>
             <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">Predictable Plans for Every Scale</h1>
             <p class="hero-subtitle max-w-3xl" style="margin-left: auto; margin-right: auto;">
-                Isolated multi-tenant SQLite database architecture, WCAG 2.2 AA accessibility built-in, and zero hidden fees. Choose a plan or customize limits for your enterprise deployment.
+                WCAG 2.2 AA accessibility built in, isolated tenant architecture, and zero hidden fees. Choose a plan that fits, whether you're building solo or leading a team.
             </p>
         </div>
     </section>
@@ -180,7 +180,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
             </div>
         </div>
 
-        <h2 class="pricing-section-title">LMS Platform Tiers</h2>
+        <h2 class="pricing-section-title">Plan Tiers</h2>
 
         <!-- Pricing Cards Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8" id="pricing-grid">

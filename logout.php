@@ -26,15 +26,25 @@ if (isset($_COOKIE[$cookieName]) && isset($_SESSION['user_id'])) {
 }
 clear_remember_me_cookie($tenant);
 
-$_SESSION = array();
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000,
-        $params["path"], $params["domain"],
-        $params["secure"], $params["httponly"]
-    );
+// Sign out of THIS tenant only. Identities are stored per tenant, so a platform admin
+// signing out of a client portal they were inspecting keeps their platform session.
+clear_tenant_identity($tenant);
+
+// If no tenant identities remain, tear the session down completely.
+if (empty($_SESSION['tenant_identities'])) {
+    $_SESSION = array();
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    session_destroy();
+} else {
+    // Rotate the session id so the signed-out tenant's session identifier cannot be replayed.
+    session_regenerate_id(true);
 }
-session_destroy();
 
 $tenantQuery = ($tenant && $tenant !== 'local-dev') ? '?tenant=' . urlencode($tenant) : '';
 header("Location: login.php" . $tenantQuery);

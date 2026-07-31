@@ -18,14 +18,26 @@ require_once 'course_importer.php';
 
 $pdo = get_db_connection();
 
+$activeTenant = resolveTenantKey();
+
 // Admin Security Check
+//
+// $_SESSION['is_admin'] is now hydrated by enforce_tenant_session_binding() from the
+// identity stored for THIS tenant only, so an administrator of one tenant can no longer
+// reach admin.php?tenant=<other> and administer another client's portal.
 if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
-    header("Location: index.php");
+    header("Location: " . tenant_url('login.php'));
     exit;
 }
 
+// Defence in depth: refuse to administer a tenant that was never provisioned, so a
+// mistyped or injected ?tenant= value cannot bring an empty portal into existence.
+if (!tenantExists($activeTenant)) {
+    http_response_code(404);
+    die("Not Found: No organization portal is provisioned under this address.");
+}
+
 $tenantMetadata = getTenantMetadata();
-$activeTenant = resolveTenantKey();
 
 // Account Status Check
 if (isset($tenantMetadata['status']) && $tenantMetadata['status'] === 'suspended') {

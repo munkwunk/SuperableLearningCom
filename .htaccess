@@ -1,3 +1,48 @@
+# ==========================================================================
+# Superable Learning LMS — Server Hardening
+# ==========================================================================
+
+# Never list directory contents.
+Options -Indexes
+
+# Block direct HTTP access to logs, databases, backups, and developer utilities.
+# The application error log previously lived in this directory and was fetchable
+# over HTTP; it now writes outside the web root, and this is belt-and-braces.
+<FilesMatch "\.(log|sqlite|sqlite3|db|ini|sh|bak|swp|dist|json~)$">
+    Require all denied
+</FilesMatch>
+
+# Dotfiles (.git, .env, .htaccess itself, .gemini rules).
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Test harnesses and CLI-only utilities must not be reachable from a browser.
+<FilesMatch "^(test_.*\.php|setup_tenant\.php|reset_admin\.php|manage\.php)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    # Do not let browsers second-guess declared content types.
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Trim referrer leakage to third parties.
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Deny access to device APIs the LMS does not use.
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+
+    # NOTE: X-Frame-Options / frame-ancestors is deliberately NOT set to DENY or
+    # SAMEORIGIN. The course player is embedded cross-origin inside the Build Capable
+    # XCL wrapper, and blocking framing would break every XCL launch. Restrict framing
+    # to known wrapper origins instead once those origins are confirmed, e.g.:
+    #   Header always set Content-Security-Policy "frame-ancestors 'self' https://*.buildxcl.com"
+
+    # HSTS. Enable only once HTTPS is confirmed working on every hostname, including
+    # every tenant subdomain, because this is difficult to reverse in browsers.
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /

@@ -93,9 +93,10 @@ try {
     // Fail closed on DB error
 }
 
-// Bypass local LMS access restrictions if loaded via an external xAPI/LRS launch (e.g., Build Capable XCL)
-$is_xapi_launch = (isset($_GET['endpoint']) && isset($_GET['auth'])) 
-    || (isset($_GET['xAPILaunchService']) && isset($_GET['xAPILaunchKey']));
+// Bypass local LMS access restrictions if loaded via a TRUSTED external xAPI/LRS launch
+// (e.g. Build Capable XCL). The endpoint host is validated against an allowlist —
+// previously the mere presence of these parameters was enough to unlock any course.
+$is_xapi_launch = isTrustedXapiLaunch($_GET, $activeTenant);
 
 if (!$has_permission && $access['type'] !== 'public' && !$is_xapi_launch) {
     $teaser_link = $access['teaser_link'] ?? 'index.php';
@@ -312,14 +313,21 @@ $assets = $manifest['properties']['assets'] ?? [];
     </style>
 
     <script>
-        const LMS_CONTEXT = { 
-            courseId: <?= json_encode($course_id) ?>, 
-            coursesWebPath: <?= json_encode(getTenantCoursesWebPath($activeTenant)) ?>,
-            tenantKey: <?= json_encode($activeTenant) ?>,
-            userId: <?= json_encode($user_id) ?>,
-            userName: <?= json_encode($user_name) ?>,
-            userEmail: <?= json_encode($user_email) ?>,
-            manifest: <?= json_encode($manifest) ?>
+        <?php
+        // JSON_HEX_TAG/AMP/APOS/QUOT prevent a "</script>" sequence inside any manifest
+        // string (course packages are author-supplied) from closing this block early and
+        // executing as markup.
+        $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+        ?>
+        const LMS_CONTEXT = {
+            courseId: <?= json_encode($course_id, $jsonFlags) ?>,
+            coursesWebPath: <?= json_encode(getTenantCoursesWebPath($activeTenant), $jsonFlags) ?>,
+            tenantKey: <?= json_encode($activeTenant, $jsonFlags) ?>,
+            userId: <?= json_encode($user_id, $jsonFlags) ?>,
+            userName: <?= json_encode($user_name, $jsonFlags) ?>,
+            userEmail: <?= json_encode($user_email, $jsonFlags) ?>,
+            csrfToken: <?= json_encode($_SESSION['csrf_token'] ?? '', $jsonFlags) ?>,
+            manifest: <?= json_encode($manifest, $jsonFlags) ?>
         };
     </script>
 </head>
@@ -440,10 +448,11 @@ $assets = $manifest['properties']['assets'] ?? [];
             async function logLocalInteraction(moduleId, eventType, eventValue = null) {
                 if (!moduleId) return;
                 try {
-                    await fetch(`api.php?tenant=${LMS_CONTEXT.tenantKey}`, {
+                    await fetch(`api.php?tenant=${encodeURIComponent(LMS_CONTEXT.tenantKey)}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRF-Token': LMS_CONTEXT.csrfToken,
                         },
                         body: JSON.stringify({
                             action: 'log_interaction',
@@ -589,7 +598,7 @@ $assets = $manifest['properties']['assets'] ?? [];
             // 1. Initial State Sync (Check what's already completed)
             async function syncProgressState() {
                 try {
-                    const response = await fetch(`api.php?action=get_state&course_id=${LMS_CONTEXT.courseId}&tenant=${LMS_CONTEXT.tenantKey}`);
+                    const response = await fetch(`api.php?action=get_state&course_id=${encodeURIComponent(LMS_CONTEXT.courseId)}&tenant=${encodeURIComponent(LMS_CONTEXT.tenantKey)}`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
                     
@@ -830,10 +839,11 @@ $assets = $manifest['properties']['assets'] ?? [];
                 btn.focus(); // Hold focus during async call
 
                 try {
-                    const response = await fetch(`api.php?tenant=${LMS_CONTEXT.tenantKey}`, {
+                    const response = await fetch(`api.php?tenant=${encodeURIComponent(LMS_CONTEXT.tenantKey)}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRF-Token': LMS_CONTEXT.csrfToken,
                         },
                         body: JSON.stringify({
                             action: 'mark_complete',
@@ -938,10 +948,11 @@ $assets = $manifest['properties']['assets'] ?? [];
                         if (completeBtn) completeBtn.disabled = true;
 
                         try {
-                            const response = await fetch(`api.php?tenant=${LMS_CONTEXT.tenantKey}`, {
+                            const response = await fetch(`api.php?tenant=${encodeURIComponent(LMS_CONTEXT.tenantKey)}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'X-CSRF-Token': LMS_CONTEXT.csrfToken,
                                 },
                                 body: JSON.stringify({
                                     action: 'mark_complete',

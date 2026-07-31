@@ -13,8 +13,15 @@ require_once __DIR__ . '/setup_tenant.php';
 $platformTenant = 'local-dev';
 $pdo = get_db_connection($platformTenant);
 
-// Security Check: Require Super Admin on Platform DB
-if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
+// Security Check: Require Super Admin on the PLATFORM database.
+//
+// This previously checked only $_SESSION['is_admin'], a flag set by logging into ANY
+// tenant. Because a tenant database was created on demand for any ?tenant= value and was
+// seeded with a known admin credential, that made every tenant admin — and in effect any
+// anonymous visitor — a platform super administrator. is_platform_admin() requires an
+// identity authenticated against local-dev specifically, and re-verifies the admin flag
+// against the platform database instead of trusting the session.
+if (!is_platform_admin()) {
     header("Location: login.php?tenant=local-dev");
     exit;
 }
@@ -33,10 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $domain     = trim($_POST['domain'] ?? '');
             $plan       = trim($_POST['plan'] ?? 'sandbox');
             $adminEmail = trim($_POST['admin_email'] ?? '');
-            $adminPass  = $_POST['admin_password'] ?? 'password123';
+            $adminPass  = $_POST['admin_password'] ?? '';
 
             if (empty($tenantKey) || empty($clientName) || empty($adminEmail)) {
                 $message = "Error: Tenant Key, Client Name, and Admin Email are required.";
+                $message_type = 'critical';
+            } elseif (strlen($adminPass) < 12) {
+                // No shared default password. Every provisioned tenant gets an explicit,
+                // unique administrator credential chosen at provisioning time.
+                $message = "Error: An administrator password of at least 12 characters is required to provision a tenant.";
                 $message_type = 'critical';
             } else {
                 $dbDir = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'tenants';
@@ -203,7 +215,11 @@ $customDomainMap = getCustomDomainMap();
 
                     <div class="form-group">
                         <label for="admin_password">Client Admin Initial Password</label>
-                        <input type="text" name="admin_password" id="admin_password" value="password123" required>
+                        <p class="text-sm" id="admin-password-hint" style="margin: 0.25rem 0 0.5rem 0;">
+                            At least 12 characters. Use a unique, randomly generated value for each client and share it through a secure channel. There is deliberately no default.
+                        </p>
+                        <input type="text" name="admin_password" id="admin_password" value="" required minlength="12"
+                               autocomplete="off" spellcheck="false" aria-describedby="admin-password-hint">
                     </div>
                 </div>
 

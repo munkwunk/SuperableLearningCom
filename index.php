@@ -27,7 +27,7 @@ if ($isPlatformSite) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Superable Learning — Overcoming barriers through accessible learning</title>
-    <meta name="description" content="Superable Learning is a modern, accessibility-first learning platform designed specifically for small organizations, nonprofits, community groups, and growing businesses.">
+    <meta name="description" content="Superable Learning builds accessibility-guardrailed tools for creators, designers, and facilitators — so the barriers to teaching are as superable as the barriers to learning.">
     <link rel="stylesheet" href="style.css">
     <?= renderTenantBrandingCss('local-dev') ?>
 </head>
@@ -73,9 +73,9 @@ if ($isPlatformSite) {
                     <span class="badge-wcag-dot"></span> Accessibility-First, WCAG 2.2 AA Compliant
                 </span>
             </div>
-            <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">Training that finally works for small organizations.</h1>
+            <h1 style="color: white; margin-bottom: 1rem;" class="text-4xl md:text-5xl font-bold">The barriers to teaching should be as superable as the barriers to learning.</h1>
             <p class="hero-subtitle max-w-3xl" style="margin-left: auto; margin-right: auto;">
-                Accessible, simple, and built for everyone.
+                Accessibility-guardrailed tools for creating, delivering, and facilitating training — built by someone who's lived the problem, not guessed at it.
             </p>
 
             <div class="hero-actions flex flex-wrap justify-center gap-4 mt-4">
@@ -115,17 +115,17 @@ if ($isPlatformSite) {
             <div class="text-center">
                 <h2 class="text-3xl font-bold mb-4" style="color: var(--color-primary); margin-top: 0;">What It Is</h2>
                 <p class="text-lg text-neutral-mid max-w-3xl mx-auto mb-6">
-                    <strong>Superable Learning</strong> is a modern, accessibility‑first learning platform designed specifically for small organizations, nonprofits, community groups, and growing businesses.
+                    <strong>Superable Learning</strong> builds accessibility‑guardrailed tools for creators, designers, and facilitators — built by someone who has personally been locked out of the tools everyone else uses.
                 </p>
                 <p class="text-lg text-neutral-mid max-w-3xl mx-auto mb-8">
-                    It gives you a clean, simple home for all your training — onboarding, compliance, volunteer education, customer learning, professional development, and everything in between.
+                    Most course‑authoring tools assume you can see the screen, use a mouse, and already know enough about accessibility to catch it when something's wrong. Superable Learning is built the other way around: the accessibility expertise lives in the tool, so you don't have to already be an expert to get it right.
                 </p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-8">
                     <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
                         <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🛠️</div>
                         <h3 class="text-lg font-bold mb-2" style="margin-top: 0; color: var(--color-primary);">No IT Team</h3>
-                        <p class="text-sm text-neutral-mid mb-0">Set up in minutes without any technical expertise. We handle the hosting, security, and accessibility compliance.</p>
+                        <p class="text-sm text-neutral-mid mb-0">Set up in minutes without any technical expertise. We handle the hosting, security, and accessibility guardrails.</p>
                     </div>
                     <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
                         <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🧩</div>
@@ -135,12 +135,12 @@ if ($isPlatformSite) {
                     <div class="card p-6" style="border-top: 4px solid var(--color-accent); background-color: var(--color-bg-light);">
                         <div style="font-size: 2.5rem; margin-bottom: 0.75rem;" aria-hidden="true">🏷️</div>
                         <h3 class="text-lg font-bold mb-2" style="margin-top: 0; color: var(--color-primary);">No Enterprise Price Tag</h3>
-                        <p class="text-sm text-neutral-mid mb-0">Affordable, transparent plans built to fit the budget of small teams, local nonprofits, and community groups.</p>
+                        <p class="text-sm text-neutral-mid mb-0">Affordable, transparent plans built to fit the budget of independent creators, small teams, and local nonprofits.</p>
                     </div>
                 </div>
                 
                 <p class="text-xl font-bold mt-12 mb-0" style="color: var(--color-primary);">
-                    Just a powerful, easy‑to‑use learning system that helps you teach people well.
+                    Because the barriers to teaching should be as superable as the barriers to learning.
                 </p>
             </div>
         </section>
@@ -149,12 +149,15 @@ if ($isPlatformSite) {
         <section id="why-superable" class="card py-8 mb-8" style="background-color: var(--color-bg-light); border: 1px solid #E2E8F0; border-radius: 1rem;">
             <div class="container-wide">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold mb-4" style="color: var(--color-primary); margin-top: 0;">Why You Need It</h2>
+                    <h2 class="text-3xl font-bold mb-4" style="color: var(--color-primary); margin-top: 0;">Who It's For</h2>
                     <p class="text-lg text-neutral-mid max-w-3xl mx-auto">
-                        You’re already training people — employees, volunteers, clients, customers — but your knowledge is scattered across PDFs, emails, Zoom recordings, and <em>“that one person who knows everything.”</em>
+                        <strong>Creators, designers, and facilitators</strong> — especially disabled creators who've been priced out or locked out of tools like Articulate, Rise, or Captivate. You have knowledge worth sharing. You shouldn't need a workaround to share it.
+                    </p>
+                    <p class="text-lg text-neutral-mid max-w-3xl mx-auto mt-4">
+                        <strong>Organizations that care about accessibility</strong> — small businesses, nonprofits, and community groups who want training that's genuinely accessible, not accessible‑adjacent, without needing an in‑house accessibility team to get there.
                     </p>
                     <p class="text-lg font-bold mt-4" style="color: var(--color-accent);">
-                        Superable Learning brings all of it together in one place, so your organization can:
+                        Here's what that looks like:
                     </p>
                 </div>
 
@@ -180,7 +183,7 @@ if ($isPlatformSite) {
                     <div class="card p-6 shadow-sm" style="background: white;">
                         <div class="feature-icon-box" aria-hidden="true">📊</div>
                         <h3 class="text-xl font-bold mb-2" style="margin-top:0; color: var(--color-primary);">Deliver Better Results</h3>
-                        <p class="text-neutral-mid text-sm mb-0">Monitor learner progress with clear tracking, module completions, and simple analytics dashboards.</p>
+                        <p class="text-neutral-mid text-sm mb-0">See what's working with clear, simple progress tracking — built for insight, not oversight.</p>
                     </div>
                     
                     <div class="card p-6 shadow-sm" style="background: white;">
@@ -192,11 +195,11 @@ if ($isPlatformSite) {
 
                 <div class="card p-6 text-center" style="background: linear-gradient(135deg, var(--color-primary), #2d5a41); color: white; border: none; border-radius: 1rem; margin-top: 2rem;">
                     <p class="text-lg mb-4" style="line-height: 1.6; color: white;">
-                        You don’t need a training department. You don’t need a big LMS.<br>
-                        You just need a system that helps people learn — and helps your organization thrive.
+                        You don't need to already be an accessibility expert. You don't need a big LMS.<br>
+                        You just need tools that carry that knowledge for you.
                     </p>
                     <p class="text-xl font-bold mb-0" style="color: var(--color-accent); filter: brightness(1.4);">
-                        Superable Learning gives you that system. Accessible. Affordable. Designed for humans.
+                        We build for the people with knowledge to share — not the people auditing whether it happened.
                     </p>
                 </div>
             </div>
@@ -314,7 +317,14 @@ if ($isPlatformSite) {
                     <div style="color: #94A3B8;">// Returns .../tenants/{tenantKey}.sqlite</div>
                     <br>
                     <div style="color: #94A3B8;">3. Dynamic Branding CSS Engine</div>
-                    <div style="color: #FBBF24;"><?= renderTenantBrandingCss('demo') ?></div>
+                    <?php
+                    // This is an illustrative code sample, not a live call. Previously this
+                    // executed renderTenantBrandingCss('demo'), which injected a real <link>
+                    // and <style> block into the page body — overriding :root variables
+                    // globally and rendering as blank where the sample should appear.
+                    ?>
+                    <div style="color: #FBBF24;"><?= htmlspecialchars('echo renderTenantBrandingCss($tenantKey);') ?></div>
+                    <div style="color: #94A3B8;">// Emits :root + [data-theme="dark"] tokens</div>
                 </div>
             </div>
         </section>
@@ -653,15 +663,21 @@ $tenantMetadata = getTenantMetadata();
                             $course_url = course_url($course['id'], $activeTenantKey);
                             $is_external = false;
                             if (!empty($course['url'])) {
-                                $course_url = $course['url'];
-                                if (preg_match('/^https?:\/\//', $course_url)) {
-                                    $is_external = true;
-                                } else {
-                                    $course_url = $courses_web_path . "/" . $course['id'] . "/" . $course_url;
+                                // Course manifests are author-supplied. Whitelist the scheme
+                                // before this value reaches an href, and fall back to the
+                                // internal player URL if it is not usable.
+                                $manifestUrl = sanitizeUrl($course['url']);
+                                if ($manifestUrl !== null) {
+                                    if (preg_match('#^https?://#i', $manifestUrl)) {
+                                        $course_url = $manifestUrl;
+                                        $is_external = true;
+                                    } else {
+                                        $course_url = $courses_web_path . "/" . $course['id'] . "/" . ltrim($manifestUrl, '/');
+                                    }
                                 }
                             }
                         ?>
-                            <a href="<?= $course_url ?>" 
+                            <a href="<?= htmlspecialchars($course_url) ?>"
                                class="btn btn-sm" 
                                aria-label="Start course: <?= $course['title'] ?><?= $is_external ? ' (opens in a new tab)' : '' ?>"
                                <?= $is_external ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
@@ -671,7 +687,7 @@ $tenantMetadata = getTenantMetadata();
                                 <?php endif; ?>
                             </a>
                         <?php elseif ($course['access']['type'] === 'teaser'): ?>
-                            <a href="<?= htmlspecialchars($course['access']['teaser_link'] ?? '#') ?>" 
+                            <a href="<?= htmlspecialchars(sanitizeUrl($course['access']['teaser_link'] ?? '') ?? '#') ?>"
                                class="btn btn-secondary btn-sm" 
                                aria-label="Learn more about <?= $course['title'] ?>">
                                 Course Info

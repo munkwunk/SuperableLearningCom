@@ -14,47 +14,67 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
+$activeTenantKey = resolveTenantKey();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf_token();
+
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if ($email && $password) {
+    // Throttle before touching the password hash, so an attacker cannot use response
+    // timing to distinguish a locked-out account from a wrong password.
+    $retryAfter = auth_throttle_retry_after($pdo, $email);
+
+    if ($retryAfter > 0) {
+        $waitMinutes = (int)ceil($retryAfter / 60);
+        $error = "Too many failed sign-in attempts. Please wait {$waitMinutes} "
+               . ($waitMinutes === 1 ? "minute" : "minutes") . " and try again.";
+    } elseif ($email && $password) {
         try {
-            $stmt = $pdo->prepare("SELECT id, password_hash, full_name, is_admin FROM users WHERE email = ?");
+            $stmt = $pdo->prepare("SELECT id, email, password_hash, full_name, is_admin FROM users WHERE email = ?");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password_hash'])) {
                 // Successful Login
                 session_regenerate_id(true); // Prevent session fixation
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['full_name'] = $user['full_name'];
-                $_SESSION['is_admin'] = (bool)$user['is_admin'];
-                
+                clear_auth_failures($pdo, $email);
+
+                // Identity is bound to this tenant only. It will not be carried into
+                // another tenant's context via ?tenant=.
+                bind_session_to_tenant($activeTenantKey, [
+                    'user_id'   => $user['id'],
+                    'full_name' => $user['full_name'],
+                    'email'     => $user['email'],
+                    'is_admin'  => (bool)$user['is_admin'],
+                ]);
+
                 // Handle Remember Me (30 Days)
                 if (isset($_POST['remember_me'])) {
-                    $tenant = resolveTenantKey();
                     $token = bin2hex(random_bytes(32));
                     $tokenHash = hash('sha256', $token);
-                    $expires = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
+                    // Stored in UTC to match the datetime('now') comparison used on read.
+                    $expires = gmdate('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 days
 
                     try {
                         $stmtToken = $pdo->prepare("INSERT INTO user_remember_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)");
                         $stmtToken->execute([$user['id'], $tokenHash, $expires]);
-                        set_remember_me_cookie($tenant, $user['id'], $token);
+                        set_remember_me_cookie($activeTenantKey, $user['id'], $token);
                     } catch (PDOException $e) {
                         error_log("Failed to store remember token: " . $e->getMessage());
                     }
                 }
-                
-                $tenant_param = !empty($_GET['tenant']) ? '?tenant=' . urlencode($_GET['tenant']) : '';
+
+                $tenant_param = ($activeTenantKey !== 'local-dev') ? '?tenant=' . urlencode($activeTenantKey) : '';
                 header("Location: index.php" . $tenant_param);
                 exit;
             } else {
+                record_auth_failure($pdo, $email);
                 $error = "Invalid email or password.";
             }
         } catch (PDOException $e) {
+            error_log("Login failure for tenant [{$activeTenantKey}]: " . $e->getMessage());
             $error = "System error. Please try again later.";
         }
     } else {
@@ -84,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" action="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
             <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
                 <input type="email" name="email" id="email" class="form-control" required autocomplete="username" value="<?= isset($email) ? htmlspecialchars($email) : '' ?>">

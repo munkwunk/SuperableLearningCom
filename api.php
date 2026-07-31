@@ -7,7 +7,8 @@
  */
 
 require_once 'config.php';
-session_start();
+// NOTE: config.php already starts the session. A second session_start() here emitted a
+// notice on every API call.
 
 $jsonBody = [];
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
@@ -18,8 +19,13 @@ if (strpos($contentType, 'application/json') !== false) {
     }
 }
 
-$tenantKey = $_REQUEST['tenant'] ?? $jsonBody['tenant'] ?? null;
 $action = $_REQUEST['action'] ?? $jsonBody['action'] ?? null;
+
+// The tenant is resolved through the normal pipeline rather than taken raw from the
+// request body. enforce_tenant_session_binding() (in config.php) has already hydrated the
+// session identity for whichever tenant this request resolves to, so a caller cannot
+// present a session from tenant A alongside ?tenant=B and act inside B.
+$tenantKey = resolveTenantKey();
 
 $pdo = get_db_connection($tenantKey);
 
@@ -53,34 +59,31 @@ if ($action === 'validate_code') {
 $is_guest = !isset($_SESSION['user_id']);
 $user_id = $is_guest ? 'guest_' . session_id() : $_SESSION['user_id'];
 
-// Ensure logged-in user exists in active tenant DB to satisfy foreign key constraints
-if (!$is_guest && is_numeric($user_id)) {
-    try {
-        $uCheck = $pdo->prepare("SELECT id FROM users WHERE id = ?");
-        $uCheck->execute([$user_id]);
-        if (!$uCheck->fetch()) {
-            // Sync user details from main database if available
-            $mainDb = get_db_connection('local-dev');
-            $mStmt = $mainDb->prepare("SELECT * FROM users WHERE id = ?");
-            $mStmt->execute([$user_id]);
-            $mUser = $mStmt->fetch();
-            
-            if ($mUser) {
-                $ins = $pdo->prepare("INSERT OR IGNORE INTO users (id, email, password_hash, full_name, is_admin) VALUES (?, ?, ?, ?, ?)");
-                $ins->execute([$mUser['id'], $mUser['email'], $mUser['password_hash'], $mUser['full_name'], $mUser['is_admin']]);
-            } else {
-                $userEmail = $_SESSION['email'] ?? ('user_' . $user_id . '@tenant.local');
-                $userName = $_SESSION['full_name'] ?? 'LMS User';
-                $ins = $pdo->prepare("INSERT OR IGNORE INTO users (id, email, password_hash, full_name, is_admin) VALUES (?, ?, 'stub_hash', ?, 0)");
-                $ins->execute([$user_id, $userEmail, $userName]);
-            }
-        }
-    } catch (PDOException $e) {
-        error_log("Failed to sync user to tenant DB: " . $e->getMessage());
-    }
-}
+// The cross-tenant user sync that used to live here has been removed.
+//
+// It copied the session user's row (including password_hash and is_admin) out of the
+// local-dev database into whichever tenant the request named, or inserted a stub user.
+// Combined with the unvalidated ?tenant= parameter that let a caller manufacture an
+// administrator inside another client's database and then read that client's learner
+// progress through get_progress_logs.
+//
+// With per-tenant session binding, a user reaching this point authenticated against this
+// tenant and therefore already exists in this tenant's users table, so no sync is needed.
 
 header('Content-Type: application/json');
+
+// Every state-changing request must carry the CSRF token. The session cookie is
+// SameSite=None so the player can run inside the Build Capable XCL iframe, which means
+// the browser will attach it to cross-site requests — this token is the only thing
+// standing between a third-party page and a write to a learner's record.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $suppliedToken = $jsonBody['csrf_token'] ?? $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!check_csrf_token($suppliedToken)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Invalid or expired security token. Please reload the course.']);
+        exit;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($action === 'get_state') {
@@ -260,8 +263,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'telemetry' => $telemetry
             ]);
         } catch (PDOException $e) {
+            // Log server side; never echo the driver message to the client.
+            error_log("API Database Error (get_progress_logs): " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Database error retrieving logs: ' . $e->getMessage()]);
+            echo json_encode(['error' => 'Database error retrieving logs']);
         }
         exit;
     }

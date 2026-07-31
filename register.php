@@ -6,12 +6,23 @@
  */
 
 require_once 'config.php';
+// NOTE: config.php already starts the session; a second session_start() emitted a notice.
+
+$activeTenantKey = resolveTenantKey();
+
+// Refuse to create accounts inside a tenant that was never provisioned. Tenant databases
+// are created on demand, so without this an arbitrary ?tenant= value would spin up a new
+// portal and populate it with self-registered users.
+if (!tenantExists($activeTenantKey)) {
+    http_response_code(404);
+    die("Not Found: No organization portal is provisioned under this address.");
+}
+
 $pdo = get_db_connection();
-session_start();
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['user_id'])) {
-    header("Location: index.php");
+    header("Location: " . tenant_url('index.php'));
     exit;
 }
 
@@ -19,12 +30,24 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf_token();
+
     $full_name = trim($_POST['full_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $course_code = strtoupper(trim($_POST['course_code'] ?? ''));
 
-    if ($full_name && $email && $password) {
+    // Throttle registration attempts per email and per IP, so this endpoint cannot be
+    // used to enumerate invitation codes or mass-create accounts.
+    $retryAfter = auth_throttle_retry_after($pdo, 'register:' . $email, 10, 900);
+
+    if ($retryAfter > 0) {
+        $waitMinutes = (int)ceil($retryAfter / 60);
+        $error = "Too many registration attempts. Please wait {$waitMinutes} "
+               . ($waitMinutes === 1 ? "minute" : "minutes") . " and try again.";
+    } elseif (strlen($password) > 0 && strlen($password) < 8) {
+        $error = "Your password must be at least 8 characters long.";
+    } elseif ($full_name && $email && $password) {
         try {
             $key_data = null;
             if ($course_code) {
@@ -34,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $key_data = $stmt->fetch();
                 
                 if (!$key_data) {
+                    record_auth_failure($pdo, 'register:' . $email);
                     $error = "The course code you entered is invalid or expired. You can leave it blank to create a free account.";
                 }
             }
@@ -83,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (PDOException $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
+            error_log("Registration failure for tenant [{$activeTenantKey}]: " . $e->getMessage());
             $error = "System error during registration. Please try again.";
         }
     } else {
@@ -125,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <form method="POST" id="reg-form">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                     <!-- Step 1: Course Code -->
                     <fieldset id="step-1">
                         <legend class="sr-only">Step 1: Course Access (Optional)</legend>

@@ -1,6 +1,6 @@
-# Superable Learning LMS — Pricing & Plans
+# Superable Learning — Pricing & Plans
 
-Superable Learning is an accessibility‑first LMS designed for creators, educators, and organizations who value simplicity, transparency, and WCAG‑aligned learning experiences. All tiers include our accessibility‑first course player, LC‑JSON support, and unlimited learners.
+Superable Learning is an accessibility‑first toolkit for creators, designers, and facilitators — built so the barriers to teaching are as superable as the barriers to learning. All tiers include our accessibility‑first course player, LC‑JSON support, and unlimited learners.
 
 Check out our pricing options below.
 
@@ -153,11 +153,10 @@ For longer courses, add the per-page rate.
 
 ## Why Superable Learning?
 Superable Learning is built on a simple philosophy:
-**Accessibility should never be an afterthought.**  
-All tiers — even Sandbox — include our full suite of basic accessibility tools.  
-Premium unlocks advanced tooling for teams who need deeper WCAG insights and collaboration.
+**The barriers to teaching should be as superable as the barriers to learning.**
+All tiers — even Sandbox — include our full suite of basic accessibility tools, because accessibility isn't something you should have to pay more to have. Premium unlocks deeper tooling for teams who need it — not a different level of accessibility.
 
-If you value predictable pricing, accessibility‑first design, and a creator‑friendly workflow, Superable Learning is built for you.
+If you're a creator with knowledge to share, or an organization that actually cares whether your training is accessible, Superable Learning is built for you.
 ---
 
 [Developer note: Please create this section as its own help page. Place it in the correct category in our help file infrastructure. Create a link to it in the add-ons section, above.]

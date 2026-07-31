@@ -1,34 +1,27 @@
-Here’s a polished, front‑page‑ready pitch for **Superable Learning** — written for SMBs who *don’t* have an LMS, *don’t* know they need one, and *don’t* want complexity. It’s crisp, benefit‑driven, and accessibility‑forward without sounding technical.
+# Superable Learning
+## The barriers to teaching should be as superable as the barriers to learning.
 
-You can drop this directly onto **SuperableLearning.com** as your hero message + supporting copy.
+### What it is
+Superable Learning builds accessibility-first tools for creating and delivering training — designed by someone who has personally been locked out of the tools everyone else uses.
 
----
+Most course-authoring tools assume you can see the screen, use a mouse, and already know enough about accessibility to catch it when something's wrong. If any of that isn't true for you, the tools were never built with you in mind — not because you don't have something worth teaching, but because the industry didn't design for you.
 
-# **Superable Learning**  
-## **Training that finally works for small organizations. Accessible, simple, and built for everyone.**
+Superable Learning is built the other way around: the accessibility expertise lives in the tool, so you don't have to already be an expert to get it right.
 
-### **What it is**  
-Superable Learning is a modern, accessibility‑first learning platform designed specifically for small organizations, nonprofits, community groups, and growing businesses.  
-It gives you a clean, simple home for all your training — onboarding, compliance, volunteer education, customer learning, professional development, and everything in between.
+### Who it's for
 
-No IT team. No complexity. No enterprise price tag.  
-Just a powerful, easy‑to‑use learning system that helps you teach people well.
+**Creators, designers, and facilitators** — especially disabled creators who've been priced out or locked out of tools like Articulate, Rise, or Captivate. You have knowledge worth sharing. You shouldn't need a workaround to share it.
 
----
+**Organizations that care about accessibility** — small businesses, nonprofits, and community groups who want training that's genuinely accessible, not accessible-adjacent, without needing an in-house accessibility team to get there.
 
-### **Why you need it**  
-You’re already training people — employees, volunteers, clients, customers — but your knowledge is scattered across PDFs, emails, Zoom recordings, and “that one person who knows everything.”  
-Superable Learning brings all of it together in one place, so your organization can:
+### What you get
 
-- **Save time** with training that’s consistent, organized, and easy to update  
-- **Look professional** with a polished learning experience your audience will trust  
-- **Support every learner** with accessibility built in from the ground up  
-- **Deliver better results** with clear progress tracking and simple analytics  
-- **Grow confidently** by starting small and expanding whenever you’re ready  
+- **An accessible course builder**, with real accessibility tooling built in as you work — contrast checking, reading-order preview, structural validation — not caught after the fact.
+- **An accessible player**, so what you build actually renders the way it was designed to, for every learner.
+- **Real accessibility review**, from people who do this work, when you need a second set of eyes.
 
-You don’t need a training department.  
-You don’t need a big LMS.  
-You just need a system that helps people learn — and helps your organization thrive.
+### Where we're headed
 
-Superable Learning gives you that system. Accessible. Affordable. Designed for humans.
+We're building toward a future where an AI can help you draft a course and our accessibility engine holds it to a real standard automatically — so getting it right doesn't depend on already knowing what "right" looks like. That's the direction we're building in. It starts with the tools you can use today.
 
+We build for the people with knowledge to share — not the people auditing whether it happened.
