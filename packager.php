@@ -331,10 +331,16 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
 
         .status-toast {
             display: none;
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            max-width: min(90vw, 600px);
             padding: 0.85rem 1.25rem;
             border-radius: 0.375rem;
-            margin-bottom: 1.25rem;
             font-weight: 700;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25), 0 8px 10px -6px rgba(0,0,0,0.15);
         }
 
         .sr-only {
@@ -418,8 +424,14 @@ $urlPrefix = $isSubfolderUrl ? '../' : '';
             </button>
         </div>
 
+        <!-- Visual status toast for sighted users. Purely presentational (aria-hidden) —
+             the actual screen reader announcement comes from #sr-status-announcer below,
+             which stays permanently mounted (never display:none) so it can't miss an
+             announcement regardless of this toast's visibility or the page's scroll position. -->
+        <div id="status-box" class="status-toast" aria-hidden="true"></div>
+
         <!-- WCAG 4.1.3 Accessible Screen Reader Status Announcements -->
-        <div id="status-box" role="status" aria-live="polite" class="status-toast"></div>
+        <div id="sr-status-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
         <!-- ================= TAB 1: MODULAR BUILDER ================= -->
         <div id="modular-builder-tab" 
@@ -915,14 +927,18 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
             showStatus('Returned focus to Course Controls toolbar.', false);
         }
 
-        // Status Toast with WCAG 4.1.3 ARIA Live Region Announcement
+        // Status Toast (visual, sighted users) + WCAG 4.1.3 ARIA Live Region Announcement (screen readers)
+        //
+        // These two are deliberately independent. The visual toast (#status-box) is aria-hidden
+        // and can be missed by a sighted user who has scrolled, has it covered, etc. The screen
+        // reader announcement (#sr-status-announcer) is a permanently-mounted, never-hidden live
+        // region so it cannot be affected by scroll position or the toast's own visibility/timing —
+        // a screen reader user gets the announcement every time, independent of what's on screen.
         function showStatus(msg, isError, priority = 'polite') {
             const statusBox = document.getElementById('status-box');
-            statusBox.setAttribute('aria-live', priority);
-            
-            // Clear text to force screen reader DOM mutation detection
+            const announcer = document.getElementById('sr-status-announcer');
+
             statusBox.textContent = '';
-            
             setTimeout(() => {
                 statusBox.style.display = 'block';
                 statusBox.style.background = isError ? 'var(--color-critical-bg, #fff5f5)' : 'var(--color-success-bg, #f0fff4)';
@@ -935,6 +951,14 @@ Make sure to format the JSON correctly. Every HTML fragment in the `html_content
             window.statusTimer = setTimeout(() => {
                 statusBox.style.display = 'none';
             }, 6000);
+
+            // Clear first so identical back-to-back messages still trigger a fresh AT announcement
+            announcer.setAttribute('aria-live', priority);
+            announcer.textContent = '';
+            if (window.announcerTimer) clearTimeout(window.announcerTimer);
+            window.announcerTimer = setTimeout(() => {
+                announcer.textContent = (isError ? 'Error: ' : '') + msg;
+            }, 50);
         }
 
         // Accessible Help Modal Dialog Engine
