@@ -394,16 +394,6 @@ function cmdRenameTenant($oldKey, $newKey) {
     $oldKey = sanitizeTenantKey($oldKey);
     $newKey = sanitizeTenantKey($newKey);
 
-    if (!tenantExists($oldKey)) {
-        fail("No tenant named '{$oldKey}'. Run: php manage.php tenants");
-    }
-    if ($newKey === '') {
-        fail("New tenant key is invalid after sanitization.");
-    }
-    if (tenantExists($newKey)) {
-        fail("A tenant named '{$newKey}' already exists. Choose a different key or delete it first.");
-    }
-
     $oldJson    = tenantsDir() . DIRECTORY_SEPARATOR . $oldKey . '.json';
     $oldDb      = getDbPath($oldKey);
     $oldStorage = getStoragePath($oldKey);
@@ -413,6 +403,19 @@ function cmdRenameTenant($oldKey, $newKey) {
     $newDb      = getDbPath($newKey);
     $newStorage = getStoragePath($newKey);
     $newCourses = LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . $newKey;
+
+    // Deliberately not using tenantExists() here: it hardcodes true for the platform
+    // tenant key so the platform is always usable pre-provisioning, which makes it
+    // useless as a collision check when renaming *into* that key. Check real files instead.
+    if (!file_exists($oldJson) && !file_exists($oldDb)) {
+        fail("No tenant named '{$oldKey}'. Run: php manage.php tenants");
+    }
+    if ($newKey === '') {
+        fail("New tenant key is invalid after sanitization.");
+    }
+    if (file_exists($newJson) || file_exists($newDb)) {
+        fail("A tenant named '{$newKey}' already has data on disk. Choose a different key or delete it first.");
+    }
 
     $meta = getTenantMetadata($oldKey);
 
