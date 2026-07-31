@@ -20,7 +20,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
     <title>Pricing & Plans — Superable Learning</title>
     <meta name="description" content="Transparent, accessible pricing for Superable Learning's creator and facilitator tools. Sandbox, Pro, and Premium tiers, plus accessibility review add-ons.">
     <link rel="stylesheet" href="style.css">
-    <?= renderTenantBrandingCss('local-dev') ?>
+    <?= renderTenantBrandingCss('platform') ?>
     <style>
         /* Custom layout styling for the pricing pages */
         .pricing-section-title {
@@ -174,7 +174,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
                     <?php if (!$is_guest && $is_admin): ?>
                         <a href="platform_admin.php" class="btn btn-primary" style="white-space: nowrap;">Configure Tenant Limits &rarr;</a>
                     <?php else: ?>
-                        <a href="login.php?tenant=local-dev" class="btn btn-primary" style="white-space: nowrap;">Admin Sign In &rarr;</a>
+                        <a href="login.php?tenant=platform" class="btn btn-primary" style="white-space: nowrap;">Admin Sign In &rarr;</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -209,7 +209,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
                     </li>
                 </ul>
 
-                <a href="index.php?tenant=local-dev" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">Explore Local Demo</a>
+                <a href="index.php?tenant=platform" class="btn btn-outline-light text-center" style="color: var(--color-primary); border-color: var(--color-primary); margin-top: auto;">Explore Local Demo</a>
             </div>
 
             <!-- Tier 2: Pro (Featured) -->
@@ -482,7 +482,7 @@ $is_admin = $_SESSION['is_admin'] ?? false;
 
     </main>
 
-    <?= renderTenantFooter('local-dev') ?>
+    <?= renderTenantFooter('platform') ?>
 
     <script>
         function toggleFaq(btn) {

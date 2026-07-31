@@ -46,6 +46,6 @@ if (empty($_SESSION['tenant_identities'])) {
     session_regenerate_id(true);
 }
 
-$tenantQuery = ($tenant && $tenant !== 'local-dev') ? '?tenant=' . urlencode($tenant) : '';
+$tenantQuery = ($tenant && $tenant !== 'platform') ? '?tenant=' . urlencode($tenant) : '';
 header("Location: login.php" . $tenantQuery);
 exit;

@@ -205,7 +205,7 @@ function enforce_tenant_session_binding() {
 
 /**
  * Returns true when the current session is an administrator of the platform tenant
- * (local-dev), which is what gates platform_admin.php.
+ * (platform), which is what gates platform_admin.php.
  *
  * The session's is_admin flag alone is NOT sufficient — it is set by logging into any
  * tenant, including one an attacker provisioned themselves.
@@ -215,7 +215,7 @@ function enforce_tenant_session_binding() {
 function is_platform_admin() {
     // Read the platform identity directly from the per-tenant map so this works no matter
     // which tenant the current request resolved to.
-    $platformIdentity = $_SESSION['tenant_identities']['local-dev'] ?? null;
+    $platformIdentity = $_SESSION['tenant_identities']['platform'] ?? null;
     if (!is_array($platformIdentity) || empty($platformIdentity['user_id'])) {
         return false;
     }
@@ -224,7 +224,7 @@ function is_platform_admin() {
     // session. The session flag alone is set by logging into ANY tenant, including one an
     // attacker provisioned for themselves.
     try {
-        $platformDb = get_db_connection('local-dev');
+        $platformDb = get_db_connection('platform');
         $stmt = $platformDb->prepare("SELECT is_admin FROM users WHERE id = ?");
         $stmt->execute([$platformIdentity['user_id']]);
         $row = $stmt->fetch();
@@ -247,7 +247,7 @@ function sanitizeTenantKey($key) {
     if (in_array($clean, ['superableaccessibility', 'superable-accessibility', 'accessibility'])) {
         return 'superableaccessibility';
     }
-    return !empty($clean) ? $clean : 'local-dev';
+    return !empty($clean) ? $clean : 'platform';
 }
 
 /**
@@ -275,7 +275,7 @@ function getCustomDomainMap() {
  * 2. Custom domain map lookup (e.g. clientdomain.com -> tenantKey)
  * 3. Subdomain detection (e.g. tenant.superablelearning.com -> tenant)
  * 4. Local development subdomain regex (e.g. tenant.localhost -> tenant)
- * 5. Main domain fallback ('local-dev')
+ * 5. Main domain fallback ('platform')
  *
  * @return string Mapped tenant key
  */
@@ -340,7 +340,7 @@ function resolveTenantKey() {
     }
 
     // 6. Default Fallback Key for Main Platform Site
-    return 'local-dev';
+    return 'platform';
 }
 
 /**
@@ -377,7 +377,7 @@ function isPlatformHost($host) {
  */
 function tenant_url($path) {
     $activeTenant = resolveTenantKey();
-    if ($activeTenant !== 'local-dev') {
+    if ($activeTenant !== 'platform') {
         $sep = (strpos($path, '?') !== false) ? '&' : '?';
         return $path . $sep . 'tenant=' . urlencode($activeTenant);
     }
@@ -395,7 +395,7 @@ function tenant_url($path) {
 function course_url($course_id, $tenantKey = null) {
     $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
     $base = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\') . '/';
-    if ($tenantKey && $tenantKey !== 'local-dev') {
+    if ($tenantKey && $tenantKey !== 'platform') {
         return $base . urlencode($tenantKey) . "/courses/" . urlencode($course_id);
     }
     return $base . "courses/" . urlencode($course_id);
@@ -556,7 +556,7 @@ function getTenantMetadata($tenantKey = null, $createIfMissing = false) {
         $content = file_get_contents($jsonPath);
         $data = json_decode($content, true);
         if (is_array($data)) {
-            if ($tenantKey === 'local-dev') {
+            if ($tenantKey === 'platform') {
                 $data['name'] = 'Superable Learning';
             }
             return $data;
@@ -565,8 +565,8 @@ function getTenantMetadata($tenantKey = null, $createIfMissing = false) {
 
     $defaultMeta = [
         'tenant_key' => $tenantKey,
-        'name'       => ($tenantKey === 'local-dev') ? 'Superable Learning' : ucfirst(str_replace(['-', '_'], ' ', $tenantKey)),
-        'domain'     => ($tenantKey === 'local-dev') ? PRIMARY_DOMAIN : $tenantKey . '.' . PRIMARY_DOMAIN,
+        'name'       => ($tenantKey === 'platform') ? 'Superable Learning' : ucfirst(str_replace(['-', '_'], ' ', $tenantKey)),
+        'domain'     => ($tenantKey === 'platform') ? PRIMARY_DOMAIN : $tenantKey . '.' . PRIMARY_DOMAIN,
         'plan'       => 'standard',
         'created'    => date('Y-m-d H:i:s'),
         'status'     => 'active'
@@ -589,7 +589,7 @@ function getTenantMetadata($tenantKey = null, $createIfMissing = false) {
  */
 function tenantExists($tenantKey = null) {
     $tenantKey = $tenantKey ? sanitizeTenantKey($tenantKey) : resolveTenantKey();
-    if ($tenantKey === 'local-dev') {
+    if ($tenantKey === 'platform') {
         return true;
     }
     $jsonPath = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . $tenantKey . '.json';
@@ -609,7 +609,7 @@ function getAvailableTenants() {
         foreach (scandir($dbDir) as $file) {
             if (substr($file, -5) === '.json') {
                 $key = substr($file, 0, -5);
-                if ($key === 'local-dev') continue;
+                if ($key === 'platform') continue;
 
                 // Skip malformed filenames such as a bare ".json". An empty key falls
                 // through getTenantMetadata() to resolveTenantKey(), which made the file
@@ -1494,7 +1494,7 @@ function resolveCourseDir($course_id, $tenantKey = null) {
 
     $fallbackDirs = [
         LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'superableaccessibility',
-        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'local-dev',
+        LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . 'platform',
         LMS_ROOT . DIRECTORY_SEPARATOR . 'courses'
     ];
 
@@ -1555,7 +1555,7 @@ function check_remember_me_cookie($pdo, $connectionTenantKey = null) {
     $tenantKey = $connectionTenantKey ? sanitizeTenantKey($connectionTenantKey) : resolveTenantKey();
 
     // Only auto-login for the tenant this request actually resolved to. Helper code opens
-    // connections to other tenants (is_platform_admin() opens local-dev, for example), and
+    // connections to other tenants (is_platform_admin() opens platform, for example), and
     // without this guard a remember-me cookie issued for tenant A would be validated
     // against tenant B's users table — where the same numeric id belongs to someone else.
     if ($tenantKey !== resolveTenantKey()) {

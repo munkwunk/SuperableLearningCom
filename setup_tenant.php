@@ -9,7 +9,7 @@
  * randomly generated value per tenant — there is deliberately no default.
  *
  * Examples:
- *   php setup_tenant.php local-dev "Local Dev" superablelearning.com standard admin@superablelearning.com "$(openssl rand -base64 18)"
+ *   php setup_tenant.php platform "Local Dev" superablelearning.com standard admin@superablelearning.com "$(openssl rand -base64 18)"
  *   php setup_tenant.php tenant-001 "Tenant 001" tenant1.superablelearning.com premium admin@tenant1.com "$(openssl rand -base64 18)"
  */
 
@@ -50,7 +50,7 @@ function provision_tenant_account($tenantKey, $clientName = null, $domain = null
     $metadata = [
         'tenant_key' => $tenantKey,
         'name'       => $clientName,
-        'domain'     => $domain ? $domain : (($tenantKey === 'local-dev') ? PRIMARY_DOMAIN : $tenantKey . '.' . PRIMARY_DOMAIN),
+        'domain'     => $domain ? $domain : (($tenantKey === 'platform') ? PRIMARY_DOMAIN : $tenantKey . '.' . PRIMARY_DOMAIN),
         'plan'       => $plan,
         'created'    => date('Y-m-d H:i:s'),
         'status'     => 'active'
@@ -80,7 +80,7 @@ function provision_tenant_account($tenantKey, $clientName = null, $domain = null
 
 // Only execute CLI output if run directly from command line
 if (php_sapi_name() === 'cli' && isset($_SERVER['PHP_SELF']) && basename($_SERVER['PHP_SELF']) === 'setup_tenant.php') {
-    $tenantKey  = $argv[1] ?? 'local-dev';
+    $tenantKey  = $argv[1] ?? 'platform';
     $clientName = $argv[2] ?? null;
     $domain     = $argv[3] ?? null;
     $plan       = $argv[4] ?? 'standard';

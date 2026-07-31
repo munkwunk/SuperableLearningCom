@@ -7,7 +7,7 @@ require_once 'config.php';
 $pdo = get_db_connection();
 
 $activeTenant = resolveTenantKey();
-$isPlatformSite = ($activeTenant === 'local-dev' && empty($_GET['tenant']));
+$isPlatformSite = ($activeTenant === 'platform' && empty($_GET['tenant']));
 
 $is_guest = !isset($_SESSION['user_id']);
 $user_id = $is_guest ? 'guest_' . session_id() : $_SESSION['user_id'];
@@ -31,7 +31,7 @@ $tenantMetadata = getTenantMetadata($activeTenant);
     <!-- Unified Header Navigation -->
     <header class="site-header">
         <div class="container-wide header-inner">
-            <?php if ($activeTenant === 'local-dev'): ?>
+            <?php if ($activeTenant === 'platform'): ?>
                 <div class="brand-group">
                     <a href="index.php" class="brand-title">Superable Learning</a>
                     <span class="badge-platform">PLATFORM</span>
@@ -44,7 +44,7 @@ $tenantMetadata = getTenantMetadata($activeTenant);
                         <a href="platform_admin.php" class="btn btn-teal btn-sm">Platform Admin</a>
                     <?php endif; ?>
                     <?php if ($is_guest): ?>
-                        <a href="login.php?tenant=local-dev" class="btn btn-outline-light btn-sm">Sign In</a>
+                        <a href="login.php?tenant=platform" class="btn btn-outline-light btn-sm">Sign In</a>
                     <?php else: ?>
                         <span class="text-sm" style="color: white; margin-right: 0.5rem;">Logged in as <strong><?= htmlspecialchars($current_user_name) ?></strong></span>
                         <a href="logout.php" class="nav-link text-sm">Logout</a>

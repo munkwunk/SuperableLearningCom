@@ -62,7 +62,7 @@ $user_id = $is_guest ? 'guest_' . session_id() : $_SESSION['user_id'];
 // The cross-tenant user sync that used to live here has been removed.
 //
 // It copied the session user's row (including password_hash and is_admin) out of the
-// local-dev database into whichever tenant the request named, or inserted a stub user.
+// platform database into whichever tenant the request named, or inserted a stub user.
 // Combined with the unvalidated ?tenant= parameter that let a caller manufacture an
 // administrator inside another client's database and then read that client's learner
 // progress through get_progress_logs.

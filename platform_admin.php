@@ -9,8 +9,8 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/setup_tenant.php';
 
-// Force connection to main platform database (local-dev) for Super Admin authentication
-$platformTenant = 'local-dev';
+// Force connection to main platform database (platform) for Super Admin authentication
+$platformTenant = 'platform';
 $pdo = get_db_connection($platformTenant);
 
 // Security Check: Require Super Admin on the PLATFORM database.
@@ -19,10 +19,10 @@ $pdo = get_db_connection($platformTenant);
 // tenant. Because a tenant database was created on demand for any ?tenant= value and was
 // seeded with a known admin credential, that made every tenant admin — and in effect any
 // anonymous visitor — a platform super administrator. is_platform_admin() requires an
-// identity authenticated against local-dev specifically, and re-verifies the admin flag
+// identity authenticated against platform specifically, and re-verifies the admin flag
 // against the platform database instead of trusting the session.
 if (!is_platform_admin()) {
-    header("Location: login.php?tenant=local-dev");
+    header("Location: login.php?tenant=platform");
     exit;
 }
 

@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                $tenant_param = ($activeTenantKey !== 'local-dev') ? '?tenant=' . urlencode($activeTenantKey) : '';
+                $tenant_param = ($activeTenantKey !== 'platform') ? '?tenant=' . urlencode($activeTenantKey) : '';
                 header("Location: index.php" . $tenant_param);
                 exit;
             } else {
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php 
         $activeTenant = resolveTenantKey();
-        if ($activeTenant === 'local-dev' && empty($_GET['tenant'])): 
+        if ($activeTenant === 'platform' && empty($_GET['tenant'])): 
             $availableTenants = getAvailableTenants();
         ?>
             <div class="mt-4 pt-3" style="border-top: 1px dashed #CBD5E1; text-align: left;">

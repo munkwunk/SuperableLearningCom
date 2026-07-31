@@ -10,7 +10,7 @@ require_once 'config.php';
 $pdo = get_db_connection();
 
 $activeTenant = resolveTenantKey();
-$isPlatformSite = ($activeTenant === 'local-dev' && empty($_GET['tenant']));
+$isPlatformSite = ($activeTenant === 'platform' && empty($_GET['tenant']));
 
 $is_guest = !isset($_SESSION['user_id']);
 $user_id = $is_guest ? 'guest_' . session_id() : $_SESSION['user_id'];
@@ -29,7 +29,7 @@ if ($isPlatformSite) {
     <title>Superable Learning — Overcoming barriers through accessible learning</title>
     <meta name="description" content="Superable Learning builds accessibility-guardrailed tools for creators, designers, and facilitators — so the barriers to teaching are as superable as the barriers to learning.">
     <link rel="stylesheet" href="style.css">
-    <?= renderTenantBrandingCss('local-dev') ?>
+    <?= renderTenantBrandingCss('platform') ?>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -56,7 +56,7 @@ if ($isPlatformSite) {
                     <a href="platform_admin.php" class="btn btn-teal btn-sm">Platform Admin</a>
                 <?php endif; ?>
                 <?php if ($is_guest): ?>
-                    <a href="login.php?tenant=local-dev" class="btn btn-outline-light btn-sm">Sign In</a>
+                    <a href="login.php?tenant=platform" class="btn btn-outline-light btn-sm">Sign In</a>
                 <?php else: ?>
                     <span class="text-sm" style="color: white; margin-right: 0.5rem;">Logged in as <strong><?= htmlspecialchars($current_user_name) ?></strong></span>
                     <a href="logout.php" class="nav-link text-sm">Logout</a>
@@ -82,7 +82,7 @@ if ($isPlatformSite) {
                 <a href="#workspace-finder" class="btn btn-accent btn-lg">Find Your Workspace</a>
                 <a href="pricing.php" class="btn btn-outline-light btn-lg">Explore Pricing</a>
                 <?php if ($is_guest): ?>
-                    <a href="login.php?tenant=local-dev" class="btn btn-teal btn-lg">Platform Admin Login</a>
+                    <a href="login.php?tenant=platform" class="btn btn-teal btn-lg">Platform Admin Login</a>
                 <?php else: ?>
                     <a href="platform_admin.php" class="btn btn-teal btn-lg">Open Client Manager</a>
                 <?php endif; ?>
@@ -369,7 +369,7 @@ if ($isPlatformSite) {
     </main>
 
     <!-- Universal Platform Footer -->
-    <?= renderTenantFooter('local-dev') ?>
+    <?= renderTenantFooter('platform') ?>
 
     <script>
         function handleWorkspaceRedirect(e) {

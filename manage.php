@@ -15,8 +15,9 @@
  *   php manage.php demote <tenant> <email>              Revoke administrator rights
  *   php manage.php delete-user <tenant> <email>         Delete one account
  *   php manage.php delete-tenant <tenant>               Delete a tenant (backs up first)
+ *   php manage.php rename-tenant <old> <new>            Rename a tenant's data on disk
  *
- * The platform ("superuser") tenant is 'local-dev'. Administrators there — and only
+ * The platform ("superuser") tenant is 'platform'. Administrators there — and only
  * there — can reach platform_admin.php.
  */
 
@@ -27,7 +28,7 @@ if (php_sapi_name() !== 'cli') {
 
 require_once __DIR__ . '/config.php';
 
-const PLATFORM_TENANT = 'local-dev';
+const PLATFORM_TENANT = 'platform';
 
 /** Passwords that must never survive in a live system. */
 const KNOWN_WEAK_PASSWORDS = [
@@ -389,6 +390,89 @@ function cmdDeleteTenant($tenantKey) {
     out("    Delete that directory yourself once you are satisfied.");
 }
 
+function cmdRenameTenant($oldKey, $newKey) {
+    $oldKey = sanitizeTenantKey($oldKey);
+    $newKey = sanitizeTenantKey($newKey);
+
+    if (!tenantExists($oldKey)) {
+        fail("No tenant named '{$oldKey}'. Run: php manage.php tenants");
+    }
+    if ($newKey === '') {
+        fail("New tenant key is invalid after sanitization.");
+    }
+    if (tenantExists($newKey)) {
+        fail("A tenant named '{$newKey}' already exists. Choose a different key or delete it first.");
+    }
+
+    $oldJson    = tenantsDir() . DIRECTORY_SEPARATOR . $oldKey . '.json';
+    $oldDb      = getDbPath($oldKey);
+    $oldStorage = getStoragePath($oldKey);
+    $oldCourses = LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . $oldKey;
+
+    $newJson    = tenantsDir() . DIRECTORY_SEPARATOR . $newKey . '.json';
+    $newDb      = getDbPath($newKey);
+    $newStorage = getStoragePath($newKey);
+    $newCourses = LMS_ROOT . DIRECTORY_SEPARATOR . 'courses' . DIRECTORY_SEPARATOR . 'tenants' . DIRECTORY_SEPARATOR . $newKey;
+
+    $meta = getTenantMetadata($oldKey);
+
+    out("Renaming tenant '{$oldKey}' to '{$newKey}':");
+    out("  Metadata:  " . (file_exists($oldJson) ? $oldJson : '(none)') . " -> {$newJson}");
+    out("  Database:  " . (file_exists($oldDb) ? $oldDb : '(none)') . " -> {$newDb}");
+    out("  Storage:   " . (is_dir($oldStorage) ? $oldStorage : '(none)') . " -> {$newStorage}");
+    out("  Courses:   " . (is_dir($oldCourses) ? "{$oldCourses} -> {$newCourses}" : '(none, not a webroot course tenant)'));
+    out();
+    out("This moves data in place (renames, not a copy) and updates the metadata's internal");
+    out("tenant_key plus any custom_domains.json entries pointing at '{$oldKey}'. Application code");
+    out("that hardcodes the old key elsewhere must be updated and deployed separately — this");
+    out("command only touches data on disk.");
+    out();
+
+    if (!confirmPhrase("rename {$oldKey} to {$newKey}")) {
+        out("Cancelled. Nothing was changed.");
+        return;
+    }
+
+    $renamed = [];
+    if (file_exists($oldDb) && @rename($oldDb, $newDb)) {
+        $renamed[] = 'database';
+    }
+    if (file_exists($oldJson)) {
+        $meta['tenant_key'] = $newKey;
+        file_put_contents($oldJson, json_encode($meta, JSON_PRETTY_PRINT));
+        if (@rename($oldJson, $newJson)) {
+            $renamed[] = 'metadata';
+        }
+    }
+    if (is_dir($oldStorage) && @rename($oldStorage, $newStorage)) {
+        $renamed[] = 'storage';
+    }
+    if (is_dir($oldCourses) && @rename($oldCourses, $newCourses)) {
+        $renamed[] = 'courses';
+    }
+
+    $mapFile = getTenantBaseDir() . DIRECTORY_SEPARATOR . 'custom_domains.json';
+    if (file_exists($mapFile)) {
+        $map = json_decode(file_get_contents($mapFile), true);
+        if (is_array($map)) {
+            $changed = false;
+            foreach ($map as $domain => $mappedTenant) {
+                if ($mappedTenant === $oldKey) {
+                    $map[$domain] = $newKey;
+                    $changed = true;
+                }
+            }
+            if ($changed) {
+                file_put_contents($mapFile, json_encode($map, JSON_PRETTY_PRINT));
+                out("[+] Updated custom_domains.json entries pointing at '{$oldKey}'.");
+            }
+        }
+    }
+
+    out("[+] Renamed: " . (empty($renamed) ? '(nothing found to move)' : implode(', ', $renamed)) . ".");
+    out("Remember: application code that hardcodes '{$oldKey}' must be updated and deployed separately.");
+}
+
 // ---------------------------------------------------------------------------
 // Dispatch
 // ---------------------------------------------------------------------------
@@ -434,6 +518,11 @@ switch ($command) {
         cmdDeleteTenant($argv[2]);
         break;
 
+    case 'rename-tenant':
+        if (empty($argv[2]) || empty($argv[3])) fail("Usage: php manage.php rename-tenant <old-tenant> <new-tenant>");
+        cmdRenameTenant($argv[2], $argv[3]);
+        break;
+
     default:
         out("Superable Learning — Platform Management CLI");
         out();
@@ -445,6 +534,7 @@ switch ($command) {
         out("  php manage.php demote <tenant> <email>        Revoke administrator rights");
         out("  php manage.php delete-user <tenant> <email>   Delete one account");
         out("  php manage.php delete-tenant <tenant>         Delete a tenant (backed up first)");
+        out("  php manage.php rename-tenant <old> <new>      Rename a tenant's data on disk");
         out();
         out("The platform (superuser) tenant is '" . PLATFORM_TENANT . "'. Administrators there,");
         out("and only there, can reach platform_admin.php.");
